@@ -1,0 +1,13 @@
+# Entornos
+.venv/
+__pycache__/
+*.pyc
+
+# Índices generados y datos pesados
+rag/_indice/
+knowledge-base/corpus/**/*.pdf
+knowledge-base/corpus/**/*.epub
+
+# Secretos
+.env
+*.key

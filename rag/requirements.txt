@@ -1,0 +1,5 @@
+# Motor de conocimiento (La Cueva-LM) — prototipo
+pymupdf>=1.24        # extracción de texto de PDFs
+scikit-learn>=1.4    # recuperación TF-IDF
+numpy>=1.26
+anthropic>=0.40      # generación fundamentada con Claude (opcional: requiere ANTHROPIC_API_KEY)
