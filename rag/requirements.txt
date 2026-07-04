@@ -1,6 +1,0 @@
-# Motor de conocimiento (La Cueva-LM) — prototipo
-pymupdf>=1.24        # extracción de texto de PDFs
-scikit-learn>=1.4    # recuperación TF-IDF
-numpy>=1.26
-google-genai>=1.0    # redacción con Gemini, capa GRATUITA (requiere GEMINI_API_KEY de aistudio.google.com/apikey)
-anthropic>=0.40      # alternativa paga: Claude (requiere ANTHROPIC_API_KEY)

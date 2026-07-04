@@ -78,33 +78,41 @@ RAG y la econometría corren; los agentes devuelven una *maqueta* de su interven
 MODO OFFLINE) en lugar de la redacción real de Claude. Cargás la clave y los mismos turnos pasan
 a ser respuestas fundamentadas reales. Ideal para desarrollar y testear sin gastar tokens.
 
-## Mapa de archivos
+## Mapa de archivos (desde 2026-07-04: paquete único `cueva/` por capas)
 
 ```
-config.py              rutas a datos (autodetecta Trabajo Final + MATRIZ ARG) y modelo/clave
-mesa/
-  modelos.py           Proyecto, Mensaje, Hallazgo, FASES
-  pizarra.py           el blackboard compartido
-  llm.py               wrapper de Claude + modo offline
-  rag_cliente.py       consulta a La Cueva-LM (índice existente)
-  agentes.py           clase base + Metodólogo, Crítico, Intérprete, Bibliógrafo
-  orquestador.py       conduce la conversación (generador que streamea)
-econ/
-  series.py            catálogo unificado de series + carga/panel
-  herramientas.py      ADF/KPSS, Granger, OLS, VAR, VECM, GARCH (registro híbrido)
-server/
-  app.py               FastAPI (endpoints + SSE)
-  static/index.html    UI de la Mesa de Trabajo
-mesa_cli.py            correr una sesión desde la terminal
+cueva/
+  config.py            rutas a datos (autodetecta Trabajo Final + MATRIZ ARG) y modelo/clave
+  llm/
+    gateway.py         ÚNICO punto de salida a LLMs: Gemini > Claude > offline, backoff 429
+    presupuesto.py     ContadorTokens por sesión (límite de llamadas + telemetría)
+  datos/series.py      catálogo unificado de series + carga/panel (caché auto-invalidante)
+  econometria/
+    herramientas.py    ADF/KPSS, Granger, OLS, VAR, VECM, GARCH (registro híbrido)
+  conocimiento/
+    ingesta.py         corpus → indice/ (fragmentos + TF-IDF sin pickle + embeddings)
+    recuperar.py       pregunta → pasajes citados
+    fichas.py          fichas metodológicas (el ingrediente secreto)
+  agentes/
+    modelos.py         Proyecto, Mensaje (handoff tipado, estado), Hallazgo, FASES
+    pizarra.py         el blackboard compartido (serializable, schema v2)
+    agentes.py         clase base + Metodólogo, Crítico, Intérprete, Bibliógrafo, Líder
+    orquestador.py     conduce la conversación (generador que streamea) + presupuesto
+  sesiones/
+    repositorio.py     cargar/guardar pizarras con lock por proyecto y borrado suave
+  api/
+    esquemas.py        contratos Pydantic de entrada (límites de tamaño)
+    app.py             FastAPI /api/v1 (endpoints + SSE + errores uniformes)
+web/index.html         UI de la Mesa de Trabajo
+scripts/               mesa_cli.py · ingestar.py · preguntar.py · metodologo.py
+tests/                 suite offline (series sintéticas; corre en CI sin claves)
 ```
 
-## Próximos pasos sugeridos
+## Próximos pasos (roadmap completo en docs/PROPUESTA_ARQUITECTURA.md)
 
-- **Bibliógrafo del usuario**: endpoint para subir PDFs propios → `rag/ingest.py` → reindex, y
-  que el Bibliógrafo los priorice en sus búsquedas.
-- **Tool-use real de Claude**: dejar que el agente elija y parametrice la herramienta (function
-  calling) en lugar del guion por fase.
-- **Persistencia de sesiones**: guardar/recuperar pizarras (`Pizarra.guardar`) y un historial.
-- **Integrar el visualizador**: embeber `visualizador.html` del Trabajo Final como pestaña para
-  ver y transformar las series que la mesa está discutiendo.
-```
+- **Fase 2 — agentes v2**: definiciones de agentes desde `knowledge-base/skills/`
+  (retira `grafo_cueva.py`/LangGraph), tool-use real (function calling) con lista blanca,
+  SSE tipado, transcript por sesión.
+- **Fase 3 — conocimiento**: ingesta incremental con manifiesto, subida de PDFs del usuario
+  (colección separada con provenance), evaluación de retrieval con preguntas doradas.
+- **Fase 4 — escala web**: SQLite tras el repositorio, job queue, auth, Docker + deploy.

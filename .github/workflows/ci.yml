@@ -1,0 +1,32 @@
+# CI — corre en cada push/PR: lint + formato + tests.
+# Todo funciona SIN API keys y SIN corpus (modo offline + series sintéticas): cuesta $0.
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar dependencias (sin extras pesados)
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Lint (ruff)
+        run: ruff check .
+
+      - name: Formato (ruff format)
+        run: ruff format --check .
+
+      - name: Tests (pytest, modo offline)
+        run: pytest

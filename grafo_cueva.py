@@ -21,6 +21,7 @@ Multi-modelo (cuida créditos): el tier de cada agente se LEE del frontmatter de
 Si falta la API key de un tier (o el modelo falla), ESE nodo responde en MODO OFFLINE
 (maqueta) y el grafo igual corre completo, para verlo moverse en Studio.
 """
+
 from __future__ import annotations
 
 import operator
@@ -30,7 +31,7 @@ import sys
 from pathlib import Path
 from typing import Annotated, TypedDict
 
-from langgraph.graph import StateGraph, START, END
+from langgraph.graph import END, START, StateGraph
 
 ROOT = Path(__file__).resolve().parent
 if str(ROOT) not in sys.path:
@@ -38,11 +39,11 @@ if str(ROOT) not in sys.path:
 
 # Utilidades del proyecto (defensivo: si faltan deps, el grafo igual carga)
 try:
-    from mesa import rag_cliente
+    from cueva.conocimiento import recuperar as rag_cliente
 except Exception:
     rag_cliente = None
 try:
-    from econ import herramientas as H
+    from cueva.econometria import herramientas as H
 except Exception:
     H = None
 
@@ -51,17 +52,21 @@ except Exception:
 # Tres tiers. Los nombres de modelo son configurables por variable de entorno.
 def _modelo(tier: str):
     """'barato'/'medio' → Gemini · 'claude' → Claude. None si falta la API key del tier."""
-    if tier in ("barato", "medio") and os.environ.get("GOOGLE_API_KEY"):
+    if tier in ("barato", "medio") and (os.environ.get("GOOGLE_API_KEY") or os.environ.get("GEMINI_API_KEY")):
         from langchain_google_genai import ChatGoogleGenerativeAI
-        nombre = (os.environ.get("CUEVA_MODELO_BARATO", "gemini-3.1-flash-lite")
-                  if tier == "barato"
-                  else os.environ.get("CUEVA_MODELO_MEDIO", "gemini-3.1-pro"))
+
+        nombre = (
+            os.environ.get("CUEVA_MODELO_BARATO", "gemini-2.5-flash-lite")
+            if tier == "barato"
+            else os.environ.get("CUEVA_MODELO_MEDIO", "gemini-2.5-flash")
+        )
         return ChatGoogleGenerativeAI(model=nombre, temperature=0.3)
     if tier == "claude" and os.environ.get("ANTHROPIC_API_KEY"):
         from langchain_anthropic import ChatAnthropic
+
         return ChatAnthropic(
-            model=os.environ.get("CUEVA_MODELO_CLAUDE", "claude-sonnet-4-6"),
-            temperature=0.3, max_tokens=1100)
+            model=os.environ.get("CUEVA_MODELO_CLAUDE", "claude-sonnet-4-6"), temperature=0.3, max_tokens=1100
+        )
     return None
 
 
@@ -69,15 +74,20 @@ def _llamar(tier: str, system: str, user: str) -> str:
     """Una llamada al modelo del tier. Cae a modo offline si no hay clave o si el modelo falla."""
     m = _modelo(tier)
     if m is None:
-        return (f"⚠️ (MODO OFFLINE — falta API key para el tier '{tier}'.) "
-                f"Acá iría la respuesta real del agente, fundamentada en la bibliografía recuperada.")
+        return (
+            f"⚠️ (MODO OFFLINE — falta API key para el tier '{tier}'.) "
+            f"Acá iría la respuesta real del agente, fundamentada en la bibliografía recuperada."
+        )
     try:
-        from langchain_core.messages import SystemMessage, HumanMessage
+        from langchain_core.messages import HumanMessage, SystemMessage
+
         r = m.invoke([SystemMessage(content=system), HumanMessage(content=user)])
         return r.content if isinstance(r.content, str) else str(r.content)
     except Exception as e:  # un modelo mal configurado no debe tumbar el grafo
-        return (f"⚠️ (MODO OFFLINE — no pude llamar al modelo del tier '{tier}': {e}.) "
-                f"Revisá el nombre del modelo o la API key; el resto del equipo sigue trabajando.")
+        return (
+            f"⚠️ (MODO OFFLINE — no pude llamar al modelo del tier '{tier}': {e}.) "
+            f"Revisá el nombre del modelo o la API key; el resto del equipo sigue trabajando."
+        )
 
 
 # ── Skills: system prompt + tier de modelo, leídos del archivo del especialista ──
@@ -96,7 +106,7 @@ def _leer_skill(nombre: str) -> tuple[str, str]:
     cuerpo = texto
     if m:
         front = m.group(1)
-        cuerpo = texto[m.end():].strip()
+        cuerpo = texto[m.end() :].strip()
         mm = re.search(r"^modelo:\s*(\w+)", front, re.M | re.I)
         if mm:
             tier = _TIER_MAP.get(mm.group(1).lower(), "claude")
@@ -128,7 +138,7 @@ def _rag(nombre: str, pregunta: str, k: int = 4) -> tuple[str, list[str]]:
 
 
 # ── Evidencia econométrica real por especialista (modo híbrido, sale $0) ───
-def _evidencia(nombre: str, estado: "Estado") -> str:
+def _evidencia(nombre: str, estado: Estado) -> str:
     if H is None:
         return ""
     series, freq, dep = estado["series"], estado["freq"], estado["dependiente"]
@@ -161,7 +171,9 @@ def _evidencia(nombre: str, estado: "Estado") -> str:
     utiles = [r for r in res if r]
     if not utiles:
         return ""
-    return "\n".join(f"- {('✅' if r.get('ok') else '⚠️')} {r.get('resumen', '(sin resumen)')}" for r in utiles)
+    return "\n".join(
+        f"- {('✅' if r.get('ok') else '⚠️')} {r.get('resumen', '(sin resumen)')}" for r in utiles
+    )
 
 
 # ── Estado que viaja por el grafo ─────────────────────────────────────────
@@ -170,7 +182,7 @@ class Estado(TypedDict, total=False):
     series: list[str]
     dependiente: str
     freq: str
-    mensajes: Annotated[list[dict], operator.add]   # se acumula (Studio lo muestra)
+    mensajes: Annotated[list[dict], operator.add]  # se acumula (Studio lo muestra)
 
 
 def _defaults(estado: Estado) -> Estado:
@@ -210,8 +222,10 @@ def _hacer_nodo(nombre: str, etiqueta: str, fase: str, tarea: str):
         if evid:
             partes.append(f"=== EVIDENCIA ECONOMÉTRICA (ya ejecutada sobre tus series) ===\n{evid}")
         partes.append(f"=== BIBLIOGRAFÍA RECUPERADA (La Cueva-LM) ===\n{biblio or '(sin pasajes)'}")
-        partes.append(f"=== TU TAREA AHORA ===\n{tarea}\n"
-                      f"Sé breve (4-8 oraciones), citá la fuente entre corchetes cuando uses la bibliografía.")
+        partes.append(
+            f"=== TU TAREA AHORA ===\n{tarea}\n"
+            f"Sé breve (4-8 oraciones), citá la fuente entre corchetes cuando uses la bibliografía."
+        )
         user = "\n\n".join(partes)
 
         texto = _llamar(tier, system, user)
@@ -229,28 +243,83 @@ def _hacer_nodo(nombre: str, etiqueta: str, fase: str, tarea: str):
 # ── Definición del pipeline: (id_nodo, agente, etiqueta, fase, tarea) ──────
 # El líder aparece dos veces (encuadre y conclusiones) → dos nodos, mismo skill.
 _PIPELINE = [
-    ("lider_encuadre", "lider", "👔 Líder (encuadre)", "🎯 ENCUADRE",
-     "Confirmá la pregunta, ordená objetivos e hipótesis y proponé el método candidato y el orden de trabajo."),
-    ("curador_datos", "curador_datos", "🧰 Curador de datos", "🔍 EXPLORATORIO",
-     "Revisá la calidad y forma de las series (rango, escala, huecos, outliers) y advertí qué cuidar antes de modelar."),
-    ("transformaciones", "transformaciones", "🔧 Transformaciones", "🔍 EXPLORATORIO",
-     "Recomendá las transformaciones necesarias (log, diferencias, desestacionalizar, deflactar, frecuencia) según la evidencia."),
-    ("multivariados", "multivariados", "📊 Multivariados", "🧪 CONTROL",
-     "Con los tests de estacionariedad y Johansen, decidí el modelo (niveles/diferencias/VECM) y justificá."),
-    ("critico", "critico", "🔎 Crítico", "🧪 CONTROL",
-     "Auditá lo dicho hasta acá: buscá raíz unitaria ignorada, espuria, quiebres o autocorrelación, y proponé cómo mitigar."),
-    ("volatilidad", "volatilidad", "📈 Volatilidad", "📐 MODELIZACIÓN",
-     "Evaluá si hay heterocedasticidad/volatilidad condicional relevante (GARCH) en la dependiente y qué implica."),
-    ("pronostico_ml", "pronostico_ml", "🔮 Pronóstico / ML", "📐 MODELIZACIÓN",
-     "Proponé un esquema de pronóstico y su evaluación fuera de muestra (benchmark naive, ARIMA/ETS, ML) si la pregunta lo amerita."),
-    ("controles_causal", "controles_causal", "🧪 Controles / causal", "📐 MODELIZACIÓN",
-     "Con Granger y el marco causal, distinguí precedencia predictiva de causalidad y advertí qué controles harían falta."),
-    ("robustez", "robustez", "🔬 Robustez", "📐 MODELIZACIÓN",
-     "Revisá la robustez de los resultados (especificaciones alternativas, sensibilidad, ajuste múltiple) y señalá fragilidades."),
-    ("interprete", "interprete", "📖 Intérprete", "📖 INTERPRETACIÓN",
-     "Traducí la evidencia y los modelos a economía clara: signos, magnitudes, largo plazo y conexión con la hipótesis."),
-    ("lider_conclusiones", "lider", "👔 Líder (conclusiones)", "🏁 CONCLUSIONES",
-     "Sintetizá la respuesta a la pregunta de investigación, los límites del análisis y el próximo paso concreto."),
+    (
+        "lider_encuadre",
+        "lider",
+        "👔 Líder (encuadre)",
+        "🎯 ENCUADRE",
+        "Confirmá la pregunta, ordená objetivos e hipótesis y proponé el método candidato y el orden de trabajo.",
+    ),
+    (
+        "curador_datos",
+        "curador_datos",
+        "🧰 Curador de datos",
+        "🔍 EXPLORATORIO",
+        "Revisá la calidad y forma de las series (rango, escala, huecos, outliers) y advertí qué cuidar antes de modelar.",
+    ),
+    (
+        "transformaciones",
+        "transformaciones",
+        "🔧 Transformaciones",
+        "🔍 EXPLORATORIO",
+        "Recomendá las transformaciones necesarias (log, diferencias, desestacionalizar, deflactar, frecuencia) según la evidencia.",
+    ),
+    (
+        "multivariados",
+        "multivariados",
+        "📊 Multivariados",
+        "🧪 CONTROL",
+        "Con los tests de estacionariedad y Johansen, decidí el modelo (niveles/diferencias/VECM) y justificá.",
+    ),
+    (
+        "critico",
+        "critico",
+        "🔎 Crítico",
+        "🧪 CONTROL",
+        "Auditá lo dicho hasta acá: buscá raíz unitaria ignorada, espuria, quiebres o autocorrelación, y proponé cómo mitigar.",
+    ),
+    (
+        "volatilidad",
+        "volatilidad",
+        "📈 Volatilidad",
+        "📐 MODELIZACIÓN",
+        "Evaluá si hay heterocedasticidad/volatilidad condicional relevante (GARCH) en la dependiente y qué implica.",
+    ),
+    (
+        "pronostico_ml",
+        "pronostico_ml",
+        "🔮 Pronóstico / ML",
+        "📐 MODELIZACIÓN",
+        "Proponé un esquema de pronóstico y su evaluación fuera de muestra (benchmark naive, ARIMA/ETS, ML) si la pregunta lo amerita.",
+    ),
+    (
+        "controles_causal",
+        "controles_causal",
+        "🧪 Controles / causal",
+        "📐 MODELIZACIÓN",
+        "Con Granger y el marco causal, distinguí precedencia predictiva de causalidad y advertí qué controles harían falta.",
+    ),
+    (
+        "robustez",
+        "robustez",
+        "🔬 Robustez",
+        "📐 MODELIZACIÓN",
+        "Revisá la robustez de los resultados (especificaciones alternativas, sensibilidad, ajuste múltiple) y señalá fragilidades.",
+    ),
+    (
+        "interprete",
+        "interprete",
+        "📖 Intérprete",
+        "📖 INTERPRETACIÓN",
+        "Traducí la evidencia y los modelos a economía clara: signos, magnitudes, largo plazo y conexión con la hipótesis.",
+    ),
+    (
+        "lider_conclusiones",
+        "lider",
+        "👔 Líder (conclusiones)",
+        "🏁 CONCLUSIONES",
+        "Sintetizá la respuesta a la pregunta de investigación, los límites del análisis y el próximo paso concreto.",
+    ),
 ]
 
 

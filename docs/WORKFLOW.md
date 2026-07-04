@@ -17,42 +17,33 @@ preguntarme nada, no manejás git, no escribís en `tasks/todo.md` ni en `_logs/
 
 ## Mapa del proyecto [TODOS]
 
-La Cueva del Economista es **un solo proyecto**, no varios repos hermanos. Pero hay una
-anomalía que hay que conocer antes de tocar git:
-
-- El `.git` real (`github.com/tomasgomezpizarro/cueva-del-economista`) está anidado un nivel
-  más abajo de lo que debería: vive en `rag/.git`, no en la raíz del proyecto. Eso significa
-  que solo `rag/` está versionado hoy — `mesa/`, `server/`, `econ/`, `docs/`,
-  `knowledge-base/`, `config.py`, etc. están **sueltos, sin versionar**.
-- Hasta que esto se resuelva (mover el `.git` a la raíz o decidir otra estructura), **toda
-  operación git se ejecuta parado en `rag/`**, no en la raíz del proyecto. `git status` desde
-  la raíz va a fallar con "not a git repository" — es esperado, no es un error a arreglar
-  sobre la marcha.
-- No migres ni reestructures el `.git` por tu cuenta: es una decisión de alto impacto
-  (reescribe qué se versiona) que se toma con el usuario, no de oficio.
+La Cueva del Economista es **un solo proyecto en un solo repo (monorepo)**: el `.git`
+(`github.com/tomasgomezpizarro/cueva-del-economista`) vive en la **raíz** desde 2026-07-04
+(antes estaba anidado en `rag/`; esa anomalía ya no existe). Todas las operaciones git se
+corren desde la raíz.
 
 Estructura de carpetas (para ubicar dónde va cada cosa):
 
 | Carpeta | Qué es |
 |---|---|
-| `rag/` | Motor de conocimiento: ingesta (`ingest.py`), consulta suelta (`ask.py`), agente Metodólogo (`metodologo.py`), prompts. Es el único subárbol versionado hoy. |
-| `mesa/` | Orquestación de agentes (LangGraph): `orquestador.py`, `agentes.py`, `pizarra.py`, `llm.py`, `modelos.py`. |
-| `econ/` | Herramientas de análisis econométrico y manejo de series (`herramientas.py`, `series.py`). |
-| `server/` | Backend + frontend de la Mesa de Trabajo (`app.py`, `static/index.html`). |
-| `knowledge-base/` | Corpus, fichas (1 página por método) y skills de agentes. |
-| `docs/` | Documentación del proyecto (visión, arquitectura, este archivo). |
+| `cueva/` | El ÚNICO paquete Python, por capas: `datos/` (series), `econometria/` (herramientas), `conocimiento/` (La Cueva-LM: ingesta/recuperar/fichas), `llm/` (gateway único de LLM), `agentes/` (mesa: pizarra, agentes, orquestador), `sesiones/` (persistencia con locks), `api/` (FastAPI + esquemas Pydantic). |
+| `web/` | Frontend de la Mesa de Trabajo (`index.html`). |
+| `scripts/` | CLIs finos: `mesa_cli.py`, `ingestar.py`, `preguntar.py`, `metodologo.py`. |
+| `knowledge-base/` | Corpus (no versionado), fichas (1 página por método), skills de agentes y prompts. |
+| `indice/` | Índice RAG generado (NO versionado; se reconstruye con `scripts/ingestar.py`). |
+| `tests/` | Suite offline (series sintéticas, sin API keys). |
+| `docs/` | Documentación (visión, arquitectura, propuesta/roadmap, este archivo). |
 
 ## Prohibiciones estrictas [TODOS]
 
 - **No versionar contenido pesado**: `knowledge-base/corpus/` (PDFs/EPUBs/papers) y
-  `rag/_indice/` (índice generado) no van al repo — se reconstruyen localmente
+  `indice/` (índice generado) no van al repo — se reconstruyen localmente
   (ver `docs/SETUP.md`). Si algo de esto aparece en `git status` como para comitear, es señal
   de que el `.gitignore` está mal, no que corresponda subirlo.
-- **No crear archivos sueltos** en la raíz del proyecto. Los scripts van en la carpeta que
-  corresponda por función: `rag/` (motor de conocimiento), `mesa/` (orquestación/agentes),
-  `econ/` (herramientas econométricas), `server/` (backend/frontend). Si un script es de un
-  solo uso (debug, prueba puntual), va en una subcarpeta tipo `rag/debug/` o similar — no
-  suelto al lado de los módulos reales.
+- **No crear archivos sueltos** en la raíz del proyecto. El código va en el subpaquete de
+  `cueva/` que corresponda por capa; los CLIs van en `scripts/`. Si un script es de un solo
+  uso (debug, prueba puntual), va en una subcarpeta tipo `scripts/debug/` — no suelto al
+  lado de los módulos reales.
 - **Nunca dejar credenciales** (`GEMINI_API_KEY`, `ANTHROPIC_API_KEY`) en código o en archivos
   committeados. Viven en `.env` (ya ignorado) o como variable de entorno. Si el frontend de
   `server/static/` necesita hacer llamadas a un LLM, esas llamadas pasan por el backend — la
@@ -65,7 +56,7 @@ Estructura de carpetas (para ubicar dónde va cada cosa):
 - **No podés preguntarle nada al usuario.** Si falta información, tomá el supuesto más
   razonable, declaralo explícitamente en tu respuesta final y seguí.
 - **Nunca toques git** (`pull`, `commit`, `push`, `checkout`, `stash`): eso lo maneja
-  exclusivamente la sesión principal, parada en `rag/` (ver Mapa del proyecto).
+  exclusivamente la sesión principal.
 - **No escribas en `tasks/todo.md` ni en `_logs/`**: son de la sesión principal.
 - **Trabajá solo dentro del alcance que te asignaron.** Si la tarea toca dos carpetas a la vez
   (ej. un cambio de agente en `mesa/` que también necesita ajustar `rag/metodologo.py`), no lo
@@ -79,7 +70,7 @@ Estructura de carpetas (para ubicar dónde va cada cosa):
   prompt todo lo que necesitan (carpeta/módulo, archivos relevantes, convenciones acordadas en
   la charla, criterio de terminado).
 - **Nunca lances dos agentes en paralelo que escriban sobre el mismo módulo** (ej. dos agentes
-  tocando `mesa/orquestador.py` a la vez). Lecturas/búsquedas en paralelo: sin restricción.
+  tocando `cueva/agentes/orquestador.py` a la vez). Lecturas/búsquedas en paralelo: sin restricción.
 - **El usuario no ve lo que hacen los subagentes**: resumí sus hallazgos y cambios en la
   respuesta.
 - Delegá en subagentes las búsquedas amplias y tareas acotadas y verificables; las decisiones
@@ -153,8 +144,7 @@ duda, preguntar una sola vez.
 
 ## Workflow Process [PRINCIPAL]
 
-0. **Actualizar primero** — antes de leer código o cambiar algo, parado en `rag/`, correr
-   `git pull` (recordar: la raíz del proyecto no es un repo git hoy, ver Mapa del proyecto).
+0. **Actualizar primero** — antes de leer código o cambiar algo, correr `git pull` en la raíz.
 1. Pensar el problema primero — leer el código relevante y escribir un plan en
    `tasks/todo.md`.
 2. El plan es una checklist de pasos concretos.
@@ -183,9 +173,9 @@ duda, preguntar una sola vez.
 
 ## Git Workflow [PRINCIPAL]
 
-- **Recordatorio permanente**: todo comando git se corre parado en `rag/`, no en la raíz,
-  hasta que se resuelva la anomalía del `.git` anidado (ver Mapa del proyecto).
+- El repo vive en la **raíz** del proyecto; todo comando git se corre desde ahí.
 - **Al arrancar**: `git pull` para traer lo último del remoto.
+- **Antes de dar algo por terminado**: `pytest` y `ruff check .` en verde (Definition of Done).
 - **Durante el trabajo**: stagear cambios a medida que se avanza, sin comitear todavía.
 - **Al terminar**: preguntar si el trabajo está completo y funcionando.
 - **Comitear**: solo con aprobación explícita del usuario.

@@ -1,0 +1,75 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cueva-del-economista"
+version = "0.2.0"
+description = "Plataforma de econometría de series de tiempo con agentes-profesores fundamentados en bibliografía (RAG)"
+requires-python = ">=3.12"
+dependencies = [
+    # Datos y econometría
+    "pandas>=2.0",
+    "numpy>=1.26",
+    "statsmodels>=0.14",
+    "arch>=6.0",
+    "openpyxl>=3.1",
+    "xlrd>=2.0",
+    # Motor de conocimiento (La Cueva-LM)
+    "scikit-learn>=1.4",
+    "pymupdf>=1.24",
+    # LLM (backend por defecto: Gemini free tier)
+    "google-genai>=0.5",
+    "python-dotenv>=1.0",
+    # Servidor web (Mesa de Trabajo)
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.29",
+]
+
+[project.optional-dependencies]
+# Claude como backend alternativo (de pago; ver ADR de costos)
+claude = ["anthropic>=0.40"]
+# Recuperación semántica multilingüe (baja torch ~2GB; necesaria para re-ingestar con embeddings)
+embeddings = ["sentence-transformers>=2.7"]
+# Pipeline LangGraph legado (grafo_cueva.py; se retira en fase 2)
+grafo = [
+    "langgraph>=1.2,<2",
+    "langgraph-cli[inmem]>=0.4.29",
+    "langchain-core>=1.4,<2",
+    "langchain-anthropic>=1.4,<2",
+    "langchain-google-genai>=4.2,<5",
+]
+# Herramientas de desarrollo (tests, lint, hooks)
+dev = [
+    "pytest>=8",
+    "httpx>=0.27",
+    "ruff>=0.4",
+    "pre-commit>=3.7",
+]
+
+[tool.setuptools.packages.find]
+include = ["cueva*"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+extend-exclude = ["_studio_demo", ".venv", "knowledge-base"]  # el corpus es contenido, no código
+
+[tool.ruff.lint]
+select = [
+    "E",   # errores de estilo (pycodestyle)
+    "F",   # errores reales (pyflakes: variables sin usar, imports rotos)
+    "I",   # orden de imports
+    "B",   # bugs probables (flake8-bugbear)
+    "UP",  # sintaxis moderna de Python
+]
+ignore = ["E501"]  # largo de línea: lo maneja el formateador
+
+[tool.ruff.lint.per-file-ignores]
+# B008: `Depends(...)` en defaults es el patrón oficial de FastAPI, no un bug
+"cueva/api/*" = ["B008"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = ["ignore::FutureWarning", "ignore::UserWarning"]

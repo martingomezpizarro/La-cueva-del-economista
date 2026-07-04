@@ -3,111 +3,125 @@
 > Instrucciones para una IA asistente (o para una persona) que tiene que dejar este
 > proyecto funcionando desde cero tras clonar el repo. Seguilas en orden.
 
-El repo **no** incluye el entorno virtual (`.venv/`), el índice generado (`rag/_indice/`)
-ni los PDFs/EPUBs del corpus: todo eso es pesado y se reconstruye localmente. Acá está cómo.
+El repo **no** incluye el entorno virtual (`.venv/`), el índice generado (`indice/`)
+ni los PDFs/EPUBs del corpus: todo eso es pesado y se reconstruye localmente.
 
 ---
 
 ## 0. Requisitos previos
 
-- **Python 3.12** (el proyecto se desarrolló con 3.12.3). Verificá: `python3 --version`.
-- **git** y acceso al repo privado `tomasgomezpizarro/cueva-del-economista`
-  (el usuario `martingomezpizarro` es colaborador).
-- Sistema operativo Linux/macOS (los comandos asumen `bash`). En Windows usar WSL o adaptar
-  la activación del venv a `.venv\Scripts\activate`.
+- **Python 3.12+** (el proyecto corre con 3.12/3.13). Verificá: `python --version`.
+- **git** y acceso al repo privado `tomasgomezpizarro/cueva-del-economista`.
+- Funciona en Windows, Linux y macOS (los comandos de venv difieren, se indican ambos).
 
 ---
 
-## 1. Clonar el repo (si no está ya)
+## 1. Clonar e instalar
 
 ```bash
 git clone https://github.com/tomasgomezpizarro/cueva-del-economista
 cd cueva-del-economista
+
+python -m venv .venv
+. .venv/bin/activate            # Windows: .venv\Scripts\activate
+
+pip install --upgrade pip
+pip install -e ".[dev]"         # el paquete cueva + herramientas de desarrollo
 ```
+
+Extras opcionales (ver `pyproject.toml`):
+
+| Extra | Cuándo |
+|---|---|
+| `.[embeddings]` | para RE-INGESTAR el corpus con recuperación semántica multilingüe (baja torch ~2GB) |
+| `.[claude]` | solo si se va a usar Anthropic como backend (de pago; el default es Gemini gratis) |
+| `.[grafo]` | solo para el pipeline LangGraph legado (`grafo_cueva.py`, se retira en fase 2) |
 
 ---
 
-## 2. Crear el entorno virtual e instalar dependencias
+## 2. Verificar que el código funciona (sin datos ni claves)
 
 ```bash
-python3 -m venv .venv
-. .venv/bin/activate
-pip install --upgrade pip
-pip install -r rag/requirements.txt
+pytest          # 48 tests offline: deben pasar todos
+ruff check .    # lint: sin errores
 ```
-
-Esto instala las dependencias del prototipo del motor de conocimiento:
-
-| Paquete        | Para qué |
-|----------------|----------|
-| `pymupdf`      | extraer texto de PDFs |
-| `scikit-learn` | recuperación TF-IDF |
-| `numpy`        | cálculo numérico |
-| `anthropic`    | redacción fundamentada con Claude (opcional, ver paso 4) |
-
-> Si más adelante el proyecto suma dependencias (statsmodels, etc.), van en
-> `rag/requirements.txt`. Reinstalá con el mismo comando de arriba.
 
 ---
 
 ## 3. Recolocar el corpus y reconstruir el índice
 
 El contenido de `knowledge-base/corpus/` (PDFs, papers, EPUBs) **no viaja en el repo**.
-Las carpetas de tema sí existen (`01_fundamentos`, `02_univariados`, … `10_codigo_python`),
-pero hay que volver a poner los archivos pesados dentro.
-
-1. Copiá los PDFs/`.py`/`.ipynb`/`.md` a la carpeta de tema que corresponda dentro de
-   `knowledge-base/corpus/` (ver `knowledge-base/GUIA_CARGA.md` para la guía completa).
-2. Reconstruí el índice (ingiere TODO el corpus):
+Las carpetas de tema sí existen (`01_fundamentos`, … `12_frontera_dl`); hay que volver a
+poner los archivos pesados dentro (ver `knowledge-base/GUIA_CARGA.md`).
 
 ```bash
-. .venv/bin/activate
-python rag/ingest.py knowledge-base/corpus
+pip install -e ".[embeddings]"                      # una sola vez (torh ~2GB)
+python scripts/ingestar.py knowledge-base/corpus    # regenera indice/
 ```
 
-Esto regenera `rag/_indice/` (embeddings, fragmentos, TF-IDF, metadatos).
+> Sin `[embeddings]` también funciona (`--no-embeddings` o dejar que caiga solo a TF-IDF),
+> pero la recuperación español→inglés es peor.
 
 ---
 
 ## 4. (Opcional) Clave de LLM para respuestas redactadas
 
-Sin clave, el sistema **igual recupera** los pasajes citados. Con clave, el LLM redacta una
-respuesta fundamentada a partir de esos pasajes. Dos opciones (el Metodólogo usa la primera
-que encuentre):
+Sin clave, el sistema **igual corre de punta a punta** (modo offline: los agentes muestran
+maquetas). Con clave, redactan respuestas fundamentadas reales.
 
 ```bash
-# Opción GRATIS (recomendada): Gemini. Key en https://aistudio.google.com/apikey
-export GEMINI_API_KEY="tu_clave_aca"        # Windows: set GEMINI_API_KEY=...
+# Opción GRATIS (default del proyecto): Gemini. Key en https://aistudio.google.com/apikey
+# Guardala en un archivo .env en la raíz (NO se versiona):
+echo 'GEMINI_API_KEY=tu_clave_aca' > .env
 
-# Opción paga: Claude
-export ANTHROPIC_API_KEY="tu_clave_aca"
+# Opción paga (requiere pip install -e ".[claude]"):
+# ANTHROPIC_API_KEY=tu_clave_aca
 ```
-
-> No comitear la clave. El `.gitignore` ya ignora `.env` y `*.key`; si preferís un archivo,
-> usá `.env` (no se versiona).
 
 ---
 
-## 5. Verificar que funciona
+## 5. Datos (series económicas)
+
+`cueva/config.py` autodetecta las carpetas hermanas `Trabajo Final` y `ANÁLISIS MATRIZ ARG`.
+Si están en otra ruta, indicalo por variable de entorno o `cueva.local.toml`:
 
 ```bash
-. .venv/bin/activate
-python rag/ask.py "¿Para qué sirve el test de Dickey-Fuller aumentado?"
-python rag/ask.py "¿Cómo estimo un VECM en Python con statsmodels?"
+python scripts/mesa_cli.py --diag     # muestra qué encontró (series, índice, backend LLM)
 ```
 
-Si devuelve pasajes citados (y, con `ANTHROPIC_API_KEY`, una respuesta redactada), está OK.
+---
+
+## 6. Levantar la plataforma
+
+```bash
+uvicorn cueva.api.app:app --port 8800     # abrir http://localhost:8800
+```
+
+O probar por terminal:
+
+```bash
+python scripts/preguntar.py "¿Para qué sirve el test de Dickey-Fuller aumentado?"
+python scripts/metodologo.py "Quiero explicar el EMBI con reservas y TCR" -i
+python scripts/mesa_cli.py --pregunta "..." --ids serie_a serie_b --dep serie_a
+```
+
+---
+
+## 7. Hooks de commit (recomendado)
+
+```bash
+pre-commit install    # formato + lint + detector de secretos antes de cada commit
+```
 
 ---
 
 ## Resumen ultra-corto
 
 ```bash
-git clone https://github.com/tomasgomezpizarro/cueva-del-economista
-cd cueva-del-economista
-python3 -m venv .venv && . .venv/bin/activate
-pip install --upgrade pip && pip install -r rag/requirements.txt
-# (poner los PDFs en knowledge-base/corpus/…)
-python rag/ingest.py knowledge-base/corpus
-python rag/ask.py "tu pregunta en español"
+git clone https://github.com/tomasgomezpizarro/cueva-del-economista && cd cueva-del-economista
+python -m venv .venv && . .venv/bin/activate
+pip install -e ".[dev]" && pytest
+# (poner los PDFs en knowledge-base/corpus/… y correr scripts/ingestar.py)
+# (clave GRATIS de Gemini en .env como GEMINI_API_KEY=…)
+uvicorn cueva.api.app:app --port 8800
 ```
