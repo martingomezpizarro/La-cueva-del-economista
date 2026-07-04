@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>🕳️📊 La Cueva del Economista</title>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#161b22; --panel2:#1c232d; --line:#2b333d;
+    --txt:#e6edf3; --muted:#8b949e; --acc:#dc2626; --acc2:#f59e0b;
+    --ok:#3fb950; --blue:#58a6ff; --purple:#bc8cff;
+    --hdr:41px; --ribbon:46px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--txt);font-size:14px;line-height:1.5;overflow:hidden}
+  header{display:flex;align-items:center;gap:12px;padding:8px 16px;background:var(--panel);
+    border-bottom:1px solid var(--line);height:var(--hdr)}
+  header h1{font-size:14px;margin:0;font-weight:600;white-space:nowrap}
+  header .estado{margin-left:auto;font-size:12px;color:var(--muted);display:flex;gap:12px;align-items:center}
+  .pill{padding:1px 8px;border-radius:999px;border:1px solid var(--line);font-size:11px;white-space:nowrap}
+  .pill.on{color:var(--ok);border-color:#214d2c}.pill.off{color:var(--acc2);border-color:#5a4410}
+
+  /* ── cinta (ribbon) estilo Word, ocultable ─────────────────────────── */
+  #ribbon{display:flex;gap:6px;padding:7px 12px;background:var(--panel);border-bottom:1px solid var(--line);
+    align-items:center;height:var(--ribbon);overflow-x:auto;overflow-y:hidden}
+  #ribbon.colapsada{display:none}
+  #ribbon .rsep{width:1px;height:24px;background:var(--line);margin:0 4px;flex:none}
+  #ribbon select{background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:7px;
+    padding:5px 8px;font-size:12px;max-width:230px}
+  .rbtn{background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:7px;
+    padding:6px 11px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex:none}
+  .rbtn:hover{border-color:var(--blue)}
+  .rbtn.activa{background:var(--acc);border-color:var(--acc);color:#fff}
+  .rbtn.mini{font-weight:500;padding:6px 9px}
+  #ribbon-toggle{position:fixed;top:6px;right:8px;z-index:60;background:var(--panel2);color:var(--muted);
+    border:1px solid var(--line);border-radius:7px;padding:4px 10px;font-size:13px;cursor:pointer}
+  #ribbon-toggle:hover{color:var(--txt)}
+
+  /* ── vista principal: el visualizador ──────────────────────────────── */
+  #viz-wrap{position:relative;height:calc(100vh - var(--hdr) - var(--ribbon))}
+  body.sin-ribbon #viz-wrap{height:calc(100vh - var(--hdr))}
+  #viz-frame{width:100%;height:100%;border:0;display:block}
+  .viz-fallback{max-width:640px;margin:60px auto;text-align:center;color:var(--muted);padding:0 20px}
+  .viz-fallback h2{color:var(--txt);font-size:16px}
+  .viz-fallback code{background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:1px 6px}
+
+  /* ── drawers (paneles laterales sobre el iframe) ───────────────────── */
+  #overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:30;display:none}
+  #overlay.on{display:block}
+  .drawer{position:fixed;top:0;right:0;bottom:0;width:420px;max-width:96vw;background:var(--panel);
+    border-left:1px solid var(--line);z-index:40;display:none;flex-direction:column;
+    box-shadow:-12px 0 32px rgba(0,0,0,.5)}
+  .drawer.on{display:flex}
+  .drawer.ancho{width:740px}
+  .drawer.informe{width:min(880px,94vw)}
+  .drawer .dhead{display:flex;align-items:center;gap:10px;padding:11px 16px;background:var(--panel2);
+    border-bottom:1px solid var(--line);flex:none}
+  .drawer .dhead b{font-size:13.5px}
+  .drawer .dhead button{margin-left:auto;background:none;border:0;color:var(--muted);cursor:pointer;font-size:17px}
+  .drawer .dbody{flex:1;overflow:auto;padding:14px 16px}
+
+  label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
+  input,textarea,select{width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);
+    border-radius:7px;padding:8px 10px;font-size:13px;font-family:inherit}
+  textarea{resize:vertical;min-height:54px}
+  .btn{background:linear-gradient(135deg,var(--acc),#991b1b);color:#fff;border:0;border-radius:8px;
+    padding:11px 14px;font-size:13px;font-weight:600;cursor:pointer;width:100%;margin-top:14px}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn.sec{background:var(--panel2);border:1px solid var(--line);font-weight:500;margin-top:8px;width:auto}
+  .btn.sm{padding:6px 10px;font-size:12px;margin-top:0;width:auto}
+  .serie-box{border:1px solid var(--line);border-radius:8px;background:var(--panel2);max-height:300px;overflow:auto;margin-top:8px}
+  .serie{display:flex;align-items:center;gap:7px;padding:5px 9px;border-bottom:1px solid #232b35;cursor:pointer;font-size:12px}
+  .serie:hover{background:#222a35}.serie small{color:var(--muted);margin-left:auto;white-space:nowrap}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .chip{display:flex;align-items:center;gap:6px;background:#23303f;border:1px solid #2f4456;color:var(--blue);
+    padding:3px 8px;border-radius:999px;font-size:11px}
+  .chip b{cursor:pointer;color:var(--muted)}
+  .chip.dep{background:#3a2b12;border-color:#5a4410;color:var(--acc2)}
+  .row2{display:flex;gap:8px}.row2>*{flex:1}
+
+  /* pizarra (feed de la mesa) */
+  .feed{max-width:100%;margin:0}
+  .vacio{color:var(--muted);text-align:center;margin-top:60px}
+  .fase{display:flex;align-items:center;gap:10px;margin:26px 0 8px;color:var(--acc2);font-weight:600;font-size:13px}
+  .fase:before,.fase:after{content:"";flex:1;height:1px;background:var(--line)}
+  .msg{display:flex;gap:11px;margin:12px 0;animation:ap .25s ease}
+  @keyframes ap{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
+  .av{width:32px;height:32px;border-radius:8px;flex:none;display:flex;align-items:center;justify-content:center;
+    font-size:16px;background:var(--panel2);border:1px solid var(--line)}
+  .bub{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 13px;flex:1;min-width:0}
+  .bub .quien{font-size:12px;font-weight:600;margin-bottom:3px;display:flex;gap:8px;align-items:center}
+  .bub .quien .a{color:var(--purple);font-weight:500}
+  .bub .cuerpo{white-space:pre-wrap;font-size:13px}
+  .bub .citas{margin-top:6px;font-size:11px;color:var(--muted)}
+  .bub .citas span{background:#1f2733;border:1px solid var(--line);border-radius:5px;padding:1px 6px;margin-right:5px}
+  .m-orq .bub{background:#13171d;border-style:dashed}
+  .m-orq .av{background:#13171d}
+  .m-tool .bub{background:#10221a;border-color:#1f5135}
+  .m-tool .cuerpo{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#9ff0c0}
+  .hall{background:#1a1407;border:1px solid #5a4410;border-radius:8px;padding:8px 12px;margin:8px 0;font-size:12.5px}
+  .hall b{color:var(--acc2)}
+  .typing{color:var(--muted);font-size:12px;margin:10px 0}
+
+  /* notas */
+  .nota{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:7px 9px;margin-bottom:6px;font-size:12.5px;white-space:pre-wrap}
+  .nota .ts{color:var(--muted);font-size:10.5px;display:block;margin-top:3px}
+
+  /* informe */
+  .inf-sec{border:1px solid var(--line);border-radius:9px;background:var(--panel2);margin-bottom:14px;overflow:hidden}
+  .inf-sec .inf-head{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#20293480}
+  .inf-sec .inf-head b{font-size:13px}
+  .inf-sec .inf-head .sp{margin-left:auto;display:flex;gap:6px}
+  .inf-sec .inf-body{padding:12px 14px}
+  .inf-sec.oculta .inf-body{display:none}
+  .inf-sec textarea{min-height:110px;background:var(--panel)}
+  .inf-icon{background:none;border:1px solid var(--line);border-radius:6px;color:var(--muted);cursor:pointer;
+    font-size:12px;padding:4px 8px}
+  .inf-icon:hover{color:var(--txt)}
+  .inf-lista{list-style:none;margin:0;padding:0;font-size:12.5px}
+  .inf-lista li{padding:5px 0;border-bottom:1px solid var(--line)}
+  .inf-lista li:last-child{border-bottom:0}
+  .agentpick{display:flex;gap:6px;margin-top:8px}
+
+  /* ── FAB: círculo flotante de agentes ──────────────────────────────── */
+  #fab{position:fixed;width:54px;height:54px;border-radius:50%;z-index:70;cursor:grab;
+    background:linear-gradient(135deg,var(--acc),#7f1d1d);border:2px solid #00000055;
+    display:flex;align-items:center;justify-content:center;font-size:24px;user-select:none;
+    box-shadow:0 6px 18px rgba(0,0,0,.55);touch-action:none}
+  #fab:active{cursor:grabbing}
+  #fab-menu{position:fixed;z-index:71;background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    box-shadow:0 10px 30px rgba(0,0,0,.55);padding:6px;display:none;flex-direction:column;gap:4px;min-width:170px}
+  #fab-menu.on{display:flex}
+  .fmi{display:flex;align-items:center;gap:9px;background:none;border:0;color:var(--txt);cursor:pointer;
+    padding:8px 10px;font-size:12.5px;border-radius:8px;text-align:left}
+  .fmi:hover{background:var(--panel2)}
+  .fmi span.e{font-size:17px}
+
+  /* panel de chat flotante */
+  #chatpanel{position:fixed;right:18px;bottom:18px;width:380px;height:min(540px,72vh);background:var(--panel);
+    border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.5);display:none;
+    flex-direction:column;z-index:72;overflow:hidden}
+  #chatpanel.on{display:flex}
+  #chatpanel .chead{display:flex;align-items:center;padding:10px 12px;background:var(--panel2);border-bottom:1px solid var(--line)}
+  #chatpanel .chead b{font-size:13px}
+  #chatpanel .chead button{background:none;border:0;color:var(--muted);cursor:pointer;font-size:16px;margin-left:auto}
+  #chat-msgs{flex:1;overflow:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+  .cmsg{border-radius:8px;padding:7px 10px;font-size:12.5px;white-space:pre-wrap;max-width:88%}
+  .cmsg.usuario{align-self:flex-end;background:#23303f;color:var(--blue)}
+  .cmsg.agente{align-self:flex-start;background:var(--panel2);border:1px solid var(--line)}
+  #chat-input-row{display:flex;gap:6px;padding:10px;border-top:1px solid var(--line)}
+  #chat-input-row textarea{min-height:40px}
+  a{color:var(--blue)}
+</style>
+</head>
+<body>
+<header>
+  <h1>🕳️📊 La Cueva del Economista</h1>
+  <div class="estado">
+    <span id="diag-series">— series</span>
+    <span id="diag-rag" class="pill">RAG</span>
+    <span id="diag-ia" class="pill">IA</span>
+    <span style="width:52px"></span>
+  </div>
+</header>
+<button id="ribbon-toggle" onclick="toggleRibbon()" title="Mostrar/ocultar la barra de trabajo">⌃</button>
+
+<!-- ── LA CINTA: todas las funciones de la Mesa de Trabajo ── -->
+<div id="ribbon">
+  <span style="font-size:11.5px;color:var(--muted);white-space:nowrap">Investigación:</span>
+  <select id="proj-select" onchange="seleccionarProyecto(this.value)"></select>
+  <button class="rbtn mini" onclick="crearProyecto()" title="Crear una investigación nueva">＋</button>
+  <button class="rbtn mini" onclick="eliminarProyectoActual()" title="Eliminar la investigación activa">🗑</button>
+  <div class="rsep"></div>
+  <button class="rbtn" id="rb-definicion" onclick="abrirPanel('definicion')">🎯 Definición</button>
+  <button class="rbtn" id="rb-series" onclick="abrirPanel('series')">🗂️ Series</button>
+  <button class="rbtn" id="rb-biblio" onclick="abrirPanel('biblio')">📚 Bibliografía</button>
+  <button class="rbtn" id="rb-notas" onclick="abrirPanel('notas')">📝 Notas</button>
+  <div class="rsep"></div>
+  <button class="rbtn" id="rb-pizarra" onclick="abrirPanel('pizarra')">🧠 Pizarra</button>
+  <button class="rbtn" id="rb-informe" onclick="abrirPanel('informe')">📄 Informe</button>
+</div>
+
+<!-- ── VISTA PRINCIPAL: el explorador de series, siempre de fondo ── -->
+<div id="viz-wrap">
+  <iframe id="viz-frame" style="display:none"></iframe>
+  <div class="viz-fallback" id="viz-fallback" style="display:none">
+    <div style="font-size:40px">🔎📈</div>
+    <h2>El explorador todavía no está disponible</h2>
+    <p>No encontré la carpeta del <b>Trabajo Final</b> (donde vive <code>notebooks/visualizador.html</code>),
+    o su servidor no pudo levantar. Configurala con la variable de entorno
+    <code>CUEVA_TRABAJO_FINAL</code> o en <code>cueva.local.toml</code>, y reiniciá el servidor.</p>
+  </div>
+</div>
+
+<div id="overlay" onclick="cerrarPanel()"></div>
+
+<!-- ── DRAWERS ── -->
+<div class="drawer" id="dw-definicion">
+  <div class="dhead"><b>🎯 Objetivos y pregunta</b><button onclick="cerrarPanel()">✕</button></div>
+  <div class="dbody">
+    <label>Título</label>
+    <input id="titulo" placeholder="Ej.: Determinantes del riesgo país" oninput="guardarCambiosDebounced()">
+    <label>Pregunta de investigación</label>
+    <textarea id="pregunta" placeholder="¿Qué variables explican…?" oninput="guardarCambiosDebounced()"></textarea>
+    <label>Objetivos (uno por línea)</label>
+    <textarea id="objetivos" placeholder="Estimar el efecto de X sobre Y" oninput="guardarCambiosDebounced()"></textarea>
+    <label>Hipótesis (una por línea)</label>
+    <textarea id="hipotesis" placeholder="Existe relación de largo plazo entre X e Y" oninput="guardarCambiosDebounced()"></textarea>
+    <label>Contexto / marco teórico (opcional)</label>
+    <textarea id="contexto" placeholder="Lo que ya sabés, supuestos, antecedentes…" oninput="guardarCambiosDebounced()"></textarea>
+    <label>Frecuencia de trabajo</label>
+    <select id="freq" onchange="guardarCambiosDebounced()">
+      <option value="mensual">Mensual</option>
+      <option value="trimestral">Trimestral</option>
+      <option value="diaria">Diaria</option>
+      <option value="anual">Anual</option>
+    </select>
+  </div>
+</div>
+
+<div class="drawer" id="dw-series">
+  <div class="dhead"><b>🗂️ Series de la investigación</b><button onclick="cerrarPanel()">✕</button></div>
+  <div class="dbody">
+    <input id="buscar" placeholder="Buscar serie…" oninput="buscarSeries()">
+    <div class="serie-box" id="lista-series"></div>
+    <div class="chips" id="chips"></div>
+    <div style="font-size:11px;color:var(--muted);margin-top:6px">
+      Click en ⭐ de un chip para marcarlo como variable dependiente (Y).
+    </div>
+  </div>
+</div>
+
+<div class="drawer" id="dw-biblio">
+  <div class="dhead"><b>📚 Bibliografía propia</b><button onclick="cerrarPanel()">✕</button></div>
+  <div class="dbody">
+    <div class="chips" id="biblio-chips"></div>
+    <div class="row2" style="margin-top:10px">
+      <input id="biblio-nueva" placeholder="Título o referencia…">
+      <button class="btn sec sm" onclick="agregarBiblio()">＋ Agregar</button>
+    </div>
+  </div>
+</div>
+
+<div class="drawer" id="dw-notas">
+  <div class="dhead"><b>📝 Notas</b><button onclick="cerrarPanel()">✕</button></div>
+  <div class="dbody">
+    <textarea id="nota-nueva" placeholder="Anotá una idea, un pendiente, un comentario…"></textarea>
+    <button class="btn sec sm" onclick="agregarNota()" style="margin-bottom:12px">＋ Agregar nota</button>
+    <div id="lista-notas"></div>
+  </div>
+</div>
+
+<div class="drawer ancho" id="dw-pizarra">
+  <div class="dhead"><b>🧠 Pizarra — la mesa de agentes</b><button onclick="cerrarPanel()">✕</button></div>
+  <div class="dbody">
+    <button class="btn" id="go" onclick="abrirMesa()" style="margin:0 0 14px">
+      ▶ Abrir la mesa completa (los 4 agentes recorren las 6 fases)
+    </button>
+    <div class="feed" id="feed">
+      <div class="vacio" id="vacio">
+        <div style="font-size:40px">🧭 📖 🔎 🗂️</div>
+        <p>Acá se ve la pizarra: la conversación de la mesa y los hallazgos que va fijando.<br>
+        Definí la investigación (🎯 y 🗂️ en la cinta) y abrí la mesa,<br>
+        o consultá a un agente puntual desde el círculo flotante.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="drawer informe" id="dw-informe">
+  <div class="dhead"><b>📄 Informe — el documento tomando forma</b><button onclick="cerrarPanel()">✕</button></div>
+  <div class="dbody"><div id="informe-wrap"></div></div>
+</div>
+
+<!-- ── FAB de agentes ── -->
+<div id="fab" title="Consultar a un agente">🧑‍🏫</div>
+<div id="fab-menu">
+  <button class="fmi" onclick="abrirChatDesdeFab('metodologo')"><span class="e">🧭</span> Metodólogo</button>
+  <button class="fmi" onclick="abrirChatDesdeFab('critico')"><span class="e">🔎</span> Crítico</button>
+  <button class="fmi" onclick="abrirChatDesdeFab('interprete')"><span class="e">📖</span> Intérprete</button>
+  <button class="fmi" onclick="abrirChatDesdeFab('bibliografo')"><span class="e">🗂️</span> Bibliógrafo</button>
+</div>
+
+<div id="chatpanel">
+  <div class="chead">
+    <b id="chat-titulo">Agente</b>
+    <button onclick="cerrarChat()">✕</button>
+  </div>
+  <div id="chat-msgs"></div>
+  <div id="chat-input-row">
+    <textarea id="chat-input" placeholder="Escribí tu pregunta…"></textarea>
+    <button class="btn sec sm" onclick="enviarChat()">➤</button>
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const AVATAR = {orquestador:"🎛️", herramientas:"🧪", metodologo:"🧭",
+                critico:"🔎", interprete:"📖", bibliografo:"🗂️"};
+const NOMBRE_AGENTE = {metodologo:"🧭 Metodólogo", critico:"🔎 Crítico",
+                       interprete:"📖 Intérprete", bibliografo:"🗂️ Bibliógrafo"};
+
+let SERIES = [];        // catálogo cargado
+let SEL = [];           // ids seleccionados
+let DEP = null;         // id dependiente
+let BIBLIO = [];        // referencias bibliográficas del usuario
+
+let PROYECTO_ID = null;
+let PIZ = null;          // último snapshot de la pizarra cargada
+let CHAT_AGENTE = null;
+let PANEL = null;        // drawer abierto
+
+// ── diagnóstico inicial ───────────────────────────────────────────────
+fetch('/api/diag').then(r=>r.json()).then(d=>{
+  $('#diag-series').textContent = (d.n_series||0) + ' series';
+  const rag=$('#diag-rag'); rag.textContent = d.indice_rag?'RAG ✓':'RAG ✗';
+  rag.className='pill '+(d.indice_rag?'on':'off');
+  const ia=$('#diag-ia'); ia.textContent = d.api_key?('Claude: '+d.modelo):'IA: offline';
+  ia.className='pill '+(d.api_key?'on':'off');
+
+  if(d.visualizador_disponible){
+    const f=$('#viz-frame'); f.src=d.visualizador_url; f.style.display='block';
+  } else {
+    $('#viz-fallback').style.display='block';
+  }
+});
+
+// ── cinta ocultable ───────────────────────────────────────────────────
+function toggleRibbon(){
+  const oculta = $('#ribbon').classList.toggle('colapsada');
+  document.body.classList.toggle('sin-ribbon', oculta);
+  $('#ribbon-toggle').textContent = oculta ? '⌄' : '⌃';
+  localStorage.setItem('cueva_ribbon', oculta ? '0' : '1');
+}
+if(localStorage.getItem('cueva_ribbon')==='0') toggleRibbon();
+
+// ── drawers ───────────────────────────────────────────────────────────
+function abrirPanel(nombre){
+  if(PANEL===nombre){ cerrarPanel(); return; }
+  cerrarPanel();
+  PANEL = nombre;
+  $('#dw-'+nombre).classList.add('on');
+  $('#overlay').classList.add('on');
+  const rb = $('#rb-'+nombre); if(rb) rb.classList.add('activa');
+  if(nombre==='series') _buscar();
+  if(nombre==='informe') renderInforme();
+}
+function cerrarPanel(){
+  if(!PANEL) return;
+  $('#dw-'+PANEL).classList.remove('on');
+  $('#overlay').classList.remove('on');
+  const rb = $('#rb-'+PANEL); if(rb) rb.classList.remove('activa');
+  PANEL = null;
+}
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape'){ if($('#fab-menu').classList.contains('on')) $('#fab-menu').classList.remove('on');
+    else if($('#chatpanel').classList.contains('on')) cerrarChat();
+    else cerrarPanel(); }
+});
+
+// ── proyectos (investigaciones guardadas) ───────────────────────────────
+async function cargarProyectos(seleccionar){
+  const lista = await fetch('/api/proyectos').then(r=>r.json());
+  const sel = $('#proj-select');
+  sel.innerHTML = lista.map(p=>`<option value="${p.id}">${p.titulo||'(sin título)'}</option>`).join('');
+  if(!lista.length){
+    await crearProyecto();
+    return;
+  }
+  const guardado = localStorage.getItem('cueva_proyecto');
+  let id = seleccionar || guardado;
+  if(!id || !lista.some(p=>p.id===id)) id = lista[0].id;
+  sel.value = id;
+  await seleccionarProyecto(id);
+}
+async function crearProyecto(){
+  const piz = await fetch('/api/proyectos',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({titulo:'Investigación sin título'})}).then(r=>r.json());
+  await cargarProyectos(piz.id);
+}
+async function eliminarProyectoActual(){
+  if(!PROYECTO_ID) return;
+  if(!confirm('¿Eliminar esta investigación? No se puede deshacer.')) return;
+  await fetch('/api/proyectos/'+PROYECTO_ID,{method:'DELETE'});
+  PROYECTO_ID=null; localStorage.removeItem('cueva_proyecto');
+  await cargarProyectos();
+}
+async function seleccionarProyecto(id){
+  PROYECTO_ID = id;
+  localStorage.setItem('cueva_proyecto', id);
+  PIZ = await fetch('/api/proyectos/'+id).then(r=>r.json());
+  renderProyecto();
+}
+
+function renderProyecto(){
+  const p = PIZ.proyecto;
+  $('#titulo').value = p.titulo || '';
+  $('#pregunta').value = p.pregunta || '';
+  $('#objetivos').value = (p.objetivos||[]).join('\n');
+  $('#hipotesis').value = (p.hipotesis||[]).join('\n');
+  $('#contexto').value = p.contexto || '';
+  $('#freq').value = p.frecuencia || 'mensual';
+  SEL = [...(p.series||[])];
+  DEP = p.serie_dependiente || null;
+  BIBLIO = [...(p.bibliografia_usuario||[])];
+  _buscar(); renderChips(); renderBiblio(); renderNotas(); renderInforme();
+
+  $('#feed').querySelectorAll('.msg,.fase,.hall').forEach(e=>e.remove());
+  if(PIZ.mensajes && PIZ.mensajes.length) $('#vacio')?.remove();
+  (PIZ.mensajes||[]).forEach(pintar);
+  $('#go').disabled = false;
+}
+
+// ── autosave de los campos del proyecto ─────────────────────────────────
+let tGuardar;
+function guardarCambiosDebounced(){ clearTimeout(tGuardar); tGuardar=setTimeout(guardarCambios,600); }
+async function guardarCambios(){
+  if(!PROYECTO_ID) return;
+  const cuerpo = {
+    titulo: $('#titulo').value, pregunta: $('#pregunta').value,
+    objetivos: $('#objetivos').value.split('\n').map(x=>x.trim()).filter(Boolean),
+    hipotesis: $('#hipotesis').value.split('\n').map(x=>x.trim()).filter(Boolean),
+    contexto: $('#contexto').value, frecuencia: $('#freq').value,
+    series: SEL, serie_dependiente: DEP, bibliografia_usuario: BIBLIO,
+  };
+  PIZ = await fetch('/api/proyectos/'+PROYECTO_ID,{method:'PATCH',
+    headers:{'Content-Type':'application/json'}, body:JSON.stringify(cuerpo)}).then(r=>r.json());
+  const opt = $('#proj-select').querySelector(`option[value="${PROYECTO_ID}"]`);
+  if(opt) opt.textContent = PIZ.proyecto.titulo || '(sin título)';
+}
+
+// ── búsqueda de series ────────────────────────────────────────────────
+let tBuscar;
+function buscarSeries(){ clearTimeout(tBuscar); tBuscar=setTimeout(_buscar,200); }
+function _buscar(){
+  const q=$('#buscar')?.value.trim() || '';
+  fetch('/api/series?limite=60&filtro='+encodeURIComponent(q)).then(r=>r.json()).then(rows=>{
+    SERIES=rows;
+    $('#lista-series').innerHTML = rows.map(s=>`
+      <div class="serie" onclick="toggle('${s.id}')">
+        <span>${SEL.includes(s.id)?'☑':'☐'}</span>
+        <span>${s.nombre}</span>
+        <small>${s.origen.split(' ')[0]} · n=${s.n}</small>
+      </div>`).join('') || '<div class="serie">sin resultados</div>';
+    renderChips();
+  });
+}
+function toggle(id){
+  if(SEL.includes(id)) SEL=SEL.filter(x=>x!==id);
+  else SEL.push(id);
+  if(DEP && !SEL.includes(DEP)) DEP=null;
+  _buscar(); renderChips(); guardarCambiosDebounced();
+}
+function renderChips(){
+  $('#chips').innerHTML = SEL.map(id=>{
+    const s=SERIES.find(x=>x.id===id)||{nombre:id};
+    const esDep=DEP===id;
+    return `<span class="chip ${esDep?'dep':''}">
+      <span onclick="marcarDep('${id}')" title="marcar dependiente" style="cursor:pointer">${esDep?'⭐Y':'☆'}</span>
+      ${s.nombre.length>26?s.nombre.slice(0,26)+'…':s.nombre}
+      <b onclick="toggle('${id}')">✕</b></span>`;
+  }).join('');
+}
+function marcarDep(id){ DEP = (DEP===id?null:id); renderChips(); guardarCambiosDebounced(); }
+
+// ── bibliografía propia ─────────────────────────────────────────────────
+function renderBiblio(){
+  $('#biblio-chips').innerHTML = BIBLIO.map((b,i)=>`<span class="chip">
+    ${b.length>40?b.slice(0,40)+'…':b}
+    <b onclick="quitarBiblio(${i})">✕</b></span>`).join('') || '<span style="color:var(--muted);font-size:11.5px">Sin referencias cargadas.</span>';
+}
+function agregarBiblio(){
+  const v=$('#biblio-nueva').value.trim();
+  if(!v) return;
+  BIBLIO.push(v); $('#biblio-nueva').value='';
+  renderBiblio(); guardarCambios();
+}
+function quitarBiblio(i){ BIBLIO.splice(i,1); renderBiblio(); guardarCambios(); }
+
+// ── notas ─────────────────────────────────────────────────────────────
+function renderNotas(){
+  const notas = PIZ.notas || [];
+  $('#lista-notas').innerHTML = notas.slice().reverse().map(n=>`
+    <div class="nota">${escapeHtml(n.texto)}<span class="ts">${new Date(n.ts*1000).toLocaleString('es-AR')}</span></div>
+  `).join('') || '<div style="color:var(--muted);font-size:11.5px">Sin notas todavía.</div>';
+}
+async function agregarNota(){
+  const ta=$('#nota-nueva'); const texto=ta.value.trim();
+  if(!texto || !PROYECTO_ID) return;
+  const nota = await fetch(`/api/proyectos/${PROYECTO_ID}/notas`,{method:'POST',
+    headers:{'Content-Type':'application/json'}, body:JSON.stringify({texto})}).then(r=>r.json());
+  PIZ.notas = PIZ.notas || []; PIZ.notas.push(nota);
+  ta.value=''; renderNotas();
+}
+
+// ── abrir la mesa completa (stream SSE) ─────────────────────────────────
+async function abrirMesa(){
+  if(!PROYECTO_ID) return;
+  await guardarCambios();
+  $('#go').disabled=true; $('#vacio')?.remove();
+  $('#feed').querySelectorAll('.msg,.fase,.hall').forEach(e=>e.remove());
+  const typing=document.createElement('div'); typing.className='typing'; typing.id='typing';
+  typing.textContent='⏳ La mesa está sesionando…'; $('#feed').appendChild(typing);
+
+  const resp = await fetch(`/api/proyectos/${PROYECTO_ID}/investigar`,{method:'POST'});
+  const reader = resp.body.getReader(); const dec=new TextDecoder(); let buf='';
+  while(true){
+    const {value,done}=await reader.read(); if(done) break;
+    buf+=dec.decode(value,{stream:true});
+    let i;
+    while((i=buf.indexOf('\n\n'))>=0){
+      const linea=buf.slice(0,i).trim(); buf=buf.slice(i+2);
+      if(!linea.startsWith('data:')) continue;
+      const m=JSON.parse(linea.slice(5).trim());
+      if(m.fin){ $('#typing')?.remove(); $('#go').disabled=false; break; }
+      pintar(m);
+      const body=$('#dw-pizarra .dbody'); body.scrollTop = body.scrollHeight;
+    }
+  }
+  $('#typing')?.remove(); $('#go').disabled=false;
+}
+
+function pintar(m){
+  const feed=$('#feed'); const typing=$('#typing');
+  if(m.autor==='orquestador' && m.contenido.startsWith('━━━')){
+    const d=document.createElement('div'); d.className='fase';
+    d.textContent=m.contenido.replace(/━/g,'').trim();
+    typing?feed.insertBefore(d,typing):feed.appendChild(d); return;
+  }
+  if(m.autor==='orquestador' && m.contenido.startsWith('📌')){
+    const d=document.createElement('div'); d.className='hall';
+    d.innerHTML='<b>📌 Hallazgo</b> · '+m.contenido.replace('📌 Hallazgo fijado · ','');
+    typing?feed.insertBefore(d,typing):feed.appendChild(d); return;
+  }
+  const cls = m.autor==='orquestador'?'m-orq':(m.autor==='herramientas'?'m-tool':'');
+  const div=document.createElement('div'); div.className='msg '+cls;
+  const dest = m.dirigido_a?`<span class="a">→ @${m.dirigido_a}</span>`:'';
+  const citas = (m.citas&&m.citas.length)?
+    `<div class="citas">📚 ${m.citas.map(c=>`<span>${c}</span>`).join('')}</div>`:'';
+  div.innerHTML=`
+    <div class="av">${AVATAR[m.autor]||'🗣️'}</div>
+    <div class="bub">
+      <div class="quien">${m.rol} ${dest}</div>
+      <div class="cuerpo">${escapeHtml(m.contenido)}</div>
+      ${citas}
+    </div>`;
+  typing?feed.insertBefore(div,typing):feed.appendChild(div);
+}
+function escapeHtml(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+
+// ── FAB arrastrable con menú de agentes ──────────────────────────────────
+const fab = $('#fab');
+(function initFab(){
+  const pos = JSON.parse(localStorage.getItem('cueva_fab_pos')||'null');
+  if(pos && pos.x!=null){ fab.style.left=pos.x+'px'; fab.style.top=pos.y+'px'; }
+  else { fab.style.right='22px'; fab.style.bottom='90px'; }
+  clampFab();
+})();
+let fabDrag=null;
+fab.addEventListener('pointerdown', e=>{
+  fab.setPointerCapture(e.pointerId);
+  const r=fab.getBoundingClientRect();
+  fabDrag={x0:e.clientX, y0:e.clientY, left:r.left, top:r.top, moved:false};
+});
+fab.addEventListener('pointermove', e=>{
+  if(!fabDrag) return;
+  const dx=e.clientX-fabDrag.x0, dy=e.clientY-fabDrag.y0;
+  if(Math.abs(dx)>6||Math.abs(dy)>6) fabDrag.moved=true;
+  if(fabDrag.moved){
+    fab.style.right='auto'; fab.style.bottom='auto';
+    fab.style.left=(fabDrag.left+dx)+'px';
+    fab.style.top=(fabDrag.top+dy)+'px';
+    $('#fab-menu').classList.remove('on');
+  }
+});
+fab.addEventListener('pointerup', e=>{
+  if(!fabDrag) return;
+  const fueClick = !fabDrag.moved;
+  fabDrag=null;
+  clampFab();
+  const r=fab.getBoundingClientRect();
+  localStorage.setItem('cueva_fab_pos', JSON.stringify({x:r.left, y:r.top}));
+  if(fueClick) toggleFabMenu();
+});
+function clampFab(){
+  const r=fab.getBoundingClientRect();
+  const x=Math.min(Math.max(r.left,6), window.innerWidth-60);
+  const y=Math.min(Math.max(r.top,6), window.innerHeight-60);
+  fab.style.right='auto'; fab.style.bottom='auto';
+  fab.style.left=x+'px'; fab.style.top=y+'px';
+}
+window.addEventListener('resize', clampFab);
+function toggleFabMenu(){
+  const menu=$('#fab-menu');
+  if(menu.classList.contains('on')){ menu.classList.remove('on'); return; }
+  const r=fab.getBoundingClientRect();
+  // abrir hacia el lado con más espacio
+  const abajo = r.top < window.innerHeight/2;
+  const derecha = r.left < window.innerWidth/2;
+  menu.style.left = derecha ? (r.right+8)+'px' : 'auto';
+  menu.style.right = derecha ? 'auto' : (window.innerWidth-r.left+8)+'px';
+  menu.style.top = abajo ? r.top+'px' : 'auto';
+  menu.style.bottom = abajo ? 'auto' : (window.innerHeight-r.bottom)+'px';
+  menu.classList.add('on');
+}
+document.addEventListener('pointerdown', e=>{
+  if(!$('#fab-menu').contains(e.target) && e.target!==fab && !fab.contains(e.target))
+    $('#fab-menu').classList.remove('on');
+});
+
+// ── chat 1:1 con un agente ───────────────────────────────────────────────
+function abrirChatDesdeFab(agenteId){
+  $('#fab-menu').classList.remove('on');
+  abrirChat(agenteId);
+}
+function abrirChat(agenteId, prefill){
+  CHAT_AGENTE = agenteId;
+  $('#chat-titulo').textContent = NOMBRE_AGENTE[agenteId] || agenteId;
+  if(prefill!==undefined) $('#chat-input').value = prefill;
+  renderChatMsgs();
+  posicionarChat();
+  $('#chatpanel').classList.add('on');
+  $('#chat-input').focus();
+}
+function posicionarChat(){
+  const cp=$('#chatpanel');
+  const r=fab.getBoundingClientRect();
+  const w=380, h=Math.min(540, window.innerHeight*0.72);
+  let x = r.left < window.innerWidth/2 ? r.right+10 : r.left-10-w;
+  let y = r.top < window.innerHeight/2 ? r.top : r.bottom-h;
+  x=Math.min(Math.max(x,8), window.innerWidth-w-8);
+  y=Math.min(Math.max(y,8), window.innerHeight-h-8);
+  cp.style.left=x+'px'; cp.style.top=y+'px'; cp.style.right='auto'; cp.style.bottom='auto';
+}
+function cerrarChat(){ $('#chatpanel').classList.remove('on'); CHAT_AGENTE=null; }
+function renderChatMsgs(){
+  const turnos = (PIZ && PIZ.chats_agentes && PIZ.chats_agentes[CHAT_AGENTE]) || [];
+  const box = $('#chat-msgs');
+  box.innerHTML = turnos.map(t=>`<div class="cmsg ${t.quien==='usuario'?'usuario':'agente'}">${escapeHtml(t.texto)}</div>`).join('')
+    || '<div style="color:var(--muted);font-size:12px">Sin conversación todavía. Preguntale algo.</div>';
+  box.scrollTop = box.scrollHeight;
+}
+async function enviarChat(){
+  const input=$('#chat-input'); const pregunta=input.value.trim();
+  if(!pregunta || !CHAT_AGENTE || !PROYECTO_ID) return;
+  input.value=''; input.disabled=true;
+  PIZ.chats_agentes[CHAT_AGENTE] = PIZ.chats_agentes[CHAT_AGENTE] || [];
+  PIZ.chats_agentes[CHAT_AGENTE].push({quien:'usuario', texto:pregunta});
+  renderChatMsgs();
+  const box=$('#chat-msgs');
+  const espera=document.createElement('div'); espera.className='cmsg agente'; espera.id='chat-espera';
+  espera.textContent='…pensando'; box.appendChild(espera); box.scrollTop=box.scrollHeight;
+  const turno = await fetch(`/api/proyectos/${PROYECTO_ID}/agente/${CHAT_AGENTE}`,{method:'POST',
+    headers:{'Content-Type':'application/json'}, body:JSON.stringify({pregunta})}).then(r=>r.json());
+  PIZ.chats_agentes[CHAT_AGENTE].push(turno);
+  renderChatMsgs();
+  input.disabled=false; input.focus();
+}
+$('#chat-input').addEventListener('keydown', e=>{
+  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); enviarChat(); }
+});
+
+// ── Informe ───────────────────────────────────────────────────────────
+const SECCIONES_TEXTO = [
+  {key:'introduccion', label:'📝 Introducción'},
+  {key:'resumen_bibliografia', label:'📚 Resumen de bibliografía'},
+  {key:'desarrollo', label:'🔧 Desarrollo'},
+  {key:'resultados', label:'📊 Resultados'},
+  {key:'conclusiones', label:'🏁 Conclusiones'},
+  {key:'anexo', label:'📎 Anexo'},
+];
+
+function renderInforme(){
+  if(!PIZ) return;
+  const ocultas = PIZ.secciones_ocultas || [];
+  const p = PIZ.proyecto;
+  const bloques = [];
+
+  bloques.push(seccionInforme('objetivos', '🎯 Objetivos', ocultas, `
+    ${(p.objetivos&&p.objetivos.length) ? '<ul class="inf-lista">'+p.objetivos.map(o=>`<li>${escapeHtml(o)}</li>`).join('')+'</ul>'
+      : '<div style="color:var(--muted);font-size:12.5px">Sin objetivos cargados (se editan en 🎯 Definición).</div>'}
+  `));
+
+  SECCIONES_TEXTO.forEach(s=>{
+    bloques.push(seccionInforme(s.key, s.label, ocultas, `
+      <textarea id="inf-${s.key}" oninput="guardarInformeDebounced('${s.key}')">${escapeHtml(PIZ.informe[s.key]||'')}</textarea>
+      ${agentPicker(s.key)}
+    `));
+  });
+
+  const items = [
+    ...(PIZ.estudios||[]).map(e=>`🧪 <b>${escapeHtml(e.herramienta)}</b> — ${escapeHtml(e.resumen)}`),
+    ...(PIZ.hallazgos||[]).map(h=>`📌 ${escapeHtml(h.texto)}`),
+  ];
+  bloques.push(seccionInforme('estudios', '🧪 Estudios realizados', ocultas, `
+    ${items.length ? '<ul class="inf-lista">'+items.map(i=>`<li>${i}</li>`).join('')+'</ul>'
+      : '<div style="color:var(--muted);font-size:12.5px">Todavía no se corrió ninguna herramienta ni se fijó un hallazgo.</div>'}
+  `));
+
+  $('#informe-wrap').innerHTML = `
+    <h2 style="font-size:20px;margin:0 0 2px">${escapeHtml(p.titulo||'Investigación sin título')}</h2>
+    <div style="color:var(--muted);font-size:12.5px;margin-bottom:18px">${escapeHtml(p.pregunta||'')}</div>
+    ${bloques.join('')}
+  `;
+}
+
+function seccionInforme(key, label, ocultas, cuerpoHtml){
+  const oculta = ocultas.includes(key);
+  return `<div class="inf-sec ${oculta?'oculta':''}" id="inf-sec-${key}">
+    <div class="inf-head">
+      <b>${label}</b>
+      <div class="sp">
+        <button class="inf-icon" onclick="toggleSeccionInforme('${key}')">${oculta?'👁 mostrar':'🙈 ocultar'}</button>
+      </div>
+    </div>
+    <div class="inf-body">${cuerpoHtml}</div>
+  </div>`;
+}
+
+function agentPicker(key){
+  return `<div class="agentpick">
+    ${Object.keys(NOMBRE_AGENTE).map(a=>`<button class="btn sec sm" onclick="consultarSobreSeccion('${a}','${key}')" title="Consultar a ${NOMBRE_AGENTE[a]}">${AVATAR[a]}</button>`).join('')}
+  </div>`;
+}
+function consultarSobreSeccion(agenteId, key){
+  const s = SECCIONES_TEXTO.find(x=>x.key===key);
+  const texto = ($('#inf-'+key)?.value || '').trim();
+  const prefill = texto
+    ? `Sobre la sección "${s.label}" del informe:\n"""${texto}"""\n\nPregunta: `
+    : `Sobre la sección "${s.label}" del informe (todavía vacía): `;
+  abrirChat(agenteId, prefill);
+}
+
+async function toggleSeccionInforme(key){
+  if(!PROYECTO_ID) return;
+  const r = await fetch(`/api/proyectos/${PROYECTO_ID}/informe/${key}/toggle`,{method:'POST'}).then(r=>r.json());
+  if(r.oculta){ if(!PIZ.secciones_ocultas.includes(key)) PIZ.secciones_ocultas.push(key); }
+  else { PIZ.secciones_ocultas = PIZ.secciones_ocultas.filter(x=>x!==key); }
+  renderInforme();
+}
+
+let tInforme={};
+function guardarInformeDebounced(key){
+  clearTimeout(tInforme[key]);
+  tInforme[key]=setTimeout(()=>guardarInforme(key),700);
+}
+async function guardarInforme(key){
+  if(!PROYECTO_ID) return;
+  const texto = $('#inf-'+key).value;
+  PIZ.informe[key]=texto;
+  await fetch(`/api/proyectos/${PROYECTO_ID}/informe/${key}`,{method:'PUT',
+    headers:{'Content-Type':'application/json'}, body:JSON.stringify({texto})});
+}
+
+// ── arranque ──────────────────────────────────────────────────────────
+cargarProyectos();
+</script>
+</body>
+</html>

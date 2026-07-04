@@ -1,0 +1,29 @@
+# Entornos y cachés
+.venv/
+__pycache__/
+*.pyc
+.langgraph_api/
+.pytest_cache/
+.ruff_cache/
+
+# Índices generados y datos pesados (se reconstruyen con la ingesta; ver docs/SETUP.md)
+indice/
+rag/_indice/
+knowledge-base/corpus/**/*.pdf
+knowledge-base/corpus/**/*.epub
+
+# Investigaciones guardadas (cuadernos de trabajo de cada usuario) y transcripts
+data/proyectos/
+
+# Seguimiento local (no se versiona)
+_logs/
+tasks/
+
+# Secretos y configuración local
+.env
+*.key
+cueva.local.toml
+
+# Backups
+*.tgz
+*.zip
