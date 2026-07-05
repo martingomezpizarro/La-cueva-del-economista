@@ -124,8 +124,19 @@ tests/                 suite offline (series sintéticas; corre en CI sin claves
 - **Auditabilidad**: SSE tipado (`event: mensaje|fin|error`), contador de tokens visible al
   cerrar la mesa, y transcript JSONL por sesión en `data/proyectos/{id}.transcript.jsonl`.
 
+## Conocimiento v2 (fase 3, hecha 2026-07-05)
+
+- **Ingesta incremental**: `indice/manifest.json` registra hash + fragmentos por archivo;
+  re-ingestar procesa solo lo nuevo/cambiado y reusa los embeddings de lo que no cambió.
+- **Biblioteca del usuario**: subida por la UI (drawer "Bibliografía propia") o
+  `POST /api/v1/biblioteca`, con checklist de seguridad (extensión, tamaño, firma %PDF,
+  nombre regenerado). Se indexa en la colección `usuario` con provenance: las citas van
+  marcadas ("· biblioteca del usuario") y el Bibliógrafo la prioriza.
+- **Evaluación medible**: `scripts/evaluar_rag.py` contra las 20 preguntas doradas de
+  `tests/eval_rag.jsonl` (aciertos@1/3/5, comparables entre TF-IDF y embeddings).
+
 ## Próximos pasos (roadmap completo en docs/PROPUESTA_ARQUITECTURA.md)
 
-- **Fase 3 — conocimiento**: evaluación de retrieval con preguntas doradas, ingesta
-  incremental con manifiesto, subida de PDFs del usuario (colección separada con provenance).
-- **Fase 4 — escala web**: SQLite tras el repositorio, job queue, auth, Docker + deploy.
+- **Fase 4 — escala web**: SQLite tras el repositorio, job queue (la indexación de subidas
+  sale del request), auth, Docker + deploy.
+- Conocimiento: conseguir Enders para el corpus; iterar retrieval según la evaluación.

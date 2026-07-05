@@ -67,8 +67,15 @@ def carpeta_series(tmp_path, monkeypatch):
 
 @pytest.fixture(autouse=True)
 def datos_temporales(tmp_path, monkeypatch):
-    """Todo lo que la plataforma escribe (proyectos, transcripts) va a una carpeta temporal."""
+    """Aislamiento total: datos (proyectos/transcripts/biblioteca) e índice van a carpetas
+    temporales — ningún test toca el índice real del repo."""
+    from cueva.conocimiento import recuperar
+
     monkeypatch.setenv("CUEVA_DATA", str(tmp_path / "data"))
+    monkeypatch.setenv("CUEVA_INDICE", str(tmp_path / "indice"))
+    recuperar.limpiar_cache()
+    yield
+    recuperar.limpiar_cache()
 
 
 @pytest.fixture()

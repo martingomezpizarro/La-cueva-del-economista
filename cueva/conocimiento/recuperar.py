@@ -4,9 +4,15 @@ Usa embeddings multilingües si el índice los tiene (preguntás en español, re
 bibliografía en inglés); si no, cae a TF-IDF. El índice se carga una sola vez por proceso
 (`limpiar_cache()` lo invalida, útil en tests y tras re-ingestar).
 
+Colecciones (provenance): cada pasaje sabe si viene del corpus curado o de la biblioteca
+subida por el usuario, y su cita lo marca. `buscar(..., coleccion=...)` filtra;
+`contexto_citado(..., prioridad_usuario=True)` antepone la biblioteca del usuario
+(la usa el Bibliógrafo).
+
 Formato del índice (generado por `ingesta.py`, SIN pickle):
-    fragmentos.jsonl   una línea JSON por fragmento {fuente, ref, tipo, texto, id}
-    meta.json          {"n": ..., "modelo_emb": ... | null}
+    fragmentos.jsonl   una línea JSON por fragmento {fuente, ref, tipo, texto, archivo, coleccion, id}
+    meta.json          {"n": ..., "modelo_emb": ... | null, "colecciones": {...}}
+    manifest.json      hash + nº de fragmentos por archivo (para la ingesta incremental)
     embeddings.npy     matriz float32 normalizada (si hay sentence-transformers)
     tfidf.json         {"vocabulario": {término: índice}, "idf": [...], "ngram_max": 2}
     tfidf_matriz.npz   matriz dispersa TF-IDF de los fragmentos (scipy)
@@ -28,10 +34,12 @@ class Pasaje:
     tipo: str
     texto: str
     score: float
+    coleccion: str = "corpus"
 
     @property
     def cita(self) -> str:
-        return f"{self.fuente} {self.ref}"
+        base = f"{self.fuente} {self.ref}"
+        return f"{base} · biblioteca del usuario" if self.coleccion == "usuario" else base
 
 
 @lru_cache(maxsize=1)
@@ -58,8 +66,14 @@ def indice_disponible() -> bool:
     return _cargar() is not None
 
 
-def buscar(pregunta: str, k: int = 5) -> list[Pasaje]:
-    """Devuelve los k pasajes más relevantes (lista vacía si no hay índice)."""
+def buscar(
+    pregunta: str, k: int = 5, *, coleccion: str | None = None, modo: str | None = None
+) -> list[Pasaje]:
+    """Devuelve los k pasajes más relevantes (lista vacía si no hay índice).
+
+    - `coleccion`: filtrar por procedencia ("corpus" | "usuario"). None = todas.
+    - `modo`: forzar "tfidf" o "embeddings" (para la evaluación); None = el mejor disponible.
+    """
     data = _cargar()
     if not data:
         return []
@@ -69,7 +83,10 @@ def buscar(pregunta: str, k: int = 5) -> list[Pasaje]:
     indice = config.ruta_indice()
     modelo_emb = meta.get("modelo_emb")
     emb_path = indice / "embeddings.npy"
-    if modelo_emb and emb_path.exists():
+    usar_emb = modo != "tfidf" and modelo_emb and emb_path.exists()
+    if modo == "embeddings" and not usar_emb:
+        return []
+    if usar_emb:
         try:
             modelo = _modelo_emb(modelo_emb)
             q = modelo.encode([f"query: {pregunta}"], normalize_embeddings=True)[0]
@@ -81,12 +98,14 @@ def buscar(pregunta: str, k: int = 5) -> list[Pasaje]:
 
     if sims is None:
         return []
-    orden = np.argsort(sims)[::-1][:k]
-    out = []
+    orden = np.argsort(sims)[::-1]
+    out: list[Pasaje] = []
     for i in orden:
-        if sims[i] <= 0:
-            continue
+        if sims[i] <= 0 or len(out) >= k:
+            break
         r = registros[i]
+        if coleccion and r.get("coleccion", "corpus") != coleccion:
+            continue
         out.append(
             Pasaje(
                 r.get("fuente", "?"),
@@ -94,14 +113,26 @@ def buscar(pregunta: str, k: int = 5) -> list[Pasaje]:
                 r.get("tipo", "prosa"),
                 r.get("texto", ""),
                 float(sims[i]),
+                r.get("coleccion", "corpus"),
             )
         )
     return out
 
 
-def contexto_citado(pregunta: str, k: int = 5, max_chars: int = 600) -> tuple[str, list[str]]:
-    """Texto listo para inyectar al prompt + lista de citas. ('', []) si no hay índice."""
-    pasajes = buscar(pregunta, k)
+def contexto_citado(
+    pregunta: str, k: int = 5, max_chars: int = 600, *, prioridad_usuario: bool = False
+) -> tuple[str, list[str]]:
+    """Texto listo para inyectar al prompt + lista de citas. ('', []) si no hay índice.
+
+    Con `prioridad_usuario=True` (el Bibliógrafo), la biblioteca subida por el usuario va
+    primero (hasta la mitad de los k lugares) y el corpus curado completa el resto.
+    """
+    if prioridad_usuario:
+        del_usuario = buscar(pregunta, max(1, k // 2), coleccion="usuario")
+        resto = [p for p in buscar(pregunta, k) if p.coleccion != "usuario"]
+        pasajes = (del_usuario + resto)[:k]
+    else:
+        pasajes = buscar(pregunta, k)
     if not pasajes:
         return "", []
     bloques, citas = [], []

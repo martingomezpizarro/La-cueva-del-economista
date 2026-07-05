@@ -1,0 +1,20 @@
+{"tema": "cointegración/Johansen", "pregunta": "¿Qué es la cointegración entre series y cómo se testea con el método de Johansen?", "fuentes_esperadas": ["Johansen", "Wolters", "statsmodels"]}
+{"tema": "raíz unitaria/ADF", "pregunta": "¿Para qué sirve el test de Dickey-Fuller aumentado y cómo se interpreta su hipótesis nula?", "fuentes_esperadas": ["Wolters", "fpp3_09", "Tsay", "Brockwell"]}
+{"tema": "VECM en Python", "pregunta": "¿Cómo estimo un modelo VECM en Python con statsmodels?", "fuentes_esperadas": ["statsmodels"]}
+{"tema": "volatilidad condicional", "pregunta": "¿Cómo modelo la volatilidad condicional de los retornos financieros?", "fuentes_esperadas": ["Tsay", "arch", "Wolters"]}
+{"tema": "GARCH persistencia", "pregunta": "¿Qué significa que la suma de los coeficientes alfa y beta de un GARCH esté cerca de uno?", "fuentes_esperadas": ["arch", "Tsay"]}
+{"tema": "VAR/identificación", "pregunta": "¿Cómo se identifica un VAR estructural y qué supuestos requiere?", "fuentes_esperadas": ["Wolters", "Strohsal", "statsmodels", "Yang"]}
+{"tema": "impulso-respuesta", "pregunta": "¿Cómo se interpreta una función de impulso-respuesta en un VAR?", "fuentes_esperadas": ["Wolters", "Strohsal", "Tsay", "statsmodels"]}
+{"tema": "causalidad de Granger", "pregunta": "¿Qué mide exactamente la causalidad de Granger y cuáles son sus limitaciones?", "fuentes_esperadas": ["Wolters", "Tsay"]}
+{"tema": "variables instrumentales", "pregunta": "¿Cuándo conviene usar variables instrumentales y qué hace válido a un instrumento?", "fuentes_esperadas": ["Angrist", "Athey"]}
+{"tema": "diferencias en diferencias", "pregunta": "¿En qué consiste el método de diferencias en diferencias y qué supuesto de tendencias paralelas exige?", "fuentes_esperadas": ["Angrist", "Athey"]}
+{"tema": "regresión espuria", "pregunta": "¿Por qué dos series con tendencia pueden dar una regresión espuria con R2 alto?", "fuentes_esperadas": ["Wolters", "Tsay", "Brockwell"]}
+{"tema": "evaluación de pronóstico", "pregunta": "¿Cómo se evalúa un pronóstico fuera de muestra y qué métricas conviene usar?", "fuentes_esperadas": ["fpp3_05", "Brockwell", "West"]}
+{"tema": "transformación logarítmica", "pregunta": "¿Cuándo conviene transformar una serie con logaritmos para estabilizar la varianza?", "fuentes_esperadas": ["fpp3_03", "Brockwell", "Wolters"]}
+{"tema": "estacionalidad", "pregunta": "¿Cómo se detecta y se trata la estacionalidad de una serie mensual?", "fuentes_esperadas": ["fpp3", "Brockwell", "Wolters"]}
+{"tema": "ARIMA identificación", "pregunta": "¿Cómo se eligen los órdenes p, d y q de un modelo ARIMA?", "fuentes_esperadas": ["Brockwell", "Tsay", "fpp3", "Wolters"]}
+{"tema": "filtro de Kalman", "pregunta": "¿Qué es el filtro de Kalman y cómo se usa para estimar modelos estructurales de series de tiempo?", "fuentes_esperadas": ["Jalles", "Harvey", "West"]}
+{"tema": "modelos bayesianos dinámicos", "pregunta": "¿Qué ventajas tienen los modelos lineales dinámicos bayesianos para pronóstico?", "fuentes_esperadas": ["West", "Marcellino", "Chan"]}
+{"tema": "raíces unitarias en paneles", "pregunta": "¿Cómo se testean raíces unitarias y cointegración en datos de panel?", "fuentes_esperadas": ["Breitung"]}
+{"tema": "cointegración fraccional", "pregunta": "¿Qué es la cointegración fraccional y cómo se hace inferencia por máxima verosimilitud en ese marco?", "fuentes_esperadas": ["Johansen"]}
+{"tema": "curva de especificación", "pregunta": "¿Cómo reporto todas las especificaciones razonables de un modelo para mostrar la robustez de un resultado?", "fuentes_esperadas": ["specification_curve", "sala_i_martin"]}

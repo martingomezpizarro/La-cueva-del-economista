@@ -5,15 +5,31 @@ datos + motor de análisis + **agentes-profesores con RAG** (`docs/PLAN_AGENTES.
 La arquitectura objetivo y el roadmap aprobado viven en `docs/PROPUESTA_ARQUITECTURA.md`.
 Responder siempre en español.
 
-## Estado (actualizado 2026-07-04)
+## Estado (actualizado 2026-07-05)
 
-**Fases 0, 1 y 2 del roadmap COMPLETAS** (rescate + red de seguridad + agentes v2).
+**Fases 0, 1, 2 y 3 del roadmap COMPLETAS** (rescate + red de seguridad + agentes v2 + conocimiento).
+
+Fase 3 (conocimiento):
+- **Ingesta incremental con manifiesto** (`indice/manifest.json`: hash SHA-256 por archivo):
+  re-ingestar solo procesa lo nuevo/cambiado, reusa embeddings de lo que no cambió y
+  descarta lo borrado. `scripts/ingestar.py` (flag `--completo` para reconstruir).
+- **Colecciones con provenance**: cada fragmento lleva `coleccion` ("corpus" | "usuario");
+  las citas de la biblioteca del usuario van marcadas y el Bibliógrafo la prioriza
+  (`prioriza_usuario: si` en su skill).
+- **Subida de bibliografía del usuario**: `POST /api/v1/biblioteca` (y GET para listar)
+  con checklist de seguridad (extensión, 30 MB máx., firma %PDF, nombre regenerado);
+  UI en el drawer "Bibliografía propia". Archivos en `<CUEVA_DATA>/biblioteca/`.
+- **Evaluación de retrieval**: `tests/eval_rag.jsonl` (20 preguntas doradas) +
+  `scripts/evaluar_rag.py` (aciertos@1/3/5, `--modo tfidf|embeddings` para comparar).
+- 70 tests en verde (aislados: los tests jamás tocan el índice real).
+
+Fase 2 (agentes v2):
 
 Fase 2 (agentes v2):
 - **Los agentes se definen en `knowledge-base/skills/`** (frontmatter: `agente`, `rol`,
-  `modelo` [tier barato/medio/claude], `sesgo_rag`, `herramientas` [lista blanca]; cuerpo =
-  system prompt). Editar el markdown cambia al agente sin tocar Python. Plantel: 12 agentes
-  (4 profesores + líder + 7 especialistas). Cargador: `cueva/agentes/skills.py`.
+  `modelo` [tier barato/medio/claude], `sesgo_rag`, `herramientas` [lista blanca],
+  `prioriza_usuario`; cuerpo = system prompt). Editar el markdown cambia al agente sin
+  tocar Python. Plantel: 12 agentes. Cargador: `cueva/agentes/skills.py`.
 - **El guion es un dato** (`cueva/agentes/pipelines.py`): pipelines `clasica` (4 profesores)
   y `equipo_completo` (10 especialistas). `grafo_cueva.py` + LangGraph RETIRADOS.
 - **Tool-use real (function calling de Gemini)**: el Metodólogo PIDE herramientas en la
@@ -42,22 +58,27 @@ Fases 0-1 (resumen):
 - Los 3 modos de agentes siguen: 1:1 (`Agente.responder_directo`), líder supervisor
   (`Orquestador.revisar`), pipeline (`Orquestador.correr`).
 
-## Problema conocido (prioridad para fase 3)
+## Problema conocido (retrieval — ya MEDIDO, no resuelto del todo)
 
-La calidad del retrieval es floja: para "riesgo país + cointegración" trae resúmenes en
-español (Sala-i-Martin, GARCH) en vez de los libros en inglés (Kirchgässner, Johansen), con
-scores casi idénticos (~0.87). Además **Enders NO está en el corpus** (verificado: 24 fuentes
-indexadas, sin Enders). Plan: evaluación con 20 preguntas doradas (`docs/PROPUESTA_ARQUITECTURA.md`
-§7) + conseguir Enders + decidir TF-IDF/embeddings con datos.
+Baseline 2026-07-05 (`scripts/evaluar_rag.py` sobre las 20 preguntas doradas):
+- **embeddings: aciertos@3 = 14/20 (70%)** · @1 = 8/20 · @5 = 16/20
+- **TF-IDF: aciertos@3 = 1/20 (5%)** → decisión tomada con datos: embeddings es la
+  recuperación primaria; TF-IDF queda solo como fallback sin sentence-transformers.
+Patrón de fallo: los resúmenes en español (`sala_i_martin`, `utils`, `specification_curve`)
+acaparan las consultas genéricas (regresión espuria, DiD, transformaciones, estacionalidad).
+Además **Enders NO está en el corpus** (24 fuentes; conseguirlo suma para cointegración).
+Ideas para iterar (medir antes/después con el script): penalizar/borrar `utils.py` del
+corpus, probar e5-base, y chunking por sección en vez de por página.
 
-## Pendientes en orden (fase 3 del roadmap aprobado)
+## Pendientes en orden (fase 4 del roadmap aprobado)
 
-1. Evaluación de retrieval: `tests/eval_rag.jsonl` con ~20 preguntas doradas + script que
-   mida aciertos; decidir TF-IDF/embeddings con datos. Conseguir Enders para el corpus.
-2. Ingesta incremental con manifiesto (`indice/manifest.json`: hash por archivo).
-3. Subida de PDFs del usuario end-to-end (colección separada con provenance, checklist de
-   seguridad de docs/PROPUESTA_ARQUITECTURA.md §5.3).
-4. Después: fase 4 (web multiusuario: SQLite, job queue, auth, Docker), según el roadmap.
+1. SQLite detrás del repositorio de sesiones + job queue (la mesa y la indexación de
+   subidas salen del request).
+2. Auth de usuarios + rate limiting + checklist de seguridad web (PROPUESTA §5).
+3. Dockerfile + compose + deploy a un PaaS.
+4. Datos: empaquetar las series (hoy carpetas hermanas) como dataset propio.
+Paralelo (conocimiento): conseguir Enders; iterar retrieval midiendo con
+`scripts/evaluar_rag.py` (baseline @3=14/20).
 
 ## Qué leer / qué no leer (economía de tokens)
 

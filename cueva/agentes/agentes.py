@@ -58,6 +58,7 @@ class Agente:
     sesgo_rag: str = ""  # términos que enriquecen su búsqueda en el RAG
     tier: str = "medio"  # barato | medio | claude → elige el modelo (cuida la cuota)
     herramientas: list[str] = field(default_factory=list)  # lista blanca para function calling
+    prioriza_usuario: bool = False  # antepone la biblioteca subida por el usuario (Bibliógrafo)
     cuerpo: str = ""  # system prompt desde el skill (manda sobre `mision`)
 
     # ── prompt de sistema ─────────────────────────────────────────────────
@@ -111,7 +112,9 @@ class Agente:
 
         # 1) recuperar bibliografía relevante a este agente + fase + pregunta
         consulta = consulta_rag or f"{self.sesgo_rag} {proyecto.pregunta} {FASE_DESC.get(fase, '')}"
-        contexto_biblio, citas = recuperar.contexto_citado(consulta, k=4)
+        contexto_biblio, citas = recuperar.contexto_citado(
+            consulta, k=4, prioridad_usuario=self.prioriza_usuario
+        )
 
         # 2) evidencia de herramientas (texto compacto)
         ev_txt = ""
@@ -215,7 +218,9 @@ class Agente:
         proyecto = piz.proyecto
 
         consulta = f"{self.sesgo_rag} {pregunta}"
-        contexto_biblio, citas = recuperar.contexto_citado(consulta, k=4)
+        contexto_biblio, citas = recuperar.contexto_citado(
+            consulta, k=4, prioridad_usuario=self.prioriza_usuario
+        )
 
         partes = [
             f"=== PROYECTO ===\n{proyecto.resumen_para_agente()}",
@@ -304,6 +309,7 @@ def _construir_plantel() -> dict[str, Agente]:
             sesgo_rag=d["sesgo_rag"] or (base.sesgo_rag if base else ""),
             tier=d["tier"],
             herramientas=d["herramientas"],
+            prioriza_usuario=d.get("prioriza_usuario", False),
             cuerpo=d["cuerpo"],
         )
     return plantel

@@ -6,40 +6,48 @@
 <title>🕳️📊 La Cueva del Economista</title>
 <style>
   :root{
-    --bg:#0e1116; --panel:#161b22; --panel2:#1c232d; --line:#2b333d;
-    --txt:#e6edf3; --muted:#8b949e; --acc:#dc2626; --acc2:#f59e0b;
-    --ok:#3fb950; --blue:#58a6ff; --purple:#bc8cff;
-    --hdr:41px; --ribbon:46px;
+    --bg:#0d1117; --panel:#161b22; --panel2:#1c232d; --line:#2b333d;
+    --txt:#e6edf3; --muted:#8b949e; --acc:#4fa8da; --acc-dk:#1c6ea4; --acc2:#e8b93f;
+    --ok:#3fb950; --blue:#5aa9e0; --purple:#bc8cff;
+    --hdr:46px; --side:48px;
   }
   *{box-sizing:border-box}
   body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-    background:var(--bg);color:var(--txt);font-size:14px;line-height:1.5;overflow:hidden}
-  header{display:flex;align-items:center;gap:12px;padding:8px 16px;background:var(--panel);
-    border-bottom:1px solid var(--line);height:var(--hdr)}
-  header h1{font-size:14px;margin:0;font-weight:600;white-space:nowrap}
+    background:var(--bg);color:var(--txt);font-size:14px;line-height:1.5;overflow:hidden;
+    display:flex;flex-direction:column;height:100vh}
+  header{display:flex;align-items:center;gap:8px;padding:0 12px;background:var(--panel);
+    border-bottom:1px solid var(--line);height:var(--hdr);flex:none}
+  header .logo{font-size:14px;font-weight:600;white-space:nowrap;margin-right:2px}
+  #rb-series{display:flex;align-items:center;gap:8px;background:var(--panel2);color:var(--txt);
+    border:1px solid var(--line);border-radius:7px;padding:6px 12px;font-size:13px;font-weight:600;
+    cursor:pointer;max-width:260px}
+  #rb-series:hover{border-color:var(--acc)}
+  #rb-series.activa{border-color:var(--acc);color:var(--txt);background:var(--panel2)}
+  #rb-series .chev{color:var(--muted);font-size:10px}
+  #symbol-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  header select#proj-select{width:auto;max-width:200px;padding:6px 8px;font-size:12px}
   header .estado{margin-left:auto;font-size:12px;color:var(--muted);display:flex;gap:12px;align-items:center}
   .pill{padding:1px 8px;border-radius:999px;border:1px solid var(--line);font-size:11px;white-space:nowrap}
   .pill.on{color:var(--ok);border-color:#214d2c}.pill.off{color:var(--acc2);border-color:#5a4410}
 
-  /* ── cinta (ribbon) estilo Word, ocultable ─────────────────────────── */
-  #ribbon{display:flex;gap:6px;padding:7px 12px;background:var(--panel);border-bottom:1px solid var(--line);
-    align-items:center;height:var(--ribbon);overflow-x:auto;overflow-y:hidden}
-  #ribbon.colapsada{display:none}
-  #ribbon .rsep{width:1px;height:24px;background:var(--line);margin:0 4px;flex:none}
-  #ribbon select{background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:7px;
-    padding:5px 8px;font-size:12px;max-width:230px}
   .rbtn{background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:7px;
     padding:6px 11px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex:none}
-  .rbtn:hover{border-color:var(--blue)}
+  .rbtn:hover{border-color:var(--acc)}
   .rbtn.activa{background:var(--acc);border-color:var(--acc);color:#fff}
   .rbtn.mini{font-weight:500;padding:6px 9px}
-  #ribbon-toggle{position:fixed;top:6px;right:8px;z-index:60;background:var(--panel2);color:var(--muted);
-    border:1px solid var(--line);border-radius:7px;padding:4px 10px;font-size:13px;cursor:pointer}
-  #ribbon-toggle:hover{color:var(--txt)}
+
+  /* ── cuerpo: sidebar de herramientas + visualizador ────────────────── */
+  #body-row{display:flex;flex:1;min-height:0}
+  #sidebar{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 0;
+    width:var(--side);flex:none;background:var(--panel);border-right:1px solid var(--line)}
+  .sbtn{width:36px;height:36px;background:none;color:var(--muted);border:1px solid transparent;
+    border-radius:8px;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .sbtn:hover{background:var(--panel2);color:var(--txt)}
+  .sbtn.activa{background:var(--panel2);color:var(--acc);border-color:var(--line)}
+  .side-sep{width:24px;height:1px;background:var(--line);margin:4px 0;flex:none}
 
   /* ── vista principal: el visualizador ──────────────────────────────── */
-  #viz-wrap{position:relative;height:calc(100vh - var(--hdr) - var(--ribbon))}
-  body.sin-ribbon #viz-wrap{height:calc(100vh - var(--hdr))}
+  #viz-wrap{position:relative;flex:1;min-width:0}
   #viz-frame{width:100%;height:100%;border:0;display:block}
   .viz-fallback{max-width:640px;margin:60px auto;text-align:center;color:var(--muted);padding:0 20px}
   .viz-fallback h2{color:var(--txt);font-size:16px}
@@ -60,11 +68,21 @@
   .drawer .dhead button{margin-left:auto;background:none;border:0;color:var(--muted);cursor:pointer;font-size:17px}
   .drawer .dbody{flex:1;overflow:auto;padding:14px 16px}
 
+  /* selector de series: modal centrado (símil "buscador de símbolos") en vez de drawer lateral */
+  #dw-series{top:64px;left:50%;right:auto;bottom:auto;transform:translateX(-50%);
+    width:min(640px,94vw);max-height:min(620px,78vh);border:1px solid var(--line);border-radius:12px;
+    box-shadow:0 20px 60px rgba(0,0,0,.6)}
+  .cat-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin-bottom:2px}
+  .cat-tab{background:none;border:1px solid var(--line);color:var(--muted);border-radius:999px;
+    padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex:none}
+  .cat-tab:hover{color:var(--txt)}
+  .cat-tab.activa{background:var(--acc);border-color:var(--acc);color:#fff}
+
   label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
   input,textarea,select{width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);
     border-radius:7px;padding:8px 10px;font-size:13px;font-family:inherit}
   textarea{resize:vertical;min-height:54px}
-  .btn{background:linear-gradient(135deg,var(--acc),#991b1b);color:#fff;border:0;border-radius:8px;
+  .btn{background:linear-gradient(135deg,var(--acc),var(--acc-dk));color:#fff;border:0;border-radius:8px;
     padding:11px 14px;font-size:13px;font-weight:600;cursor:pointer;width:100%;margin-top:14px}
   .btn:disabled{opacity:.5;cursor:not-allowed}
   .btn.sec{background:var(--panel2);border:1px solid var(--line);font-weight:500;margin-top:8px;width:auto}
@@ -124,7 +142,7 @@
 
   /* ── FAB: círculo flotante de agentes ──────────────────────────────── */
   #fab{position:fixed;width:54px;height:54px;border-radius:50%;z-index:70;cursor:grab;
-    background:linear-gradient(135deg,var(--acc),#7f1d1d);border:2px solid #00000055;
+    background:linear-gradient(135deg,var(--acc),var(--acc-dk));border:2px solid #00000055;
     display:flex;align-items:center;justify-content:center;font-size:24px;user-select:none;
     box-shadow:0 6px 18px rgba(0,0,0,.55);touch-action:none}
   #fab:active{cursor:grabbing}
@@ -155,41 +173,41 @@
 </head>
 <body>
 <header>
-  <h1>🕳️📊 La Cueva del Economista</h1>
+  <div class="logo">🕳️ Cueva</div>
+  <button id="rb-series" onclick="abrirPanel('series')" title="Elegir las series de la investigación">
+    <span id="symbol-label">Elegir series…</span><span class="chev">▾</span>
+  </button>
+  <select id="proj-select" onchange="seleccionarProyecto(this.value)" title="Investigación activa"></select>
+  <button class="rbtn mini" onclick="crearProyecto()" title="Crear una investigación nueva">＋</button>
+  <button class="rbtn mini" onclick="eliminarProyectoActual()" title="Eliminar la investigación activa">🗑</button>
   <div class="estado">
     <span id="diag-series">— series</span>
     <span id="diag-rag" class="pill">RAG</span>
     <span id="diag-ia" class="pill">IA</span>
-    <span style="width:52px"></span>
   </div>
 </header>
-<button id="ribbon-toggle" onclick="toggleRibbon()" title="Mostrar/ocultar la barra de trabajo">⌃</button>
 
-<!-- ── LA CINTA: todas las funciones de la Mesa de Trabajo ── -->
-<div id="ribbon">
-  <span style="font-size:11.5px;color:var(--muted);white-space:nowrap">Investigación:</span>
-  <select id="proj-select" onchange="seleccionarProyecto(this.value)"></select>
-  <button class="rbtn mini" onclick="crearProyecto()" title="Crear una investigación nueva">＋</button>
-  <button class="rbtn mini" onclick="eliminarProyectoActual()" title="Eliminar la investigación activa">🗑</button>
-  <div class="rsep"></div>
-  <button class="rbtn" id="rb-definicion" onclick="abrirPanel('definicion')">🎯 Definición</button>
-  <button class="rbtn" id="rb-series" onclick="abrirPanel('series')">🗂️ Series</button>
-  <button class="rbtn" id="rb-biblio" onclick="abrirPanel('biblio')">📚 Bibliografía</button>
-  <button class="rbtn" id="rb-notas" onclick="abrirPanel('notas')">📝 Notas</button>
-  <div class="rsep"></div>
-  <button class="rbtn" id="rb-pizarra" onclick="abrirPanel('pizarra')">🧠 Pizarra</button>
-  <button class="rbtn" id="rb-informe" onclick="abrirPanel('informe')">📄 Informe</button>
-</div>
+<div id="body-row">
+  <!-- ── sidebar: herramientas de la investigación ── -->
+  <nav id="sidebar">
+    <button class="sbtn" id="rb-definicion" onclick="abrirPanel('definicion')" title="🎯 Objetivos y pregunta">🎯</button>
+    <button class="sbtn" id="rb-biblio" onclick="abrirPanel('biblio')" title="📚 Bibliografía">📚</button>
+    <button class="sbtn" id="rb-notas" onclick="abrirPanel('notas')" title="📝 Notas">📝</button>
+    <div class="side-sep"></div>
+    <button class="sbtn" id="rb-pizarra" onclick="abrirPanel('pizarra')" title="🧠 Pizarra — la mesa de agentes">🧠</button>
+    <button class="sbtn" id="rb-informe" onclick="abrirPanel('informe')" title="📄 Informe">📄</button>
+  </nav>
 
-<!-- ── VISTA PRINCIPAL: el explorador de series, siempre de fondo ── -->
-<div id="viz-wrap">
-  <iframe id="viz-frame" style="display:none"></iframe>
-  <div class="viz-fallback" id="viz-fallback" style="display:none">
-    <div style="font-size:40px">🔎📈</div>
-    <h2>El explorador todavía no está disponible</h2>
-    <p>No encontré la carpeta del <b>Trabajo Final</b> (donde vive <code>notebooks/visualizador.html</code>),
-    o su servidor no pudo levantar. Configurala con la variable de entorno
-    <code>CUEVA_TRABAJO_FINAL</code> o en <code>cueva.local.toml</code>, y reiniciá el servidor.</p>
+  <!-- ── VISTA PRINCIPAL: el explorador de series, siempre de fondo ── -->
+  <div id="viz-wrap">
+    <iframe id="viz-frame" style="display:none"></iframe>
+    <div class="viz-fallback" id="viz-fallback" style="display:none">
+      <div style="font-size:40px">🔎📈</div>
+      <h2>El explorador todavía no está disponible</h2>
+      <p>No encontré la carpeta del <b>Trabajo Final</b> (donde vive <code>notebooks/visualizador.html</code>),
+      o su servidor no pudo levantar. Configurala con la variable de entorno
+      <code>CUEVA_TRABAJO_FINAL</code> o en <code>cueva.local.toml</code>, y reiniciá el servidor.</p>
+    </div>
   </div>
 </div>
 
@@ -220,8 +238,13 @@
 </div>
 
 <div class="drawer" id="dw-series">
-  <div class="dhead"><b>🗂️ Series de la investigación</b><button onclick="cerrarPanel()">✕</button></div>
+  <div class="dhead"><b>🗂️ Elegir series</b><button onclick="cerrarPanel()">✕</button></div>
   <div class="dbody">
+    <div class="cat-tabs" id="cat-tabs">
+      <button class="cat-tab activa" data-o="" onclick="filtrarCategoria('')">Todas</button>
+      <button class="cat-tab" data-o="Trabajo Final" onclick="filtrarCategoria('Trabajo Final')">Trabajo Final</button>
+      <button class="cat-tab" data-o="MATRIZ ARG" onclick="filtrarCategoria('MATRIZ ARG')">MATRIZ ARG</button>
+    </div>
     <input id="buscar" placeholder="Buscar serie…" oninput="buscarSeries()">
     <div class="serie-box" id="lista-series"></div>
     <div class="chips" id="chips"></div>
@@ -234,6 +257,15 @@
 <div class="drawer" id="dw-biblio">
   <div class="dhead"><b>📚 Bibliografía propia</b><button onclick="cerrarPanel()">✕</button></div>
   <div class="dbody">
+    <label>Subir a La Cueva-LM (PDF / md / txt, máx. 30 MB) — los agentes la citan marcando el origen</label>
+    <div class="row2">
+      <input type="file" id="biblio-archivo" accept=".pdf,.md,.txt">
+      <button class="btn sec sm" onclick="subirBiblio()" id="biblio-subir">⬆ Subir e indexar</button>
+    </div>
+    <div id="biblio-subida-estado" style="font-size:11.5px;color:var(--muted);margin-top:6px"></div>
+    <div id="biblio-archivos" style="margin-top:8px"></div>
+
+    <label style="margin-top:18px">Referencias (solo título, sin archivo)</label>
     <div class="chips" id="biblio-chips"></div>
     <div class="row2" style="margin-top:10px">
       <input id="biblio-nueva" placeholder="Título o referencia…">
@@ -261,7 +293,7 @@
       <div class="vacio" id="vacio">
         <div style="font-size:40px">🧭 📖 🔎 🗂️</div>
         <p>Acá se ve la pizarra: la conversación de la mesa y los hallazgos que va fijando.<br>
-        Definí la investigación (🎯 y 🗂️ en la cinta) y abrí la mesa,<br>
+        Definí la investigación (🎯 en la barra lateral) y elegí las series (arriba a la izquierda) y abrí la mesa,<br>
         o consultá a un agente puntual desde el círculo flotante.</p>
       </div>
     </div>
@@ -326,15 +358,6 @@ fetch('/api/v1/diag').then(r=>r.json()).then(d=>{
   }
 });
 
-// ── cinta ocultable ───────────────────────────────────────────────────
-function toggleRibbon(){
-  const oculta = $('#ribbon').classList.toggle('colapsada');
-  document.body.classList.toggle('sin-ribbon', oculta);
-  $('#ribbon-toggle').textContent = oculta ? '⌄' : '⌃';
-  localStorage.setItem('cueva_ribbon', oculta ? '0' : '1');
-}
-if(localStorage.getItem('cueva_ribbon')==='0') toggleRibbon();
-
 // ── drawers ───────────────────────────────────────────────────────────
 function abrirPanel(nombre){
   if(PANEL===nombre){ cerrarPanel(); return; }
@@ -345,6 +368,7 @@ function abrirPanel(nombre){
   const rb = $('#rb-'+nombre); if(rb) rb.classList.add('activa');
   if(nombre==='series') _buscar();
   if(nombre==='informe') renderInforme();
+  if(nombre==='biblio') cargarBiblioArchivos();
 }
 function cerrarPanel(){
   if(!PANEL) return;
@@ -430,12 +454,19 @@ async function guardarCambios(){
   if(opt) opt.textContent = PIZ.proyecto.titulo || '(sin título)';
 }
 
-// ── búsqueda de series ────────────────────────────────────────────────
+// ── búsqueda de series (con pestañas de categoría, símil buscador de símbolos) ──
 let tBuscar;
+let CATEGORIA = '';
+function filtrarCategoria(o){
+  CATEGORIA = o;
+  document.querySelectorAll('.cat-tab').forEach(b=>b.classList.toggle('activa', b.dataset.o===o));
+  _buscar();
+}
 function buscarSeries(){ clearTimeout(tBuscar); tBuscar=setTimeout(_buscar,200); }
 function _buscar(){
   const q=$('#buscar')?.value.trim() || '';
-  fetch('/api/v1/series?limite=60&filtro='+encodeURIComponent(q)).then(r=>r.json()).then(rows=>{
+  const url='/api/v1/series?limite=60&filtro='+encodeURIComponent(q)+'&origen='+encodeURIComponent(CATEGORIA);
+  fetch(url).then(r=>r.json()).then(rows=>{
     SERIES=rows;
     $('#lista-series').innerHTML = rows.map(s=>`
       <div class="serie" onclick="toggle('${s.id}')">
@@ -461,8 +492,22 @@ function renderChips(){
       ${escapeHtml(s.nombre.length>26?s.nombre.slice(0,26)+'…':s.nombre)}
       <b onclick="toggle('${id}')">✕</b></span>`;
   }).join('');
+  actualizarEtiquetaSeries();
 }
 function marcarDep(id){ DEP = (DEP===id?null:id); renderChips(); guardarCambiosDebounced(); }
+function actualizarEtiquetaSeries(){
+  const lbl = $('#symbol-label');
+  if(!lbl) return;
+  if(DEP){
+    const s = SERIES.find(x=>x.id===DEP);
+    const resto = SEL.length>1 ? ` +${SEL.length-1}` : '';
+    lbl.textContent = (s?s.nombre:DEP) + resto;
+  } else if(SEL.length){
+    lbl.textContent = `${SEL.length} serie${SEL.length===1?'':'s'} elegida${SEL.length===1?'':'s'}`;
+  } else {
+    lbl.textContent = 'Elegir series…';
+  }
+}
 
 // ── bibliografía propia ─────────────────────────────────────────────────
 function renderBiblio(){
@@ -477,6 +522,34 @@ function agregarBiblio(){
   renderBiblio(); guardarCambios();
 }
 function quitarBiblio(i){ BIBLIO.splice(i,1); renderBiblio(); guardarCambios(); }
+
+// subida de archivos a La Cueva-LM (colección "usuario", con provenance)
+async function cargarBiblioArchivos(){
+  try{
+    const lista = await fetch('/api/v1/biblioteca').then(r=>r.json());
+    $('#biblio-archivos').innerHTML = (lista||[]).map(a=>`
+      <div class="serie" style="cursor:default"><span>📄</span><span>${escapeHtml(a.archivo)}</span>
+      <small>${a.indexado?`✅ ${a.fragmentos} fragmentos`:'⏳ sin indexar'}</small></div>`).join('')
+      || '<span style="color:var(--muted);font-size:11.5px">Sin archivos subidos.</span>';
+  }catch(e){}
+}
+async function subirBiblio(){
+  const inp=$('#biblio-archivo'); const f=inp.files && inp.files[0];
+  if(!f){ $('#biblio-subida-estado').textContent='Elegí un archivo primero.'; return; }
+  const btn=$('#biblio-subir'); btn.disabled=true;
+  $('#biblio-subida-estado').textContent='⏳ Subiendo e indexando (un libro puede tardar un minuto)…';
+  try{
+    const fd=new FormData(); fd.append('archivo', f);
+    const r=await fetch('/api/v1/biblioteca',{method:'POST',body:fd});
+    const d=await r.json();
+    if(!r.ok) throw new Error(d.error?.mensaje||'error');
+    $('#biblio-subida-estado').textContent=`✅ ${escapeHtml(d.archivo)} indexado (${d.fragmentos} fragmentos).`;
+    if(!BIBLIO.includes(d.titulo)){ BIBLIO.push(d.titulo); renderBiblio(); guardarCambios(); }
+    inp.value=''; cargarBiblioArchivos();
+  }catch(e){
+    $('#biblio-subida-estado').textContent='⚠️ '+e.message;
+  }finally{ btn.disabled=false; }
+}
 
 // ── notas ─────────────────────────────────────────────────────────────
 function renderNotas(){

@@ -35,7 +35,7 @@ import sys
 import uuid
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI, HTTPException, Path, Query, Request
+from fastapi import Depends, FastAPI, HTTPException, Path, Query, Request, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 
 from cueva import config
@@ -181,6 +181,28 @@ def crear_app() -> FastAPI:
     @app.get("/api/v1/herramientas")
     def listar_herramientas():
         return JSONResponse(H.catalogo_herramientas())
+
+    # ── biblioteca del usuario (bibliografía propia subida) ────────────────
+    @app.get("/api/v1/biblioteca")
+    def api_listar_biblioteca():
+        from cueva.conocimiento import biblioteca
+
+        return JSONResponse(biblioteca.listar())
+
+    @app.post("/api/v1/biblioteca")
+    async def api_subir_biblioteca(archivo: UploadFile):
+        """Sube un PDF/md/txt propio y lo indexa en la colección 'usuario' (con provenance).
+
+        Nota: la indexación corre en el request (segundos para un paper; un libro con
+        embeddings puede tardar ~1 min). En fase 4 pasa a la cola de trabajos."""
+        from cueva.conocimiento import biblioteca
+
+        contenido = await archivo.read()
+        try:
+            resultado = biblioteca.guardar_e_indexar(archivo.filename or "", contenido)
+        except biblioteca.ArchivoInvalido as e:
+            raise HTTPException(422, str(e)) from e
+        return JSONResponse(resultado)
 
     @app.post("/api/v1/herramienta")
     def ejecutar_herramienta(body: HerramientaEjecutar, repo: RepositorioProyectos = Depends(get_repo)):

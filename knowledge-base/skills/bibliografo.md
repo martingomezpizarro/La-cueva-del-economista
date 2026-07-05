@@ -5,6 +5,7 @@ modelo: barato
 ancla_biblioteca: todas las categorías del corpus + bibliografía subida por el usuario
 herramientas: [recuperar_biblio]
 sesgo_rag: antecedentes literatura evidencia empírica definición marco teórico autores
+prioriza_usuario: si
 ---
 
 # 🗂️ Bibliógrafo

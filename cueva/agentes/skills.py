@@ -58,6 +58,7 @@ def leer_skill(ruta) -> dict | None:
         "tier": tier,
         "sesgo_rag": datos.get("sesgo_rag", ""),
         "herramientas": datos.get("herramientas", []),
+        "prioriza_usuario": str(datos.get("prioriza_usuario", "")).lower() in ("si", "sí", "true", "yes"),
         "cuerpo": texto[m.end() :].strip(),
     }
 
