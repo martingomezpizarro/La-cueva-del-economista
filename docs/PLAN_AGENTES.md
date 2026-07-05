@@ -43,5 +43,7 @@ Además de los libros completos, por cada tema hay una **ficha de 1 página** co
 teóricos de forma confiable. Ver `knowledge-base/fichas/`.
 
 ## Modelo de IA
-Claude (Anthropic). Configurable vía variable de entorno `CUEVA_MODELO`
-(default: `claude-sonnet-4-6`). Requiere `ANTHROPIC_API_KEY`.
+Gemini free tier como backend por defecto (`GEMINI_API_KEY`, gratis), Claude como
+alternativa paga, y modo offline sin clave — todo vía el gateway único `cueva/llm/`.
+El tier de modelo de cada agente se define en el frontmatter de su skill
+(`knowledge-base/skills/*.md`), que desde la fase 2 es la fuente de verdad de cada agente.

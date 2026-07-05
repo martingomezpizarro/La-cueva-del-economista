@@ -4,6 +4,7 @@ rol: 🔧 Especialista en transformaciones
 modelo: medio
 ancla_biblioteca: corpus/03_transformaciones · ficha transformaciones_y_frecuencia
 herramientas: [estacionariedad, transformar_serie, cambiar_frecuencia, desestacionalizar, deflactar]
+sesgo_rag: transformaciones logaritmo diferencias desestacionalizar deflactar frecuencia
 ---
 
 # 🔧 Especialista en transformaciones

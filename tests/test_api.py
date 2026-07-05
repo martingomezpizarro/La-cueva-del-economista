@@ -84,19 +84,35 @@ def test_chat_con_agente_offline(cliente):
     assert cliente.post(f"/api/v1/proyectos/{pid}/agente/nadie", json={"pregunta": "?"}).status_code == 404
 
 
-def test_investigar_streamea_hasta_el_fin(cliente):
-    """E2E: la mesa completa por SSE en modo offline, terminando con el evento fin."""
+def _leer_sse(respuesta):
+    """Parsea un stream SSE tipado → [(evento, datos)]."""
     import json as J
 
+    eventos, actual = [], "mensaje"
+    for linea in respuesta.iter_lines():
+        if linea.startswith("event: "):
+            actual = linea[7:].strip()
+        elif linea.startswith("data: "):
+            eventos.append((actual, J.loads(linea[6:])))
+    return eventos
+
+
+def test_investigar_streamea_hasta_el_fin(cliente):
+    """E2E: la mesa completa por SSE tipado en modo offline, terminando con el evento fin."""
     pid = _crear(cliente)["id"]
     cliente.patch(f"/api/v1/proyectos/{pid}", json={"pregunta": "¿?", "series": ["coint_x", "coint_y"]})
 
-    eventos = []
     with cliente.stream("POST", f"/api/v1/proyectos/{pid}/investigar") as r:
         assert r.status_code == 200
-        for linea in r.iter_lines():
-            if linea.startswith("data: "):
-                eventos.append(J.loads(linea[6:]))
-    assert eventos[-1].get("fin") is True
-    assert "uso_llm" in eventos[-1]
-    assert any(e.get("autor") == "herramientas" for e in eventos)
+        eventos = _leer_sse(r)
+
+    nombres = [n for n, _ in eventos]
+    assert nombres[-1] == "fin"
+    assert "uso_llm" in eventos[-1][1]
+    assert any(n == "mensaje" and d.get("autor") == "herramientas" for n, d in eventos)
+
+
+def test_investigar_pipeline_invalido(cliente):
+    pid = _crear(cliente)["id"]
+    r = cliente.post(f"/api/v1/proyectos/{pid}/investigar?pipeline=inventado")
+    assert r.status_code == 422

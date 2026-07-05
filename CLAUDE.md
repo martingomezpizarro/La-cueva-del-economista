@@ -7,7 +7,23 @@ Responder siempre en español.
 
 ## Estado (actualizado 2026-07-04)
 
-**Fases 0 y 1 del roadmap COMPLETAS** (rescate + red de seguridad):
+**Fases 0, 1 y 2 del roadmap COMPLETAS** (rescate + red de seguridad + agentes v2).
+
+Fase 2 (agentes v2):
+- **Los agentes se definen en `knowledge-base/skills/`** (frontmatter: `agente`, `rol`,
+  `modelo` [tier barato/medio/claude], `sesgo_rag`, `herramientas` [lista blanca]; cuerpo =
+  system prompt). Editar el markdown cambia al agente sin tocar Python. Plantel: 12 agentes
+  (4 profesores + líder + 7 especialistas). Cargador: `cueva/agentes/skills.py`.
+- **El guion es un dato** (`cueva/agentes/pipelines.py`): pipelines `clasica` (4 profesores)
+  y `equipo_completo` (10 especialistas). `grafo_cueva.py` + LangGraph RETIRADOS.
+- **Tool-use real (function calling de Gemini)**: el Metodólogo PIDE herramientas en la
+  modelización; lista blanca del skill ∩ REGISTRO, tope de 3 por turno, argumentos saneados,
+  cada ejecución queda como evidencia en la pizarra. Probado contra la API real.
+- **SSE tipado** (`event: mensaje|fin|error`) + **transcript JSONL** por sesión
+  (`data/proyectos/{id}.transcript.jsonl`) + uso de tokens visible en la UI al cerrar la mesa.
+- 62 tests en verde.
+
+Fases 0-1 (resumen):
 
 - **El `.git` vive en la raíz** (la anomalía del git anidado en `rag/` quedó resuelta).
   Todo el proyecto está versionado; corpus, `indice/` y `data/proyectos/` van ignorados.
@@ -24,8 +40,7 @@ Responder siempre en español.
   caché de series sin invalidar (B8), handoff no tipado (B9), y un `np.False_ is False`
   que hacía inalcanzable la conclusión "NO estacionaria" en ADF/KPSS.
 - Los 3 modos de agentes siguen: 1:1 (`Agente.responder_directo`), líder supervisor
-  (`Orquestador.revisar`), pipeline (`Orquestador.correr`). `grafo_cueva.py` (LangGraph)
-  sigue funcionando pero se retira en fase 2 (unificación por skills).
+  (`Orquestador.revisar`), pipeline (`Orquestador.correr`).
 
 ## Problema conocido (prioridad para fase 3)
 
@@ -35,14 +50,14 @@ scores casi idénticos (~0.87). Además **Enders NO está en el corpus** (verifi
 indexadas, sin Enders). Plan: evaluación con 20 preguntas doradas (`docs/PROPUESTA_ARQUITECTURA.md`
 §7) + conseguir Enders + decidir TF-IDF/embeddings con datos.
 
-## Pendientes en orden (fase 2 del roadmap aprobado)
+## Pendientes en orden (fase 3 del roadmap aprobado)
 
-1. Unificar motor de agentes: definiciones desde `knowledge-base/skills/` (frontmatter =
-   tier/sesgo/herramientas; cuerpo = system prompt); retirar `grafo_cueva.py` + LangGraph.
-2. Tool-use real (function calling de Gemini) para el Metodólogo, con lista blanca y límites.
-3. SSE tipado (eventos con nombre) + transcript JSONL por sesión.
-4. Después: fase 3 (conocimiento: ingesta incremental con manifiesto, PDFs del usuario,
-   eval de retrieval) y fase 4 (web multiusuario), según el roadmap.
+1. Evaluación de retrieval: `tests/eval_rag.jsonl` con ~20 preguntas doradas + script que
+   mida aciertos; decidir TF-IDF/embeddings con datos. Conseguir Enders para el corpus.
+2. Ingesta incremental con manifiesto (`indice/manifest.json`: hash por archivo).
+3. Subida de PDFs del usuario end-to-end (colección separada con provenance, checklist de
+   seguridad de docs/PROPUESTA_ARQUITECTURA.md §5.3).
+4. Después: fase 4 (web multiusuario: SQLite, job queue, auth, Docker), según el roadmap.
 
 ## Qué leer / qué no leer (economía de tokens)
 

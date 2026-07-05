@@ -510,11 +510,32 @@ async function abrirMesa(){
     buf+=dec.decode(value,{stream:true});
     let i;
     while((i=buf.indexOf('\n\n'))>=0){
-      const linea=buf.slice(0,i).trim(); buf=buf.slice(i+2);
-      if(!linea.startsWith('data:')) continue;
-      const m=JSON.parse(linea.slice(5).trim());
-      if(m.fin){ $('#typing')?.remove(); $('#go').disabled=false; break; }
-      pintar(m);
+      const bloque=buf.slice(0,i); buf=buf.slice(i+2);
+      // SSE tipado: cada bloque trae "event: <nombre>" + "data: <json>"
+      let evento='mensaje', datos=null;
+      for(const linea of bloque.split('\n')){
+        if(linea.startsWith('event:')) evento=linea.slice(6).trim();
+        else if(linea.startsWith('data:')) datos=JSON.parse(linea.slice(5).trim());
+      }
+      if(!datos) continue;
+      if(evento==='fin'){
+        $('#typing')?.remove(); $('#go').disabled=false;
+        if(datos.uso_llm && datos.uso_llm.llamadas!==undefined){
+          const u=datos.uso_llm;
+          const d=document.createElement('div'); d.className='fase';
+          d.textContent=`🔢 Uso de esta mesa: ${u.llamadas} llamadas · ${u.tokens_entrada}+${u.tokens_salida} tokens`;
+          $('#feed').appendChild(d);
+        }
+        break;
+      }
+      if(evento==='error'){
+        $('#typing')?.remove(); $('#go').disabled=false;
+        const d=document.createElement('div'); d.className='fase';
+        d.textContent='⚠️ La mesa se interrumpió: '+(datos.mensaje||'error desconocido');
+        $('#feed').appendChild(d);
+        break;
+      }
+      pintar(datos);
       const body=$('#dw-pizarra .dbody'); body.scrollTop = body.scrollHeight;
     }
   }

@@ -35,7 +35,6 @@ Extras opcionales (ver `pyproject.toml`):
 |---|---|
 | `.[embeddings]` | para RE-INGESTAR el corpus con recuperación semántica multilingüe (baja torch ~2GB) |
 | `.[claude]` | solo si se va a usar Anthropic como backend (de pago; el default es Gemini gratis) |
-| `.[grafo]` | solo para el pipeline LangGraph legado (`grafo_cueva.py`, se retira en fase 2) |
 
 ---
 

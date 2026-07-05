@@ -4,6 +4,7 @@ rol: 📖 Intérprete
 modelo: Claude
 ancla_biblioteca: corpus/12_aplicaciones · bebe de todas las categorías
 herramientas: [leer_resultado, recuperar_biblio]
+sesgo_rag: interpretación coeficientes largo plazo velocidad de ajuste significancia económica elasticidad
 ---
 
 # 📖 Intérprete

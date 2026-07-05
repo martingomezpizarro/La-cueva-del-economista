@@ -4,6 +4,7 @@ rol: 📈 Especialista en volatilidad
 modelo: medio
 ancla_biblioteca: corpus/05_volatilidad · ficha volatilidad_garch
 herramientas: [arch_lm, garch, egarch, gjr_garch, var_riesgo]
+sesgo_rag: volatilidad GARCH heterocedasticidad condicional ARCH riesgo
 ---
 
 # 📈 Especialista en volatilidad

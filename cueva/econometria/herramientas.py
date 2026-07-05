@@ -308,6 +308,86 @@ def catalogo_herramientas() -> list[dict]:
     return [{"nombre": k, "params": v["params"], "desc": v["desc"]} for k, v in REGISTRO.items()]
 
 
+# ──────────────────────────────────────────────────────────────────────────
+# Declaraciones para function calling (JSON Schema por herramienta)
+# ──────────────────────────────────────────────────────────────────────────
+_FREQ = {
+    "type": "string",
+    "enum": ["diaria", "mensual", "trimestral", "anual"],
+    "description": "Frecuencia de remuestreo",
+}
+_SID = {"type": "string", "description": "ID de la serie (del catálogo de series)"}
+_SIDS = {
+    "type": "array",
+    "items": {"type": "string"},
+    "minItems": 2,
+    "maxItems": 4,
+    "description": "IDs de las series (del catálogo)",
+}
+
+ESQUEMAS: dict[str, dict] = {
+    "describir": {"type": "object", "properties": {"sid": _SID, "freq": _FREQ}, "required": ["sid"]},
+    "estacionariedad": {
+        "type": "object",
+        "properties": {
+            "sid": _SID,
+            "freq": _FREQ,
+            "dif": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 2,
+                "description": "Cantidad de diferencias a aplicar antes del test",
+            },
+        },
+        "required": ["sid"],
+    },
+    "granger": {
+        "type": "object",
+        "properties": {
+            "sid_x": _SID,
+            "sid_y": _SID,
+            "freq": _FREQ,
+            "max_lags": {"type": "integer", "minimum": 1, "maximum": 12},
+        },
+        "required": ["sid_x", "sid_y"],
+    },
+    "ols": {
+        "type": "object",
+        "properties": {
+            "dep": _SID,
+            "indeps": {
+                "type": "array",
+                "items": {"type": "string"},
+                "minItems": 1,
+                "maxItems": 4,
+                "description": "IDs de las series explicativas",
+            },
+            "freq": _FREQ,
+        },
+        "required": ["dep", "indeps"],
+    },
+    "var": {"type": "object", "properties": {"sids": _SIDS, "freq": _FREQ}, "required": ["sids"]},
+    "vecm": {"type": "object", "properties": {"sids": _SIDS, "freq": _FREQ}, "required": ["sids"]},
+    "garch": {"type": "object", "properties": {"sid": _SID, "freq": _FREQ}, "required": ["sid"]},
+}
+
+
+def declaraciones_herramientas(nombres: list[str]) -> list[dict]:
+    """Declaraciones function-calling SOLO de las herramientas pedidas que existen y son
+    ejecutables (intersección con el REGISTRO = lista blanca efectiva)."""
+    out = []
+    for n in nombres:
+        if n in REGISTRO and n in ESQUEMAS:
+            out.append(
+                {
+                    "name": n,
+                    "description": REGISTRO[n]["desc"],
+                    "parameters_json_schema": ESQUEMAS[n],
+                }
+            )
+    return out
+
+
 def ejecutar(nombre: str, **kwargs) -> dict:
     """Ejecuta una herramienta estándar por nombre. Si no existe → modo asesor (híbrido)."""
     if nombre not in REGISTRO:

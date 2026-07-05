@@ -108,11 +108,24 @@ scripts/               mesa_cli.py · ingestar.py · preguntar.py · metodologo.
 tests/                 suite offline (series sintéticas; corre en CI sin claves)
 ```
 
+## Agentes v2 (fase 2, hecha 2026-07-04)
+
+- **Skills como fuente de verdad**: cada agente se define en `knowledge-base/skills/*.md`
+  (frontmatter: id, rol, tier de modelo, sesgo RAG, lista blanca de herramientas; cuerpo =
+  system prompt). 12 agentes: metodólogo, crítico, intérprete, bibliógrafo, líder + 7
+  especialistas. Editás el markdown, cambia el agente.
+- **Pipelines como dato** (`cueva/agentes/pipelines.py`): `clasica` (4 profesores, con
+  tool-use del Metodólogo en modelización) y `equipo_completo` (los 10 especialistas;
+  reemplaza al viejo `grafo_cueva.py`/LangGraph, retirado). Se elige por query param:
+  `POST /api/v1/proyectos/{id}/investigar?pipeline=equipo_completo`.
+- **Tool-use real**: en modelización el Metodólogo puede PEDIR herramientas (function
+  calling de Gemini) — solo las de su lista blanca, máx. 3 por turno, argumentos saneados;
+  cada ejecución queda publicada como evidencia en la pizarra.
+- **Auditabilidad**: SSE tipado (`event: mensaje|fin|error`), contador de tokens visible al
+  cerrar la mesa, y transcript JSONL por sesión en `data/proyectos/{id}.transcript.jsonl`.
+
 ## Próximos pasos (roadmap completo en docs/PROPUESTA_ARQUITECTURA.md)
 
-- **Fase 2 — agentes v2**: definiciones de agentes desde `knowledge-base/skills/`
-  (retira `grafo_cueva.py`/LangGraph), tool-use real (function calling) con lista blanca,
-  SSE tipado, transcript por sesión.
-- **Fase 3 — conocimiento**: ingesta incremental con manifiesto, subida de PDFs del usuario
-  (colección separada con provenance), evaluación de retrieval con preguntas doradas.
+- **Fase 3 — conocimiento**: evaluación de retrieval con preguntas doradas, ingesta
+  incremental con manifiesto, subida de PDFs del usuario (colección separada con provenance).
 - **Fase 4 — escala web**: SQLite tras el repositorio, job queue, auth, Docker + deploy.

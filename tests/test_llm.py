@@ -24,7 +24,7 @@ def test_backoff_reintenta_429(monkeypatch):
     monkeypatch.setenv("GEMINI_API_KEY", "clave-de-prueba")
     intentos = {"n": 0}
 
-    def falso_llamar(back, system, messages, max_tokens, temperatura):
+    def falso_llamar(back, system, messages, max_tokens, temperatura, **kwargs):
         intentos["n"] += 1
         if intentos["n"] < 3:
             raise RuntimeError("429 RESOURCE_EXHAUSTED: quota exceeded")

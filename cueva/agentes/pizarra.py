@@ -104,8 +104,10 @@ class Pizarra:
         return estudio
 
     def agregar_chat(self, agente_id: str, quien: str, texto: str) -> dict:
+        # la validación de que el agente exista es de la capa API (contra AGENTES);
+        # la pizarra acepta cualquier id para soportar agentes nuevos definidos por skills
         if agente_id not in self.chats_agentes:
-            raise KeyError(f"Agente desconocido: {agente_id}")
+            self.chats_agentes[agente_id] = []
         turno = {"quien": quien, "texto": texto, "ts": _ahora()}
         with self._lock:
             self.chats_agentes[agente_id].append(turno)

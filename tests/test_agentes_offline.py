@@ -94,6 +94,44 @@ def test_modo_lider_revisar(sin_llm, carpeta_series):
     assert mensajes and mensajes[0].autor == "lider"
 
 
+def test_pipeline_equipo_completo_offline(sin_llm, carpeta_series):
+    """El guion de 10 especialistas (ex grafo_cueva.py) corre como dato del orquestador."""
+    piz = investigar(_proyecto_cointegrado(), pipeline="equipo_completo")
+    autores = {m.autor for m in piz.mensajes}
+    assert {"lider", "curador_datos", "multivariados", "interprete"} <= autores
+    assert [h.fase for h in piz.hallazgos] == [
+        "encuadre",
+        "exploratorio",
+        "control",
+        "modelizacion",
+        "interpretacion",
+        "conclusiones",
+    ]
+
+
+def test_pipeline_desconocido():
+    import pytest
+
+    with pytest.raises(ValueError):
+        Orquestador(_proyecto_cointegrado(), pipeline="inventado")
+
+
+def test_transcript_de_la_mesa(sin_llm, carpeta_series):
+    """Cada sesión deja su transcript JSONL auditable (también en modo offline)."""
+    import json
+    import os
+    from pathlib import Path
+
+    orq = Orquestador(_proyecto_cointegrado())
+    for _ in orq.correr():
+        pass
+    ruta = Path(os.environ["CUEVA_DATA"]) / "proyectos" / f"{orq.piz.id}.transcript.jsonl"
+    assert ruta.exists()
+    lineas = [json.loads(x) for x in ruta.read_text(encoding="utf-8").splitlines()]
+    assert len(lineas) >= 10  # un evento por turno de agente + hallazgos
+    assert all("system" in ln and "respuesta" in ln for ln in lineas)
+
+
 def test_handoff_tipado(sin_llm, carpeta_series):
     """El handoff es un campo de primera clase del mensaje (bug B9)."""
     from cueva.agentes.agentes import _HANDOFF_RE

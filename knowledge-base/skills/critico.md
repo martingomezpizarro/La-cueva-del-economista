@@ -4,6 +4,7 @@ rol: 🔎 Crítico / referee
 modelo: Claude
 ancla_biblioteca: corpus/06_quiebres_nolineal + fichas/ · ficha diagnostico_errores_tipicos
 herramientas: [ljung_box, breusch_godfrey, arch_lm, jarque_bera, cusum, bai_perron, reset_ramsey]
+sesgo_rag: errores típicos regresión espuria raíz unitaria quiebre estructural autocorrelación diagnóstico residuos
 ---
 
 # 🔎 Crítico / referee

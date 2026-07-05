@@ -37,12 +37,27 @@ def ruta_indice() -> Path:
     return Path(os.environ.get("CUEVA_INDICE", ROOT / "indice"))
 
 
+def ruta_datos() -> Path:
+    """Carpeta de datos locales (proyectos guardados, transcripts). Override: CUEVA_DATA."""
+    return Path(os.environ.get("CUEVA_DATA", ROOT / "data"))
+
+
 def modelo_gemini() -> str:
     return os.environ.get("CUEVA_MODELO_GEMINI", "gemini-2.5-flash")
 
 
 def modelo_claude() -> str:
     return os.environ.get("CUEVA_MODELO", "claude-sonnet-4-6")
+
+
+def modelo_para_tier(tier: str) -> str:
+    """Modelo de Gemini según el tier del skill (cuida la cuota del free tier).
+
+    'barato' → flash-lite (agentes de trámite) · 'medio'/'claude' → flash (agentes de criterio).
+    El tier 'claude' solo usa Anthropic si es el backend activo (decisión de costos: Gemini)."""
+    if tier == "barato":
+        return os.environ.get("CUEVA_MODELO_BARATO", "gemini-2.5-flash-lite")
+    return modelo_gemini()
 
 
 def _primero_que_existe(candidatos) -> Path | None:

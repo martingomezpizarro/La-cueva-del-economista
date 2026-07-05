@@ -31,14 +31,6 @@ dependencies = [
 claude = ["anthropic>=0.40"]
 # Recuperación semántica multilingüe (baja torch ~2GB; necesaria para re-ingestar con embeddings)
 embeddings = ["sentence-transformers>=2.7"]
-# Pipeline LangGraph legado (grafo_cueva.py; se retira en fase 2)
-grafo = [
-    "langgraph>=1.2,<2",
-    "langgraph-cli[inmem]>=0.4.29",
-    "langchain-core>=1.4,<2",
-    "langchain-anthropic>=1.4,<2",
-    "langchain-google-genai>=4.2,<5",
-]
 # Herramientas de desarrollo (tests, lint, hooks)
 dev = [
     "pytest>=8",

@@ -4,6 +4,7 @@ rol: 👔 Líder / PI
 modelo: Claude
 ancla_biblioteca: corpus/12_aplicaciones · todas (visión transversal)
 herramientas: [leer_pizarra, convocar_especialista, fijar_hallazgo]
+sesgo_rag: visión transversal pregunta de investigación método candidato objetivos diseño
 ---
 
 # 👔 Líder / PI

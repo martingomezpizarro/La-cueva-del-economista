@@ -4,6 +4,7 @@ rol: 🔮 Especialista en pronóstico / ML
 modelo: medio
 ancla_biblioteca: corpus/07_pronostico + corpus/12_frontera_dl · ficha pronostico_ml_dl
 herramientas: [benchmark_naive, arima, ets, xgboost_ts, nbeats, foundation_model, diebold_mariano]
+sesgo_rag: pronóstico forecasting ARIMA machine learning evaluación fuera de muestra
 ---
 
 # 🔮 Especialista en pronóstico / ML

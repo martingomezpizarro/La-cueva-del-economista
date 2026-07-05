@@ -3,23 +3,26 @@
 Recorre las fases de una investigación (encuadre → exploratorio → control → modelización →
 interpretación → conclusiones). En cada fase:
   1. ejecuta las herramientas econométricas estándar de la fase (modo híbrido),
-  2. les da el turno a los agentes según un guion, pero respetando los HANDOFFS
-     (si un agente interpela a otro, ese otro responde) — así emerge la conversación,
+  2. da los turnos que indica el PIPELINE elegido (ver `pipelines.py`: el guion es un dato),
+     respetando los HANDOFFS (si un agente interpela a otro, ese otro responde),
   3. fija un hallazgo que sintetiza lo discutido.
 
-`correr()` es un GENERADOR: rinde cada Mensaje apenas se produce, para que la UI muestre la
-mesa conversando en vivo. Lleva un ContadorTokens por sesión (queda en pizarra.uso_llm).
+`correr()` es un GENERADOR: rinde cada Mensaje apenas se produce (incluidos los mensajes de
+herramientas que un agente pide vía function calling), para que la UI muestre la mesa en vivo.
+Cada sesión lleva un ContadorTokens (queda en pizarra.uso_llm) y un Transcript JSONL
+(data/proyectos/{id}.transcript.jsonl) que la hace auditable.
 """
 
 from __future__ import annotations
 
 from collections.abc import Iterator
 
-from cueva import llm
-from cueva.llm import ContadorTokens
+from cueva import config, llm
+from cueva.llm import ContadorTokens, Transcript
 
 from .agentes import AGENTES
 from .modelos import FASE_LABEL, FASES, Hallazgo, Mensaje, Proyecto
+from .pipelines import PIPELINES, turnos_de
 from .pizarra import Pizarra
 
 try:
@@ -27,16 +30,26 @@ try:
 except Exception:  # pragma: no cover
     H = None
 
-# Techo de llamadas al LLM por sesión de mesa (guion completo ≈ 13; margen para handoffs).
-# Al agotarse, los turnos restantes salen en modo offline y lo dicen (degradación visible).
-LIMITE_LLAMADAS_MESA = 30
+# Techo de llamadas al LLM por sesión de mesa (guion completo ≈ 13-18; margen para handoffs
+# y rondas de function calling). Al agotarse, los turnos restantes salen en modo offline.
+LIMITE_LLAMADAS_MESA = 40
 
 
 class Orquestador:
-    def __init__(self, proyecto: Proyecto, max_handoffs: int = 2, piz: Pizarra | None = None):
+    def __init__(
+        self,
+        proyecto: Proyecto,
+        max_handoffs: int = 2,
+        piz: Pizarra | None = None,
+        pipeline: str = "clasica",
+    ):
+        if pipeline not in PIPELINES:
+            raise ValueError(f"Pipeline desconocido: {pipeline} (hay: {', '.join(PIPELINES)})")
         self.piz = piz if piz is not None else Pizarra(proyecto)
         self.max_handoffs = max_handoffs
+        self.pipeline = pipeline
         self.contador = ContadorTokens(limite_llamadas=LIMITE_LLAMADAS_MESA)
+        self.transcript = Transcript(config.ruta_datos() / "proyectos" / f"{self.piz.id}.transcript.jsonl")
 
     # ── utilidades de publicación ─────────────────────────────────────────
     def _sistema(self, texto: str, fase: str = "general") -> Mensaje:
@@ -52,8 +65,7 @@ class Orquestador:
         for r in utiles:
             marca = "✅" if r.get("ok") else "⚠️"
             lineas.append(f"{marca} {r.get('resumen', '(sin resumen)')}")
-        # TODOS los resultados quedan en el mensaje (antes solo el primero → se perdía
-        # la prueba de cointegración y la mesa nunca elegía VECM; bug B1).
+        # TODOS los resultados quedan en el mensaje (bug B1: antes solo el primero).
         return self.piz.publicar(
             Mensaje(
                 autor="herramientas",
@@ -74,8 +86,10 @@ class Orquestador:
         consulta_rag=None,
         responde_a=None,
         profundidad=0,
+        permitir_herramientas=False,
     ) -> Iterator[Mensaje]:
         agente = AGENTES[agente_id]
+        antes = len(self.piz.mensajes)
         msg = agente.intervenir(
             self.piz,
             instruccion,
@@ -83,8 +97,11 @@ class Orquestador:
             consulta_rag=consulta_rag,
             responde_a=responde_a,
             contador=self.contador,
+            transcript=self.transcript,
+            permitir_herramientas=permitir_herramientas,
         )
-        yield msg
+        # rinde TODO lo publicado en el turno (incluye la evidencia de tool-use, si hubo)
+        yield from self.piz.mensajes[antes:]
         # resolver handoff (conversación encadenada, con límite de profundidad)
         if msg.handoff:
             destino = msg.handoff["destino"]
@@ -136,62 +153,6 @@ class Orquestador:
                 out.extend(m.herramientas)
         return out
 
-    # ── guion de agentes por fase ─────────────────────────────────────────
-    def _guion(self, fase: str) -> Iterator[Mensaje]:
-        if fase == "encuadre":
-            yield from self._turno(
-                "metodologo",
-                "Aterrizá la pregunta en un diseño econométrico: ¿qué familia de modelos es candidata "
-                "y por qué? Nombrá los 2-3 supuestos críticos a verificar antes de avanzar.",
-            )
-            yield from self._turno(
-                "bibliografo",
-                "¿Qué antecedentes o definiciones de la bibliografía respaldan o matizan el enfoque propuesto?",
-            )
-        elif fase == "exploratorio":
-            yield from self._turno(
-                "critico",
-                "Mirá la evidencia descriptiva: forma, escala, posibles huecos/outliers/estacionalidad. "
-                "¿Qué hay que tratar antes de testear o modelar?",
-                evidencia=self._ultima_evidencia(),
-            )
-        elif fase == "control":
-            yield from self._turno(
-                "critico",
-                "Leé los tests de estacionariedad y la prueba de cointegración. ¿Qué órdenes de integración hay? "
-                "¿Riesgo de regresión espuria? ¿Hace falta diferenciar o usar marco de cointegración?",
-                evidencia=self._ultima_evidencia(),
-            )
-            yield from self._turno(
-                "metodologo",
-                "Dado el control de series, fijá el método a estimar (en niveles, diferencias, VECM/ARDL) "
-                "y justificá el orden de los pasos.",
-            )
-        elif fase == "modelizacion":
-            yield from self._turno(
-                "metodologo",
-                "Comentá la estimación obtenida: ¿el modelo quedó bien especificado? ¿qué validar todavía?",
-                evidencia=self._ultima_evidencia(),
-            )
-        elif fase == "interpretacion":
-            yield from self._turno(
-                "interprete",
-                "Traducí los resultados a economía: signo, magnitud y significancia de lo relevante, "
-                "conectándolo con la pregunta y las hipótesis. Citá la bibliografía que respalda la lectura.",
-                evidencia=self._ultima_evidencia(),
-            )
-            yield from self._turno(
-                "critico",
-                "Auditá la interpretación: ¿la evidencia la sostiene o se está sobre-leyendo? "
-                "¿algún diagnóstico pendiente (autocorrelación, estabilidad, espuria) que la debilite?",
-            )
-        elif fase == "conclusiones":
-            yield from self._turno(
-                "interprete",
-                "Redactá una respuesta provisoria a la pregunta de investigación a partir de los hallazgos "
-                "fijados, separando lo que la evidencia sostiene de lo conjetural, y nombrando límites.",
-            )
-
     # ── modo 2: líder supervisor, a demanda (no forma parte de correr()) ───
     def revisar(self, disparador: str = "") -> Iterator[Mensaje]:
         """El Líder mira el estado actual del proyecto (a demanda, sin correr toda la mesa)
@@ -230,7 +191,9 @@ class Orquestador:
             f"Fase: {FASE_LABEL.get(fase, fase)}\n\n"
             f"Conversación:\n{self.piz.transcripcion(ultimos=6)}"
         )
-        r = llm.completar(sys, usuario, max_tokens=200, temperatura=0.2, contador=self.contador)
+        r = llm.completar(
+            sys, usuario, max_tokens=200, temperatura=0.2, contador=self.contador, transcript=self.transcript
+        )
         self.piz.fijar_hallazgo(Hallazgo(fase=fase, texto=r.texto, autor="orquestador"))
         return self._sistema(f"📌 Hallazgo fijado · {FASE_LABEL.get(fase, fase)}: {r.texto}", fase=fase)
 
@@ -239,7 +202,8 @@ class Orquestador:
         p = self.piz.proyecto
         yield self._sistema(
             f"Abrimos la mesa para «{p.titulo}». Pregunta: {p.pregunta or '(sin definir)'}. "
-            f"Series: {len(p.series)}. Modo IA: {llm.backend() or 'offline (sin API key)'}."
+            f"Series: {len(p.series)}. Pipeline: {self.pipeline}. "
+            f"Modo IA: {llm.backend() or 'offline (sin API key)'}."
         )
         for fase, label, desc in FASES:
             self.piz.avanzar_fase(fase)
@@ -248,7 +212,13 @@ class Orquestador:
             ev = self._evidencia(resultados, fase)
             if ev is not None:
                 yield ev
-            yield from self._guion(fase)
+            for turno in turnos_de(self.pipeline, fase):
+                yield from self._turno(
+                    turno["agente"],
+                    turno["tarea"],
+                    evidencia=self._ultima_evidencia() if turno.get("evidencia") else None,
+                    permitir_herramientas=bool(turno.get("herramientas")),
+                )
             yield self._fijar_hallazgo(fase)
             self.piz.uso_llm = self.contador.to_dict()
         yield self._sistema(
@@ -258,9 +228,9 @@ class Orquestador:
         self.piz.uso_llm = self.contador.to_dict()
 
 
-def investigar(proyecto: Proyecto) -> Pizarra:
+def investigar(proyecto: Proyecto, pipeline: str = "clasica") -> Pizarra:
     """Corre la mesa entera y devuelve la pizarra (versión no-streaming, para CLI/tests)."""
-    orq = Orquestador(proyecto)
+    orq = Orquestador(proyecto, pipeline=pipeline)
     for _ in orq.correr():
         pass
     return orq.piz

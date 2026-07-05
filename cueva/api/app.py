@@ -272,22 +272,34 @@ def crear_app() -> FastAPI:
         return JSONResponse(turno)
 
     @app.post("/api/v1/proyectos/{pid}/investigar")
-    def api_investigar(pid: str = PID, repo: RepositorioProyectos = Depends(get_repo)):
+    def api_investigar(
+        pid: str = PID,
+        pipeline: str = Query(default="clasica", max_length=40),
+        repo: RepositorioProyectos = Depends(get_repo),
+    ):
+        from cueva.agentes.pipelines import PIPELINES
+
+        if pipeline not in PIPELINES:
+            raise HTTPException(422, f"Pipeline desconocido: {pipeline} (hay: {', '.join(PIPELINES)})")
         piz = repo.obtener(pid)
         if getattr(piz, "_mesa_corriendo", False):
             raise HTTPException(409, "Ya hay una mesa corriendo sobre esta investigación.")
-        orq = Orquestador(piz.proyecto, piz=piz)
+        orq = Orquestador(piz.proyecto, piz=piz, pipeline=pipeline)
+
+        def _evento(nombre: str, datos: dict) -> str:
+            return f"event: {nombre}\ndata: " + json.dumps(datos, ensure_ascii=False) + "\n\n"
 
         def stream():
             piz._mesa_corriendo = True
             try:
                 for msg in orq.correr():
                     repo.guardar(piz)
-                    yield "data: " + json.dumps(msg.to_dict(), ensure_ascii=False) + "\n\n"
+                    yield _evento("mensaje", msg.to_dict())
                 repo.guardar(piz)
-                yield (
-                    "data: " + json.dumps({"fin": True, "uso_llm": piz.uso_llm}, ensure_ascii=False) + "\n\n"
-                )
+                yield _evento("fin", {"fin": True, "uso_llm": piz.uso_llm})
+            except Exception as e:  # el stream ya arrancó: no puede devolver 500, avisa por SSE
+                log.exception("mesa falló en %s", pid)
+                yield _evento("error", {"mensaje": str(e)})
             finally:
                 piz._mesa_corriendo = False
 

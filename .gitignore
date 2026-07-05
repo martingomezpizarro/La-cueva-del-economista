@@ -2,7 +2,7 @@
 .venv/
 __pycache__/
 *.pyc
-.langgraph_api/
+*.egg-info/
 .pytest_cache/
 .ruff_cache/
 

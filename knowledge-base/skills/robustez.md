@@ -4,6 +4,7 @@ rol: 🔬 Especialista en robustez / minería
 modelo: Claude
 ancla_biblioteca: corpus/09_robustez · ficha robustez_seleccion_modelos
 herramientas: [extreme_bounds, curva_especificacion, model_averaging, lasso_seleccion, ajuste_multiple]
+sesgo_rag: robustez selección de modelos especificación model averaging ajuste múltiple
 ---
 
 # 🔬 Especialista en robustez / minería de especificaciones

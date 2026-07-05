@@ -4,6 +4,7 @@ rol: 🧰 Curador de datos
 modelo: barato
 ancla_biblioteca: corpus/00_datos · ficha datos_y_medicion
 herramientas: [describir, catalogo_series, completar_ficha, chequear_procedencia]
+sesgo_rag: datos medición fuente procedencia calidad de la serie frecuencia huecos
 ---
 
 # 🧰 Curador de datos

@@ -4,6 +4,7 @@ rol: 🧪 Especialista en controles / causal
 modelo: Claude
 ancla_biblioteca: corpus/08_causal · ficha inferencia_causal_controles
 herramientas: [control_sintetico, did, iv, rdd, test_pre_tendencias]
+sesgo_rag: inferencia causal controles variables instrumentales DiD control sintético
 ---
 
 # 🧪 Especialista en controles / causal

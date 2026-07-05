@@ -4,6 +4,7 @@ rol: 📊 Especialista en multivariados
 modelo: Claude
 ancla_biblioteca: corpus/04_multivariados · ficha multivariados_cointegracion
 herramientas: [estacionariedad, johansen, vecm, var, svar, ardl, granger, irf]
+sesgo_rag: VAR VECM cointegración Johansen orden de integración estacionariedad
 ---
 
 # 📊 Especialista en multivariados

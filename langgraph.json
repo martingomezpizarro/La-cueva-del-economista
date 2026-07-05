@@ -1,8 +1,0 @@
-{
-  "dependencies": ["."],
-  "graphs": {
-    "cueva_demo": "./_studio_demo/grafo.py:grafo",
-    "equipo": "./grafo_cueva.py:grafo"
-  },
-  "env": ".env"
-}

@@ -65,6 +65,12 @@ def carpeta_series(tmp_path, monkeypatch):
     S.refrescar()
 
 
+@pytest.fixture(autouse=True)
+def datos_temporales(tmp_path, monkeypatch):
+    """Todo lo que la plataforma escribe (proyectos, transcripts) va a una carpeta temporal."""
+    monkeypatch.setenv("CUEVA_DATA", str(tmp_path / "data"))
+
+
 @pytest.fixture()
 def sin_llm(monkeypatch):
     """Garantiza modo offline: sin claves, el gateway responde maquetas deterministas."""
