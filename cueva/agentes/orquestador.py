@@ -31,8 +31,9 @@ except Exception:  # pragma: no cover
     H = None
 
 # Techo de llamadas al LLM por sesión de mesa (guion completo ≈ 13-18; margen para handoffs
-# y rondas de function calling). Al agotarse, los turnos restantes salen en modo offline.
-LIMITE_LLAMADAS_MESA = 40
+# y rondas de function calling: hasta 6 turnos con tool-use × 3 rondas extra cada uno).
+# Al agotarse, los turnos restantes salen en modo offline.
+LIMITE_LLAMADAS_MESA = 60
 
 
 class Orquestador:
@@ -143,6 +144,12 @@ class Orquestador:
                 res.append(H.ejecutar("var", sids=series[:4], freq=freq))
             elif len(series) == 1:
                 res.append(H.ejecutar("garch", sid=series[0], freq=freq))
+            # precedencia predictiva hacia la dependiente: evidencia base para el turno
+            # causal (antes se le pedía leer "Granger" y Granger jamás se corría)
+            dep = p.serie_dependiente or (series[0] if len(series) >= 2 else None)
+            if dep and len(series) >= 2:
+                for sx in [s for s in series if s != dep][:2]:
+                    res.append(H.ejecutar("granger", sid_x=sx, sid_y=dep, freq=freq))
         return [r for r in res if r]
 
     def evidencia_previa(self) -> list[dict]:

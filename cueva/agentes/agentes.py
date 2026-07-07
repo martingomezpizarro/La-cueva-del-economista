@@ -45,9 +45,15 @@ REGLAS ESTRICTAS (no negociables):
 5. Sé breve: 4-8 oraciones. Andá al punto que aporta valor en ESTA fase.
 6. Si necesitás algo de otro agente de la mesa, terminá con una línea:
    HANDOFF: <id_agente> :: <tu pregunta concreta>
-   (ids disponibles: metodologo, critico, interprete, bibliografo)
+   (ids disponibles: {ids_handoff})
 7. Distinguí lo que la bibliografía afirma de tus inferencias. No des falsa certeza.
 """
+
+
+def _ids_handoff(excepto: str) -> str:
+    """Ids de agentes a los que se puede dirigir un HANDOFF (todo el plantel menos uno mismo).
+    Antes estaba cableado a los 4 profesores clásicos y desinformaba a los especialistas."""
+    return ", ".join(sorted(a for a in AGENTES if a != excepto))
 
 
 @dataclass
@@ -72,7 +78,7 @@ class Agente:
                 f"Sos {self.rol}, un agente de la plataforma 'La Cueva del Economista'.\n"
                 f"Tu misión: {self.mision}"
             )
-        return f"{identidad}\n\n{REGLAS}"
+        return f"{identidad}\n\n{REGLAS.format(ids_handoff=_ids_handoff(self.id))}"
 
     def _modelo(self) -> str | None:
         """Modelo según el tier del skill (solo aplica al backend Gemini)."""

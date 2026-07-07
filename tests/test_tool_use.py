@@ -83,6 +83,36 @@ def test_tope_de_herramientas(monkeypatch):
     assert r.estado == "ok" and r.texto
 
 
+def test_backend_sin_tool_use_degrada_visible(monkeypatch):
+    """Si el turno PEDÍA herramientas y el backend activo no soporta function calling
+    (Claude), la respuesta sale marcada `sin_herramientas`: la mesa ve la degradación,
+    no un "ok" que esconde que no hubo evidencia."""
+    for var in ("GEMINI_API_KEY", "GOOGLE_API_KEY"):
+        monkeypatch.delenv(var, raising=False)
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "clave-de-prueba")
+    monkeypatch.setattr(
+        G, "_llamar", lambda *a, **k: G.Respuesta(texto="respuesta sin evidencia", backend="claude")
+    )
+
+    r, resultados = conversar_con_herramientas(
+        "sys",
+        [{"role": "user", "content": "x"}],
+        declaraciones=DECL,
+        ejecutar_fn=lambda *a: {"ok": True},
+    )
+    assert r.estado == "sin_herramientas"
+    assert resultados == []
+
+    # sin declaraciones no hay nada que degradar: conversación normal, estado ok
+    r, _ = conversar_con_herramientas(
+        "sys",
+        [{"role": "user", "content": "x"}],
+        declaraciones=[],
+        ejecutar_fn=lambda *a: {"ok": True},
+    )
+    assert r.estado == "ok"
+
+
 def test_offline_no_usa_herramientas(sin_llm):
     r, resultados = conversar_con_herramientas(
         "sys",

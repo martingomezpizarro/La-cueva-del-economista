@@ -17,6 +17,8 @@ Function calling (`conversar_con_herramientas`, solo Gemini):
   bucle pedido→ejecución→respuesta con un TOPE de ejecuciones y devuelve además la lista
   de resultados (para dejarlos como evidencia auditable en la pizarra). La decisión de QUÉ
   herramientas se ofrecen (lista blanca) es del llamador, nunca del modelo.
+  Si el backend activo NO soporta tool-use (Claude) y el turno lo pedía, la respuesta sale
+  con `estado="sin_herramientas"`: la degradación es visible, no silenciosa.
 """
 
 from __future__ import annotations
@@ -47,7 +49,7 @@ class Respuesta:
     tokens_entrada: int = 0
     tokens_salida: int = 0
     intentos: int = 1
-    estado: str = "ok"  # "ok" | "offline" | "error" | "presupuesto"
+    estado: str = "ok"  # "ok" | "offline" | "error" | "presupuesto" | "sin_herramientas"
     llamadas_funcion: list = field(default_factory=list)  # [{"name", "args"}] pedidas por el modelo
     _partes_crudas: list = field(default_factory=list)  # partes SDK del turno del modelo (uso interno)
 
@@ -162,6 +164,11 @@ def conversar_con_herramientas(
             modelo=modelo,
             transcript=transcript,
         )
+        if declaraciones and r.estado == "ok":
+            # El turno PEDÍA tool-use y el backend activo no lo soporta: la degradación
+            # tiene que ser visible en la mesa, no un "ok" que esconde que no hubo evidencia.
+            log.warning("turno con herramientas degradado a conversación (backend=%s)", back)
+            r.estado = "sin_herramientas"
         return r, []
 
     from google.genai import types

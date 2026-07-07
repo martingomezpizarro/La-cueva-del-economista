@@ -3,6 +3,7 @@
 from cueva.agentes.agentes import AGENTES
 from cueva.agentes.pipelines import PIPELINES
 from cueva.econometria import declaraciones_herramientas
+from cueva.econometria.herramientas import REGISTRO
 
 
 def test_plantel_completo_desde_skills():
@@ -60,6 +61,37 @@ def test_ejecutar_segura_respeta_lista_blanca(carpeta_series):
     r = met._ejecutar_segura("estacionariedad", {"sid": "caminata", "dif": 1.0})
     assert r["ok"]
     assert r["args"]["dif"] == 1
+
+
+def test_herramientas_de_skills_existen_en_registro():
+    """Regla de consistencia (perfeccionismo anti-alucinación): la lista blanca de CADA skill
+    debe ser subconjunto del REGISTRO ejecutable. Un skill que promete herramientas
+    inexistentes lleva al agente a inventar la evidencia que cree poder pedir. Lo que el
+    agente sabe pero la plataforma no ejecuta va en el cuerpo como 'asesorás sin ejecutar'."""
+    for aid, agente in AGENTES.items():
+        fantasmas = set(agente.herramientas) - set(REGISTRO)
+        assert not fantasmas, f"skill '{aid}' declara herramientas inexistentes: {sorted(fantasmas)}"
+
+
+def test_turnos_con_tool_use_tienen_agente_equipado():
+    """Un turno con `herramientas: True` solo tiene sentido si el agente puede ejecutar algo."""
+    for nombre, turnos in PIPELINES.items():
+        for t in turnos:
+            if t.get("herramientas"):
+                ejecutables = set(AGENTES[t["agente"]].herramientas) & set(REGISTRO)
+                assert ejecutables, (
+                    f"{nombre}/{t['fase']}: turno con tool-use pero '{t['agente']}' "
+                    f"no tiene herramientas ejecutables"
+                )
+
+
+def test_handoff_ids_dinamicos_en_el_prompt():
+    """Las REGLAS ofrecen TODO el plantel como destino de handoff (menos uno mismo):
+    antes estaban cableados los 4 profesores clásicos y desinformaban a los especialistas."""
+    sp = AGENTES["robustez"].system_prompt()
+    linea_ids = sp.split("ids disponibles:")[1].split(")")[0]
+    assert "multivariados" in linea_ids and "lider" in linea_ids and "critico" in linea_ids
+    assert "robustez" not in linea_ids  # nadie se hace handoff a sí mismo
 
 
 def test_pipelines_referencian_agentes_existentes():

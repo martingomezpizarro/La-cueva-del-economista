@@ -43,3 +43,45 @@ def test_cache_detecta_archivos_nuevos(carpeta_series):
 
 def test_listar_filtra(carpeta_series):
     assert [s["id"] for s in S.listar(filtro="coint")] == ["coint_x", "coint_y"]
+
+
+# ── Catálogo curado (catalogo.json). No tocan disco de datos: leen el JSON del paquete. ──
+
+
+def test_catalogo_curado_integridad():
+    """El catálogo curado (fuente única) parsea, cubre las 9 familias y tiene ids únicos."""
+    hojas = S._cargar_definicion_curada()
+    assert len(hojas) > 500  # ~553 hojas migradas del visualizador
+    ids = [h["id"] for h in hojas]
+    assert len(ids) == len(set(ids)), "ids duplicados en catalogo.json"
+    for h in hojas:
+        assert h["grupo"], h  # toda hoja cuelga de una familia (el subgrupo puede faltar)
+        assert h["fuentes"], h  # y tiene al menos una fuente
+    # salvo las dummies (items a nivel familia), el resto cuelga de un subgrupo
+    sin_sub = [h["id"] for h in hojas if not h["subgrupo"]]
+    assert all(h["grupo"] == "Dummies y Variables Estructurales" for h in hojas if not h["subgrupo"]), sin_sub
+    familias = {h["grupo"] for h in hojas}
+    assert len(familias) == 9
+    assert "Sector Externo" in familias and "Deuda y Riesgo Soberano" in familias
+
+
+def test_fuente_para_freq_elige_la_mas_cercana():
+    """Con varias fuentes, cargar elige la de frecuencia más próxima a la pedida."""
+    info = S.SerieInfo(
+        id="x",
+        nombre="X",
+        origen="Trabajo Final",
+        archivo="m.csv",
+        col_fecha="fecha",
+        col_valor="y",
+        n=10,
+        desde="",
+        hasta="",
+        fuentes=[
+            {"freq": "M", "path": "mensual.csv", "dateCol": "fecha", "valCol": "y"},
+            {"freq": "Q", "path": "trim.csv", "dateCol": "fecha", "valCol": "y"},
+        ],
+    )
+    assert S._fuente_para_freq(info, "mensual")["path"] == "mensual.csv"
+    assert S._fuente_para_freq(info, "trimestral")["path"] == "trim.csv"
+    assert S._fuente_para_freq(info, "anual")["path"] == "trim.csv"  # Q es la más cercana a A

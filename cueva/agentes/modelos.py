@@ -76,7 +76,7 @@ class Mensaje:
     handoff: dict | None = None  # {"destino": id, "pregunta": str} si este turno interpela a otro
     citas: list[str] = field(default_factory=list)  # fuentes de bibliografía citadas
     herramientas: list[dict] = field(default_factory=list)  # resultados econométricos del turno
-    estado: str = "ok"  # ok | offline | error | presupuesto
+    estado: str = "ok"  # ok | offline | error | presupuesto | sin_herramientas
     id: str = field(default_factory=_id)
     ts: float = field(default_factory=_ahora)
 
@@ -112,8 +112,22 @@ class Hallazgo:
         return asdict(self)
 
 
-# IDs canónicos de los agentes de la mesa (los chats 1:1 se indexan por esto)
-AGENTES_IDS = ["metodologo", "critico", "interprete", "bibliografo", "lider"]
+# IDs canónicos de los agentes de la mesa (los chats 1:1 se indexan por esto):
+# los 4 profesores clásicos + líder, y los 7 especialistas de knowledge-base/skills/
+AGENTES_IDS = [
+    "metodologo",
+    "critico",
+    "interprete",
+    "bibliografo",
+    "lider",
+    "curador_datos",
+    "transformaciones",
+    "multivariados",
+    "volatilidad",
+    "pronostico_ml",
+    "controles_causal",
+    "robustez",
+]
 
 # Fases canónicas del pipeline de investigación
 FASES = [

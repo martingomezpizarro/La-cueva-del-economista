@@ -4,9 +4,14 @@ Un pipeline es una lista de turnos: en qué fase habla qué agente, con qué tar
 recibe la evidencia econométrica de la fase y si puede PEDIR herramientas (function
 calling). Editar/agregar un guion no requiere tocar el orquestador.
 
-- "clasica": la mesa de 4 profesores + Metodólogo con tool-use en modelización.
+- "clasica": la mesa de 4 profesores; tool-use del Metodólogo (modelización) y del
+  Crítico (auditoría de la interpretación).
 - "equipo_completo": los 10 especialistas de knowledge-base/skills/ (reemplaza al viejo
-  pipeline LangGraph de grafo_cueva.py, retirado en fase 2).
+  pipeline LangGraph de grafo_cueva.py, retirado en fase 2); tool-use en los turnos de
+  multivariados, volatilidad, controles_causal y robustez.
+
+Regla de consistencia (la vigila un test): un turno con `herramientas: True` solo tiene
+sentido si el agente declara en su skill herramientas que EXISTEN en el REGISTRO.
 """
 
 from __future__ import annotations
@@ -63,8 +68,11 @@ PIPELINES: dict[str, list[dict]] = {
         {
             "fase": "interpretacion",
             "agente": "critico",
+            "evidencia": True,
+            "herramientas": True,
             "tarea": "Auditá la interpretación: ¿la evidencia la sostiene o se está sobre-leyendo? "
-            "¿algún diagnóstico pendiente (autocorrelación, estabilidad, espuria) que la debilite?",
+            "Si falta un diagnóstico (autocorrelación, estabilidad, espuria), PEDILO con tus "
+            "herramientas antes de dar el veredicto.",
         },
         {
             "fase": "conclusiones",
@@ -95,18 +103,23 @@ PIPELINES: dict[str, list[dict]] = {
             "fase": "control",
             "agente": "multivariados",
             "evidencia": True,
-            "tarea": "Con los tests de estacionariedad y Johansen, decidí el modelo (niveles/diferencias/VECM) y justificá.",
+            "herramientas": True,
+            "tarea": "Con los tests de estacionariedad y Johansen, decidí el modelo (niveles/diferencias/VECM) y justificá. "
+            "Si te falta un test (otra serie, otra diferencia), PEDILO con tus herramientas.",
         },
         {
             "fase": "control",
             "agente": "critico",
+            "evidencia": True,
             "tarea": "Auditá lo dicho hasta acá: buscá raíz unitaria ignorada, espuria, quiebres o autocorrelación, y proponé cómo mitigar.",
         },
         {
             "fase": "modelizacion",
             "agente": "volatilidad",
             "evidencia": True,
-            "tarea": "Evaluá si hay heterocedasticidad/volatilidad condicional relevante (GARCH) en la dependiente y qué implica.",
+            "herramientas": True,
+            "tarea": "Evaluá si hay heterocedasticidad/volatilidad condicional relevante en la dependiente: "
+            "PEDÍ arch_lm para testear efectos ARCH y, solo si los hay, un GARCH.",
         },
         {
             "fase": "modelizacion",
@@ -117,13 +130,17 @@ PIPELINES: dict[str, list[dict]] = {
             "fase": "modelizacion",
             "agente": "controles_causal",
             "evidencia": True,
-            "tarea": "Con Granger y el marco causal, distinguí precedencia predictiva de causalidad y advertí qué controles harían falta.",
+            "herramientas": True,
+            "tarea": "Con Granger y el marco causal, distinguí precedencia predictiva de causalidad y advertí qué controles "
+            "harían falta. Si falta el test de Granger de algún par relevante, PEDILO.",
         },
         {
             "fase": "modelizacion",
             "agente": "robustez",
             "evidencia": True,
-            "tarea": "Revisá la robustez de los resultados (especificaciones alternativas, sensibilidad, ajuste múltiple) y señalá fragilidades.",
+            "herramientas": True,
+            "tarea": "Revisá la robustez de los resultados: probá al menos UNA especificación alternativa con tus "
+            "herramientas (ols/diagnosticos) y señalá fragilidades y riesgo de ajuste múltiple.",
         },
         {
             "fase": "interpretacion",

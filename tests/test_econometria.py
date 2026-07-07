@@ -45,6 +45,41 @@ def test_describir(carpeta_series):
     assert r["stats"]["n"] > 0
 
 
+def test_diagnosticos_limpios_dan_verde(carpeta_series):
+    """coint_y = 2 + 0.8·coint_x + ruido iid POR CONSTRUCCIÓN → la batería no debe ver nada."""
+    r = ejecutar("diagnosticos", dep="coint_y", indeps=["coint_x"])
+    assert r["ok"]
+    assert r["semaforo"] == "verde"
+    assert r["banderas"] == []
+    assert set(r["pvalores"]) == {
+        "autocorrelación (Ljung-Box)",
+        "autocorrelación (Breusch-Godfrey)",
+        "heterocedasticidad (ARCH-LM)",
+        "no normalidad (Jarque-Bera)",
+        "especificación (RESET Ramsey)",
+        "inestabilidad (CUSUM-OLS)",
+    }
+
+
+def test_diagnosticos_cazan_la_espuria(carpeta_series):
+    """caminata ~ caminata2 son random walks INDEPENDIENTES: los residuos quedan I(1) y la
+    batería tiene que gritar autocorrelación (el semáforo del Crítico en rojo)."""
+    r = ejecutar("diagnosticos", dep="caminata", indeps=["caminata2"])
+    assert r["ok"]
+    assert r["semaforo"] == "rojo"
+    assert "autocorrelación (Ljung-Box)" in r["banderas"]
+    assert "autocorrelación (Breusch-Godfrey)" in r["banderas"]
+
+
+def test_arch_lm_sin_efectos_arch(carpeta_series):
+    """Los incrementos de la caminata son homocedásticos por construcción → sin efectos ARCH
+    (la evidencia que le dice al especialista en volatilidad que un GARCH NO se justifica)."""
+    r = ejecutar("arch_lm", sid="caminata")
+    assert r["ok"]
+    assert r["hay_arch"] is False
+    assert r["p_valor"] > 0.05
+
+
 def test_herramienta_desconocida_es_modo_asesor():
     r = ejecutar("magia_negra")
     assert not r["ok"]

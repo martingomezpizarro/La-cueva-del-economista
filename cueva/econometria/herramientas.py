@@ -14,9 +14,12 @@ instalación (no rompe la plataforma).
 
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 from cueva.datos import series as S
+
+log = logging.getLogger("cueva.econometria")
 
 
 def _necesita(modulo: str) -> dict:
@@ -126,7 +129,9 @@ def granger(sid_x: str, sid_y: str, freq: str = "mensual", max_lags: int = 6) ->
         res = grangercausalitytests(d[[sid_y, sid_x]].diff().dropna(), maxlag=max_lags, verbose=False)
     except Exception as e:
         return {"ok": False, "herramienta": "granger", "resumen": f"Falló el test: {e}"}
-    pvals = {lag: float(r[0]["ssr_ftest"][1]) for lag, r in res.items()}
+    # int() nativo: statsmodels devuelve claves numpy.int64 y json.dumps no las acepta
+    # (rompía la persistencia de la pizarra la primera vez que la mesa corrió granger)
+    pvals = {int(lag): float(r[0]["ssr_ftest"][1]) for lag, r in res.items()}
     mejor = min(pvals, key=pvals.get)
     p = pvals[mejor]
     concl = (
@@ -283,6 +288,104 @@ def garch(sid: str, freq: str = "mensual", p: int = 1, q: int = 1) -> dict:
 
 
 # ──────────────────────────────────────────────────────────────────────────
+# Diagnósticos de especificación (la batería del Crítico, sobre residuos OLS)
+# ──────────────────────────────────────────────────────────────────────────
+def diagnosticos(dep: str, indeps: list[str], freq: str = "mensual") -> dict:
+    """Estima OLS de dep ~ indeps y corre la batería de diagnósticos sobre los residuos:
+    Ljung-Box y Breusch-Godfrey (autocorrelación), ARCH-LM (heterocedasticidad condicional),
+    Jarque-Bera (normalidad), RESET de Ramsey (especificación) y CUSUM (estabilidad).
+    Devuelve un semáforo: verde (sin banderas), amarillo (1-2), rojo (3+)."""
+    try:
+        import statsmodels.api as sm
+        from statsmodels.stats.diagnostic import (
+            acorr_breusch_godfrey,
+            acorr_ljungbox,
+            breaks_cusumolsresid,
+            het_arch,
+            linear_reset,
+        )
+        from statsmodels.stats.stattools import durbin_watson, jarque_bera
+    except Exception:
+        return {**_necesita("statsmodels"), "herramienta": "diagnosticos"}
+    df = S.panel([dep] + list(indeps), freq=freq).dropna()
+    if df.shape[1] < 2 or len(df) < len(indeps) + 15:
+        return {"ok": False, "herramienta": "diagnosticos", "resumen": "Datos insuficientes para diagnosticar."}
+    y = df[dep]
+    X = sm.add_constant(df[list(indeps)])
+    m = sm.OLS(y, X).fit()  # los tests clásicos se definen sobre los residuos OLS (sin HAC)
+    resid = m.resid
+    nlags = max(1, min(12, len(resid) // 10))
+    try:
+        pvals = {
+            "autocorrelación (Ljung-Box)": float(
+                acorr_ljungbox(resid, lags=[nlags], return_df=True)["lb_pvalue"].iloc[0]
+            ),
+            "autocorrelación (Breusch-Godfrey)": float(acorr_breusch_godfrey(m, nlags=nlags)[1]),
+            "heterocedasticidad (ARCH-LM)": float(het_arch(resid, nlags=nlags)[1]),
+            "no normalidad (Jarque-Bera)": float(jarque_bera(resid)[1]),
+            "especificación (RESET Ramsey)": float(linear_reset(m, power=2, use_f=True).pvalue),
+            "inestabilidad (CUSUM-OLS)": float(breaks_cusumolsresid(resid, ddof=X.shape[1])[1]),
+        }
+    except Exception as e:
+        return {"ok": False, "herramienta": "diagnosticos", "resumen": f"Falló la batería: {e}"}
+    banderas = [nombre for nombre, p in pvals.items() if p < 0.05]
+    semaforo = "verde" if not banderas else ("amarillo" if len(banderas) <= 2 else "rojo")
+    detalle = " · ".join(f"{n}: p={p:.3f}" for n, p in pvals.items())
+    return {
+        "ok": True,
+        "herramienta": "diagnosticos",
+        "args": {"dep": dep, "indeps": list(indeps), "freq": freq},
+        "resumen": (
+            f"Diagnósticos sobre residuos de OLS {dep} ~ {', '.join(indeps)} "
+            f"(DW={durbin_watson(resid):.2f}): {detalle}. "
+            f"SEMÁFORO: {semaforo.upper()}"
+            + (f" — banderas: {'; '.join(banderas)}." if banderas else " — sin banderas al 5%.")
+        ),
+        "pvalores": {n: round(p, 4) for n, p in pvals.items()},
+        "banderas": banderas,
+        "semaforo": semaforo,
+    }
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# ARCH-LM sobre retornos (¿se justifica modelar la varianza?)
+# ──────────────────────────────────────────────────────────────────────────
+def arch_lm(sid: str, freq: str = "mensual", lags: int = 12) -> dict:
+    """Test ARCH-LM de Engle sobre los retornos de una serie: si hay efectos ARCH,
+    un modelo de volatilidad condicional (GARCH) se justifica; si no, no."""
+    try:
+        from statsmodels.stats.diagnostic import het_arch
+    except Exception:
+        return {**_necesita("statsmodels"), "herramienta": "arch_lm"}
+    try:
+        s = S.cargar(sid, freq=freq)
+    except Exception as e:
+        return {"ok": False, "herramienta": "arch_lm", "resumen": f"No pude cargar {sid}: {e}"}
+    ret = s.pct_change().dropna() * 100
+    if len(ret) < 30:
+        return {"ok": False, "herramienta": "arch_lm", "resumen": f"Pocos retornos en {sid} (n={len(ret)})."}
+    ret = ret - ret.mean()
+    nlags = max(1, min(int(lags), len(ret) // 10))
+    stat, p = het_arch(ret, nlags=nlags)[:2]
+    hay_arch = bool(p < 0.05)
+    return {
+        "ok": True,
+        "herramienta": "arch_lm",
+        "args": {"sid": sid, "freq": freq, "lags": nlags},
+        "resumen": (
+            f"ARCH-LM sobre retornos de {sid} ({nlags} rezagos): LM={float(stat):.2f}, p={float(p):.3f} → "
+            + (
+                "HAY efectos ARCH: modelar la varianza (GARCH) se justifica."
+                if hay_arch
+                else "sin evidencia de efectos ARCH: un GARCH no se justifica."
+            )
+        ),
+        "p_valor": float(p),
+        "hay_arch": hay_arch,
+    }
+
+
+# ──────────────────────────────────────────────────────────────────────────
 # Registro de herramientas (lo que los agentes pueden ver y pedir)
 # ──────────────────────────────────────────────────────────────────────────
 REGISTRO: dict[str, dict[str, Any]] = {
@@ -301,6 +404,17 @@ REGISTRO: dict[str, dict[str, Any]] = {
     "var": {"fn": var, "params": ["sids[]"], "desc": "Vector Autorregresivo (en diferencias)."},
     "vecm": {"fn": vecm, "params": ["sids[]"], "desc": "Cointegración de Johansen + VECM (largo plazo)."},
     "garch": {"fn": garch, "params": ["sid"], "desc": "Volatilidad condicional GARCH sobre retornos."},
+    "diagnosticos": {
+        "fn": diagnosticos,
+        "params": ["dep", "indeps[]"],
+        "desc": "Batería de diagnósticos sobre residuos OLS: Ljung-Box, Breusch-Godfrey, "
+        "ARCH-LM, Jarque-Bera, RESET, CUSUM. Devuelve semáforo verde/amarillo/rojo.",
+    },
+    "arch_lm": {
+        "fn": arch_lm,
+        "params": ["sid", "lags?"],
+        "desc": "Test ARCH-LM de Engle sobre retornos: ¿se justifica un GARCH?",
+    },
 }
 
 
@@ -369,12 +483,38 @@ ESQUEMAS: dict[str, dict] = {
     "var": {"type": "object", "properties": {"sids": _SIDS, "freq": _FREQ}, "required": ["sids"]},
     "vecm": {"type": "object", "properties": {"sids": _SIDS, "freq": _FREQ}, "required": ["sids"]},
     "garch": {"type": "object", "properties": {"sid": _SID, "freq": _FREQ}, "required": ["sid"]},
+    "diagnosticos": {
+        "type": "object",
+        "properties": {
+            "dep": _SID,
+            "indeps": {
+                "type": "array",
+                "items": {"type": "string"},
+                "minItems": 1,
+                "maxItems": 4,
+                "description": "IDs de las series explicativas",
+            },
+            "freq": _FREQ,
+        },
+        "required": ["dep", "indeps"],
+    },
+    "arch_lm": {
+        "type": "object",
+        "properties": {
+            "sid": _SID,
+            "freq": _FREQ,
+            "lags": {"type": "integer", "minimum": 1, "maximum": 24, "description": "Rezagos del test"},
+        },
+        "required": ["sid"],
+    },
 }
 
 
 def declaraciones_herramientas(nombres: list[str]) -> list[dict]:
     """Declaraciones function-calling SOLO de las herramientas pedidas que existen y son
-    ejecutables (intersección con el REGISTRO = lista blanca efectiva)."""
+    ejecutables (intersección con el REGISTRO = lista blanca efectiva). Lo que se descarta
+    se LOGUEA: un skill que promete herramientas inexistentes es un bug de configuración,
+    no algo que deba fallar en silencio."""
     out = []
     for n in nombres:
         if n in REGISTRO and n in ESQUEMAS:
@@ -385,6 +525,8 @@ def declaraciones_herramientas(nombres: list[str]) -> list[dict]:
                     "parameters_json_schema": ESQUEMAS[n],
                 }
             )
+        else:
+            log.warning("herramienta declarada pero inexistente en el REGISTRO: %s (se descarta)", n)
     return out
 
 

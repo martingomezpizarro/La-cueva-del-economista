@@ -5,9 +5,48 @@ datos + motor de análisis + **agentes-profesores con RAG** (`docs/PLAN_AGENTES.
 La arquitectura objetivo y el roadmap aprobado viven en `docs/PROPUESTA_ARQUITECTURA.md`.
 Responder siempre en español.
 
-## Estado (actualizado 2026-07-05)
+## Estado (actualizado 2026-07-06)
 
 **Fases 0, 1, 2 y 3 del roadmap COMPLETAS** (rescate + red de seguridad + agentes v2 + conocimiento).
+
+**Agentes con herramientas coherentes (auditoría 2026-07-06, P0+P1 ejecutados):**
+- **Skills sincerados**: la lista blanca de cada skill es SUBCONJUNTO del REGISTRO (lo vigila
+  `test_herramientas_de_skills_existen_en_registro`); lo que la plataforma no ejecuta va en el
+  cuerpo como "asesorás sin ejecutar" (nunca en el frontmatter, para que el agente no alucine
+  evidencia). `declaraciones_herramientas` loguea warning si algo se descarta.
+- **Herramientas nuevas** (`cueva/econometria/herramientas.py`, 9 en total): `diagnosticos`
+  (batería sobre residuos OLS: Ljung-Box, Breusch-Godfrey, ARCH-LM, Jarque-Bera, RESET, CUSUM →
+  semáforo verde/amarillo/rojo — el Crítico con dientes) y `arch_lm` (¿se justifica un GARCH?).
+- **Tool-use en 6 turnos** (antes 1): Metodólogo y Crítico en `clasica`; multivariados, volatilidad,
+  controles_causal y robustez en `equipo_completo`. `LIMITE_LLAMADAS_MESA` 40→60.
+- **Granger se corre en modelización** (dep vs 2 indeps) — antes el turno causal leía evidencia
+  que no existía. De paso se cazó bug latente: `p_por_lag` con claves numpy.int64 rompía la
+  persistencia de la pizarra la primera vez que granger corría en la mesa.
+- **Handoffs dinámicos**: las REGLAS ofrecen todo el plantel (menos uno mismo), ya no los 4
+  cableados; `AGENTES_IDS` incluye a los 7 especialistas (tienen chat 1:1).
+- **Degradación visible**: turno que pedía tool-use con backend sin function calling (Claude)
+  sale con `estado="sin_herramientas"`, no un "ok" mentiroso.
+- Pendiente P2/P3 (decidido en la auditoría): transformaciones como parámetro de las herramientas,
+  `catalogo_series` para el Curador, pronóstico ARIMA/ETS/DM, tool-use en `responder_directo`.
+
+**Organización de series (catálogo curado, fuente única):**
+- `cueva/datos/catalogo.json` es LA fuente de verdad de la taxonomía: **9 familias**
+  (grupo → subgrupo → serie) con `id`, `label`, `unit` y fuentes por frecuencia (M/Q/A).
+  553 hojas migradas del árbol viejo del visualizador (20 grupos → 9 familias; se colapsaron
+  los grupos de 1 serie, se movió Índice Líder a Actividad y las expectativas de inflación a
+  Expectativas y Confianza). Para reorganizar: **editar el JSON**, no Python ni el template.
+- `series.py` consume el JSON (aporta `grupo`/`subgrupo`/`unidad`/`etiqueta`); el escaneo de
+  carpetas quedó como *fallback* solo para archivos que el catálogo NO cura (sintéticos de test,
+  subidas, CSVs por curar). Un archivo referenciado por el catálogo es "territorio curado": el
+  escaneo no vuelve a explotar sus columnas (adiós slugs crípticos de los INDEC anuales).
+- ANÁLISIS MATRIZ ARG **excluido** (sus 9 CSVs duplicaban EMAE/ICA ya presentes, mejor abiertos,
+  en el Trabajo Final).
+- El árbol del visualizador se **deriva** del JSON: `python scripts/generar_arbol_visualizador.py`
+  inyecta el `const CATALOG` (estilo comillas simples, compatible con el generador de TF) entre
+  marcadores `/*__CATALOG_INICIO__*/…/*__CATALOG_FIN__*/` en `visualizador_template.html`; después,
+  en la carpeta de TF, `python notebooks/generar_visualizador.py` embebe los datos.
+- Pendiente menor: el drawer "Elegir series" de `web/index.html` aún tiene la pestaña "MATRIZ ARG"
+  (hoy vacía) y muestra `origen` en vez de `grupo`; migrar a familia/subgrupo cuando se toque UI.
 
 Fase 3 (conocimiento):
 - **Ingesta incremental con manifiesto** (`indice/manifest.json`: hash SHA-256 por archivo):
@@ -21,7 +60,7 @@ Fase 3 (conocimiento):
   UI en el drawer "Bibliografía propia". Archivos en `<CUEVA_DATA>/biblioteca/`.
 - **Evaluación de retrieval**: `tests/eval_rag.jsonl` (20 preguntas doradas) +
   `scripts/evaluar_rag.py` (aciertos@1/3/5, `--modo tfidf|embeddings` para comparar).
-- 70 tests en verde (aislados: los tests jamás tocan el índice real).
+- 79 tests en verde (aislados: los tests jamás tocan el índice real).
 
 Fase 2 (agentes v2):
 

@@ -18,14 +18,7 @@
   header{display:flex;align-items:center;gap:8px;padding:0 12px;background:var(--panel);
     border-bottom:1px solid var(--line);height:var(--hdr);flex:none}
   header .logo{font-size:14px;font-weight:600;white-space:nowrap;margin-right:2px}
-  #rb-series{display:flex;align-items:center;gap:8px;background:var(--panel2);color:var(--txt);
-    border:1px solid var(--line);border-radius:7px;padding:6px 12px;font-size:13px;font-weight:600;
-    cursor:pointer;max-width:260px}
-  #rb-series:hover{border-color:var(--acc)}
-  #rb-series.activa{border-color:var(--acc);color:var(--txt);background:var(--panel2)}
-  #rb-series .chev{color:var(--muted);font-size:10px}
-  #symbol-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  header select#proj-select{width:auto;max-width:200px;padding:6px 8px;font-size:12px}
+  header select#proj-select{width:auto;max-width:220px;padding:6px 8px;font-size:12px}
   header .estado{margin-left:auto;font-size:12px;color:var(--muted);display:flex;gap:12px;align-items:center}
   .pill{padding:1px 8px;border-radius:999px;border:1px solid var(--line);font-size:11px;white-space:nowrap}
   .pill.on{color:var(--ok);border-color:#214d2c}.pill.off{color:var(--acc2);border-color:#5a4410}
@@ -36,10 +29,10 @@
   .rbtn.activa{background:var(--acc);border-color:var(--acc);color:#fff}
   .rbtn.mini{font-weight:500;padding:6px 9px}
 
-  /* ── cuerpo: sidebar de herramientas + visualizador ────────────────── */
+  /* ── cuerpo: visualizador + rail de herramientas a la derecha ──────── */
   #body-row{display:flex;flex:1;min-height:0}
   #sidebar{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 0;
-    width:var(--side);flex:none;background:var(--panel);border-right:1px solid var(--line)}
+    width:var(--side);flex:none;background:var(--panel);border-left:1px solid var(--line)}
   .sbtn{width:36px;height:36px;background:none;color:var(--muted);border:1px solid transparent;
     border-radius:8px;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center}
   .sbtn:hover{background:var(--panel2);color:var(--txt)}
@@ -68,10 +61,7 @@
   .drawer .dhead button{margin-left:auto;background:none;border:0;color:var(--muted);cursor:pointer;font-size:17px}
   .drawer .dbody{flex:1;overflow:auto;padding:14px 16px}
 
-  /* selector de series: modal centrado (símil "buscador de símbolos") en vez de drawer lateral */
-  #dw-series{top:64px;left:50%;right:auto;bottom:auto;transform:translateX(-50%);
-    width:min(640px,94vw);max-height:min(620px,78vh);border:1px solid var(--line);border-radius:12px;
-    box-shadow:0 20px 60px rgba(0,0,0,.6)}
+  /* selector de series de la investigación: drawer derecho con pestañas de categoría */
   .cat-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin-bottom:2px}
   .cat-tab{background:none;border:1px solid var(--line);color:var(--muted);border-radius:999px;
     padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex:none}
@@ -174,9 +164,6 @@
 <body>
 <header>
   <div class="logo">🕳️ Cueva</div>
-  <button id="rb-series" onclick="abrirPanel('series')" title="Elegir las series de la investigación">
-    <span id="symbol-label">Elegir series…</span><span class="chev">▾</span>
-  </button>
   <select id="proj-select" onchange="seleccionarProyecto(this.value)" title="Investigación activa"></select>
   <button class="rbtn mini" onclick="crearProyecto()" title="Crear una investigación nueva">＋</button>
   <button class="rbtn mini" onclick="eliminarProyectoActual()" title="Eliminar la investigación activa">🗑</button>
@@ -188,16 +175,6 @@
 </header>
 
 <div id="body-row">
-  <!-- ── sidebar: herramientas de la investigación ── -->
-  <nav id="sidebar">
-    <button class="sbtn" id="rb-definicion" onclick="abrirPanel('definicion')" title="🎯 Objetivos y pregunta">🎯</button>
-    <button class="sbtn" id="rb-biblio" onclick="abrirPanel('biblio')" title="📚 Bibliografía">📚</button>
-    <button class="sbtn" id="rb-notas" onclick="abrirPanel('notas')" title="📝 Notas">📝</button>
-    <div class="side-sep"></div>
-    <button class="sbtn" id="rb-pizarra" onclick="abrirPanel('pizarra')" title="🧠 Pizarra — la mesa de agentes">🧠</button>
-    <button class="sbtn" id="rb-informe" onclick="abrirPanel('informe')" title="📄 Informe">📄</button>
-  </nav>
-
   <!-- ── VISTA PRINCIPAL: el explorador de series, siempre de fondo ── -->
   <div id="viz-wrap">
     <iframe id="viz-frame" style="display:none"></iframe>
@@ -209,6 +186,17 @@
       <code>CUEVA_TRABAJO_FINAL</code> o en <code>cueva.local.toml</code>, y reiniciá el servidor.</p>
     </div>
   </div>
+
+  <!-- ── rail derecho: el flujo de la investigación (estilo panel de TradingView) ── -->
+  <nav id="sidebar">
+    <button class="sbtn" id="rb-series" onclick="abrirPanel('series')" title="🗂️ Series de la investigación (variables X / Y)">🗂️</button>
+    <button class="sbtn" id="rb-definicion" onclick="abrirPanel('definicion')" title="🎯 Objetivos y pregunta">🎯</button>
+    <button class="sbtn" id="rb-biblio" onclick="abrirPanel('biblio')" title="📚 Bibliografía">📚</button>
+    <button class="sbtn" id="rb-notas" onclick="abrirPanel('notas')" title="📝 Notas">📝</button>
+    <div class="side-sep"></div>
+    <button class="sbtn" id="rb-pizarra" onclick="abrirPanel('pizarra')" title="🧠 Pizarra — la mesa de agentes">🧠</button>
+    <button class="sbtn" id="rb-informe" onclick="abrirPanel('informe')" title="📄 Informe">📄</button>
+  </nav>
 </div>
 
 <div id="overlay" onclick="cerrarPanel()"></div>
@@ -293,7 +281,7 @@
       <div class="vacio" id="vacio">
         <div style="font-size:40px">🧭 📖 🔎 🗂️</div>
         <p>Acá se ve la pizarra: la conversación de la mesa y los hallazgos que va fijando.<br>
-        Definí la investigación (🎯 en la barra lateral) y elegí las series (arriba a la izquierda) y abrí la mesa,<br>
+        Definí la investigación y elegí sus series (🎯 y 🗂️ en el rail de la derecha) y abrí la mesa,<br>
         o consultá a un agente puntual desde el círculo flotante.</p>
       </div>
     </div>
@@ -492,22 +480,8 @@ function renderChips(){
       ${escapeHtml(s.nombre.length>26?s.nombre.slice(0,26)+'…':s.nombre)}
       <b onclick="toggle('${id}')">✕</b></span>`;
   }).join('');
-  actualizarEtiquetaSeries();
 }
 function marcarDep(id){ DEP = (DEP===id?null:id); renderChips(); guardarCambiosDebounced(); }
-function actualizarEtiquetaSeries(){
-  const lbl = $('#symbol-label');
-  if(!lbl) return;
-  if(DEP){
-    const s = SERIES.find(x=>x.id===DEP);
-    const resto = SEL.length>1 ? ` +${SEL.length-1}` : '';
-    lbl.textContent = (s?s.nombre:DEP) + resto;
-  } else if(SEL.length){
-    lbl.textContent = `${SEL.length} serie${SEL.length===1?'':'s'} elegida${SEL.length===1?'':'s'}`;
-  } else {
-    lbl.textContent = 'Elegir series…';
-  }
-}
 
 // ── bibliografía propia ─────────────────────────────────────────────────
 function renderBiblio(){
@@ -648,7 +622,7 @@ const fab = $('#fab');
 (function initFab(){
   const pos = JSON.parse(localStorage.getItem('cueva_fab_pos')||'null');
   if(pos && pos.x!=null){ fab.style.left=pos.x+'px'; fab.style.top=pos.y+'px'; }
-  else { fab.style.right='22px'; fab.style.bottom='90px'; }
+  else { fab.style.right='64px'; fab.style.bottom='24px'; }  /* despejar el rail derecho */
   clampFab();
 })();
 let fabDrag=null;
