@@ -116,3 +116,39 @@ def test_investigar_pipeline_invalido(cliente):
     pid = _crear(cliente)["id"]
     r = cliente.post(f"/api/v1/proyectos/{pid}/investigar?pipeline=inventado")
     assert r.status_code == 422
+
+
+# ── módulo Línea de Tiempo ────────────────────────────────────────────────
+def test_historia_devuelve_todo_en_una_respuesta(cliente):
+    d = cliente.get("/api/v1/historia").json()
+    assert d["rango"]["desde"] == 1880
+    assert len(d["presidencias"]) >= 60
+    assert d["eventos"], "sin eventos"
+    assert d["estado"]["eventos_con_ficha"] >= 1
+
+
+def test_ficha_de_evento_y_404_con_envelope(cliente):
+    d = cliente.get("/api/v1/historia/eventos/crisis-baring-1890").json()
+    assert d["evento"]["titulo"] == "Crisis de Baring"
+    assert d["ficha"]["cifras"], "la ficha no trajo cifras"
+    r = cliente.get("/api/v1/historia/eventos/no-existe-1999")
+    assert r.status_code == 404
+    assert r.json()["error"]["codigo"] == "evento_no_encontrado"
+
+
+def test_la_pantalla_de_tiempo_se_sirve(cliente):
+    for ruta in ("/tiempo", "/tiempo/crisis-baring-1890"):
+        r = cliente.get(ruta)
+        assert r.status_code == 200
+        assert "Línea de Tiempo" in r.text
+    assert cliente.get("/web/estilo/tokens.css").status_code == 200
+    assert cliente.get("/web/tiempo/app.js").status_code == 200
+
+
+def test_las_dos_pantallas_comparten_el_sistema_de_diseno(cliente):
+    """Un solo lugar donde vive el tema: si la Mesa vuelve a tener CSS propio, esto se cae."""
+    inicio = cliente.get("/").text
+    assert "/web/estilo/tokens.css" in inicio, "la Mesa no carga los tokens compartidos"
+    assert "/web/estilo/tema.js" in inicio, "la Mesa no carga el tema compartido"
+    assert cliente.get("/web/estilo/tema.js").status_code == 200
+    assert "/web/estilo/tema.js" in cliente.get("/tiempo").text

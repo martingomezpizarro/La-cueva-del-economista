@@ -1,0 +1,3226 @@
+<title>La Cueva del Economista</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+/* ============================================================
+   TOKENS — pizarrón y tiza
+   :root = tema claro (papel). Se redefinen SOLO tokens en dark.
+   ============================================================ */
+:root{
+  --ground:#EEF1EC; --surface:#FAFBF8; --surface-2:#F1F4EF;
+  --sunken:#E4E9E2; --line:#D5DDD4; --line-soft:#E3E9E1;
+  --ink:#14201C; --ink-2:#3D4B44; --ink-dim:#697A71; --ink-faint:#93A198;
+  --accent:#8A6410; --accent-ink:#FFFFFF; --accent-soft:#F0E5C8; --accent-line:#C9A64E;
+  --ok:#2F7D52; --ok-soft:#DCEDE2;
+  --warn:#9E5518; --warn-soft:#F6E4D4;
+  --crit:#A32F4C; --crit-soft:#F6DCE2;
+  --info:#26607F; --info-soft:#D8E8F0;
+  --facto:#A32F4C; --const:#2F7D52;
+  --s1:#26607F; --s2:#8A6410; --s3:#A32F4C; --s4:#2F7D52; --s5:#6A4A94;
+  --shadow:0 1px 2px rgba(20,32,28,.06), 0 8px 24px -12px rgba(20,32,28,.18);
+  --r:6px; --r-lg:10px;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --sans:"IBM Plex Sans",-apple-system,"Segoe UI",Roboto,sans-serif;
+  --display:"Fraunces",Georgia,serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --ground:#101715; --surface:#18211E; --surface-2:#1F2A26;
+    --sunken:#0C1211; --line:#2C3833; --line-soft:#232E2A;
+    --ink:#E7EDE9; --ink-2:#C2CEC8; --ink-dim:#8B9A93; --ink-faint:#66766E;
+    --accent:#E9C46A; --accent-ink:#151E1B; --accent-soft:rgba(233,196,106,.14); --accent-line:rgba(233,196,106,.45);
+    --ok:#7BC49A; --ok-soft:rgba(123,196,154,.14);
+    --warn:#E08A4C; --warn-soft:rgba(224,138,76,.14);
+    --crit:#E0708A; --crit-soft:rgba(224,112,138,.14);
+    --info:#7FB3D0; --info-soft:rgba(127,179,208,.14);
+    --facto:#E0708A; --const:#7BC49A;
+    --s1:#7FB3D0; --s2:#E9C46A; --s3:#E0708A; --s4:#7BC49A; --s5:#B79BE0;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 32px -16px rgba(0,0,0,.7);
+  }
+}
+:root[data-theme="dark"]{
+  --ground:#101715; --surface:#18211E; --surface-2:#1F2A26;
+  --sunken:#0C1211; --line:#2C3833; --line-soft:#232E2A;
+  --ink:#E7EDE9; --ink-2:#C2CEC8; --ink-dim:#8B9A93; --ink-faint:#66766E;
+  --accent:#E9C46A; --accent-ink:#151E1B; --accent-soft:rgba(233,196,106,.14); --accent-line:rgba(233,196,106,.45);
+  --ok:#7BC49A; --ok-soft:rgba(123,196,154,.14);
+  --warn:#E08A4C; --warn-soft:rgba(224,138,76,.14);
+  --crit:#E0708A; --crit-soft:rgba(224,112,138,.14);
+  --info:#7FB3D0; --info-soft:rgba(127,179,208,.14);
+  --facto:#E0708A; --const:#7BC49A;
+  --s1:#7FB3D0; --s2:#E9C46A; --s3:#E0708A; --s4:#7BC49A; --s5:#B79BE0;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 32px -16px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:var(--sans); font-size:14px; line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+}
+button,input,select,textarea{font:inherit; color:inherit}
+button{cursor:pointer; background:none; border:none}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:3px}
+.num{font-family:var(--mono); font-variant-numeric:tabular-nums}
+.lbl{font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-dim); font-weight:600}
+
+/* ============================ SHELL ============================ */
+.app{display:flex; flex-direction:column; height:100vh; overflow:hidden}
+.topbar{
+  display:flex; align-items:center; gap:16px; height:52px; flex:0 0 52px;
+  padding:0 14px; background:var(--surface); border-bottom:1px solid var(--line);
+}
+.brand{display:flex; align-items:center; gap:9px; min-width:0}
+.brand-name{font-family:var(--display); font-weight:700; font-size:16.5px; letter-spacing:-.01em; white-space:nowrap}
+.brand-name em{font-style:normal; color:var(--accent)}
+.glyph{flex:0 0 auto}
+
+.modswitch{display:flex; gap:2px; padding:3px; background:var(--sunken); border-radius:var(--r-lg); border:1px solid var(--line-soft)}
+.modswitch button{
+  display:flex; align-items:center; gap:7px; padding:5px 13px; border-radius:7px;
+  font-size:13px; font-weight:500; color:var(--ink-dim); transition:background .14s,color .14s;
+}
+.modswitch button:hover{color:var(--ink)}
+.modswitch button[aria-current="true"]{background:var(--surface); color:var(--ink); box-shadow:var(--shadow); font-weight:600}
+.modswitch svg{opacity:.85}
+
+.topright{margin-left:auto; display:flex; align-items:center; gap:8px}
+.proj{
+  display:flex; align-items:center; gap:8px; padding:4px 10px 4px 11px;
+  background:var(--sunken); border:1px solid var(--line-soft); border-radius:var(--r); max-width:280px;
+}
+.proj .lbl{font-size:9.5px}
+.proj-name{font-size:12.5px; font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.chip{
+  display:inline-flex; align-items:center; gap:5px; padding:2px 8px; border-radius:100px;
+  font-size:11px; font-weight:500; border:1px solid transparent; white-space:nowrap;
+}
+.chip.ok{background:var(--ok-soft); color:var(--ok); border-color:color-mix(in srgb,var(--ok) 32%,transparent)}
+.chip.warn{background:var(--warn-soft); color:var(--warn); border-color:color-mix(in srgb,var(--warn) 32%,transparent)}
+.chip.crit{background:var(--crit-soft); color:var(--crit); border-color:color-mix(in srgb,var(--crit) 32%,transparent)}
+.chip.info{background:var(--info-soft); color:var(--info); border-color:color-mix(in srgb,var(--info) 32%,transparent)}
+.chip.neutral{background:var(--sunken); color:var(--ink-dim); border-color:var(--line)}
+.chip .dot{width:5px; height:5px; border-radius:50%; background:currentColor}
+.iconbtn{
+  width:30px; height:30px; display:grid; place-items:center; border-radius:var(--r);
+  color:var(--ink-dim); border:1px solid transparent;
+}
+.iconbtn:hover{background:var(--sunken); color:var(--ink); border-color:var(--line-soft)}
+
+.main{flex:1; min-height:0; display:flex}
+.module{display:none; flex:1; min-width:0}
+.module.on{display:flex}
+
+/* ============================ PANELES ============================ */
+.rail{
+  flex:0 0 232px; background:var(--surface); border-right:1px solid var(--line);
+  display:flex; flex-direction:column; min-height:0;
+}
+.rail-r{border-right:none; border-left:1px solid var(--line); flex-basis:296px}
+.panel-hd{
+  display:flex; align-items:center; gap:8px; padding:11px 13px 9px;
+  border-bottom:1px solid var(--line-soft); flex:0 0 auto;
+}
+.panel-hd .lbl{flex:1}
+.scroll{overflow-y:auto; overflow-x:hidden; flex:1; min-height:0; scrollbar-width:thin}
+.scroll::-webkit-scrollbar{width:9px}
+.scroll::-webkit-scrollbar-thumb{background:var(--line); border-radius:9px; border:3px solid var(--surface)}
+.stage{flex:1; min-width:0; display:flex; flex-direction:column; background:var(--ground); overflow:hidden}
+
+/* ============================ CONTROLES ============================ */
+.layer{
+  display:flex; align-items:center; gap:9px; padding:6px 13px; cursor:pointer;
+  font-size:12.5px; border-left:2px solid transparent;
+}
+.layer:hover{background:var(--surface-2)}
+.layer input{appearance:none; width:13px; height:13px; border:1.5px solid var(--line); border-radius:3px; flex:0 0 auto; background:var(--surface); position:relative; cursor:pointer}
+.layer input:checked{background:currentColor; border-color:currentColor}
+.layer input:checked::after{content:""; position:absolute; inset:1.5px; border-left:1.6px solid var(--surface); border-bottom:1.6px solid var(--surface); transform:rotate(-45deg) translate(1px,-1px); height:4px}
+.layer .swatch{width:14px; height:3px; border-radius:2px; flex:0 0 auto}
+.layer .name{flex:1; color:var(--ink-2); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.layer .meta{font-size:10.5px; color:var(--ink-faint); font-family:var(--mono)}
+.group-hd{
+  display:flex; align-items:center; gap:7px; padding:9px 13px 5px; font-size:10.5px;
+  letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); font-weight:600;
+}
+.group-hd::after{content:""; flex:1; height:1px; background:var(--line-soft)}
+
+.seg{display:inline-flex; background:var(--sunken); border:1px solid var(--line-soft); border-radius:var(--r); padding:2px}
+.seg button{padding:3.5px 10px; border-radius:4px; font-size:11.5px; font-weight:500; color:var(--ink-dim)}
+.seg button[aria-pressed="true"]{background:var(--surface); color:var(--ink); box-shadow:0 1px 2px rgba(0,0,0,.08); font-weight:600}
+.btn{
+  display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:var(--r);
+  border:1px solid var(--line); background:var(--surface); font-size:12.5px; font-weight:500; color:var(--ink-2);
+}
+.btn:hover{border-color:var(--ink-faint); color:var(--ink)}
+.btn.primary{background:var(--accent); color:var(--accent-ink); border-color:var(--accent); font-weight:600}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.ghost{border-color:transparent; background:none}
+.btn.ghost:hover{background:var(--sunken)}
+.btn.sm{padding:4px 9px; font-size:11.5px}
+
+/* ============================ TIMELINE ============================ */
+.tl-bar{
+  display:flex; align-items:center; gap:12px; padding:9px 16px;
+  border-bottom:1px solid var(--line); background:var(--surface); flex:0 0 auto; flex-wrap:wrap;
+}
+.tl-title{font-family:var(--display); font-size:17px; font-weight:700; letter-spacing:-.01em}
+.tl-sub{font-size:11.5px; color:var(--ink-dim)}
+.tl-canvas{flex:1; min-height:0; padding:14px 16px 10px; overflow:auto}
+.tl-hint{margin-top:6px; font-size:10.5px; color:var(--ink-faint); text-align:center; letter-spacing:.01em}
+.ctrl{display:flex; align-items:center; gap:7px}
+.ctrl .lbl{font-size:9.5px; white-space:nowrap}
+.tl-svg{cursor:grab; touch-action:none; -webkit-user-select:none; user-select:none}
+.tl-svg:active{cursor:grabbing}
+.tl-svg{display:block; width:100%; height:auto; min-width:760px}
+.evt-pin{cursor:pointer}
+.evt-pin:hover .pin-head{r:5.5}
+.evt-pin.sel .pin-head{stroke-width:2.5}
+.pres-block{cursor:pointer}
+.pres-block:hover rect{opacity:.9}
+.gapband{fill:var(--line-soft); opacity:.5}
+
+.evt-card{padding:13px 14px; border-bottom:1px solid var(--line-soft)}
+.evt-date{font-family:var(--mono); font-size:11px; color:var(--ink-dim); letter-spacing:.02em}
+.evt-title{font-family:var(--display); font-size:16.5px; font-weight:700; margin:3px 0 6px; line-height:1.25; text-wrap:balance}
+.evt-desc{font-size:13px; color:var(--ink-2); line-height:1.5}
+.kv{display:grid; grid-template-columns:auto 1fr; gap:5px 12px; font-size:12px; margin-top:11px}
+.kv dt{color:var(--ink-dim); font-size:11px; letter-spacing:.04em; text-transform:uppercase; font-weight:600; padding-top:1px}
+.kv dd{margin:0; color:var(--ink-2)}
+.evtlist-item{display:flex; gap:9px; padding:7px 13px; cursor:pointer; align-items:baseline; border-left:2px solid transparent}
+.evtlist-item:hover{background:var(--surface-2)}
+.evtlist-item[aria-selected="true"]{background:var(--accent-soft); border-left-color:var(--accent)}
+.evtlist-item .y{font-family:var(--mono); font-size:11.5px; color:var(--ink-dim); flex:0 0 34px}
+.evtlist-item .t{font-size:12.5px; color:var(--ink-2); line-height:1.35}
+
+/* ============================ MESA ============================ */
+.subnav{
+  display:flex; align-items:center; gap:2px; padding:0 12px; height:42px; flex:0 0 42px;
+  background:var(--surface); border-bottom:1px solid var(--line);
+}
+.subnav button{
+  padding:0 13px; height:100%; font-size:13px; font-weight:500; color:var(--ink-dim);
+  border-bottom:2px solid transparent; display:flex; align-items:center; gap:7px;
+}
+.subnav button:hover{color:var(--ink)}
+.subnav button[aria-current="true"]{color:var(--ink); border-bottom-color:var(--accent); font-weight:600}
+.subnav .sep{width:1px; height:18px; background:var(--line); margin:0 8px}
+.view{display:none; flex:1; min-height:0; flex-direction:column}
+.view.on{display:flex}
+.pad{padding:16px 18px}
+.toolbar{
+  display:flex; align-items:center; gap:9px; padding:9px 16px; flex-wrap:wrap;
+  border-bottom:1px solid var(--line); background:var(--surface); flex:0 0 auto;
+}
+.spacer{flex:1}
+
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); overflow:hidden}
+.card-hd{display:flex; align-items:center; gap:9px; padding:10px 13px; border-bottom:1px solid var(--line-soft)}
+.card-hd h3{margin:0; font-size:13.5px; font-weight:600; letter-spacing:-.005em}
+.card-bd{padding:13px}
+.grid2{display:grid; grid-template-columns:repeat(auto-fit,minmax(310px,1fr)); gap:14px}
+.stat-row{display:grid; grid-template-columns:repeat(auto-fit,minmax(112px,1fr)); gap:1px; background:var(--line-soft)}
+.stat{background:var(--surface); padding:9px 12px}
+.stat .k{font-size:10px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-dim); font-weight:600}
+.stat .v{font-family:var(--mono); font-size:16px; font-weight:500; margin-top:2px; font-variant-numeric:tabular-nums}
+
+table{border-collapse:collapse; width:100%; font-size:12.5px}
+th{
+  text-align:left; font-size:10px; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-dim);
+  font-weight:600; padding:7px 10px; border-bottom:1px solid var(--line); white-space:nowrap;
+}
+td{padding:7px 10px; border-bottom:1px solid var(--line-soft); color:var(--ink-2)}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--surface-2)}
+td.n,th.n{text-align:right; font-family:var(--mono); font-variant-numeric:tabular-nums}
+.tablewrap{overflow-x:auto}
+
+.tree-grp{padding:7px 13px 3px; font-size:11px; font-weight:600; color:var(--ink-2); display:flex; align-items:center; gap:7px; cursor:pointer}
+.tree-grp .caret{transition:transform .15s; color:var(--ink-faint)}
+.tree-grp[aria-expanded="false"] .caret{transform:rotate(-90deg)}
+.tree-grp .cnt{margin-left:auto; font-family:var(--mono); font-size:10px; color:var(--ink-faint)}
+.tree-kids{display:block}
+.tree-grp[aria-expanded="false"]+.tree-kids{display:none}
+.serie{
+  display:flex; align-items:center; gap:8px; padding:4.5px 13px 4.5px 26px; font-size:12px;
+  color:var(--ink-2); cursor:pointer; border-left:2px solid transparent;
+}
+.serie:hover{background:var(--surface-2)}
+.serie[aria-selected="true"]{background:var(--accent-soft); border-left-color:var(--accent); color:var(--ink)}
+.serie .u{margin-left:auto; font-family:var(--mono); font-size:10px; color:var(--ink-faint); white-space:nowrap}
+.searchbox{margin:9px 11px; display:flex; align-items:center; gap:7px; padding:5px 9px; background:var(--sunken); border:1px solid var(--line-soft); border-radius:var(--r)}
+.searchbox input{flex:1; background:none; border:none; outline:none; font-size:12.5px; min-width:0}
+.searchbox input::placeholder{color:var(--ink-faint)}
+
+/* pasos / estudios */
+.step{border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface); overflow:hidden}
+.step+.step{margin-top:11px}
+.step-hd{display:flex; align-items:center; gap:9px; padding:9px 12px; background:var(--surface-2); border-bottom:1px solid var(--line-soft)}
+.step-n{
+  width:19px; height:19px; border-radius:5px; display:grid; place-items:center; flex:0 0 auto;
+  background:var(--sunken); border:1px solid var(--line); font-family:var(--mono); font-size:10.5px; color:var(--ink-dim); font-weight:600;
+}
+.step-name{font-size:12.5px; font-weight:600}
+.step-args{font-family:var(--mono); font-size:11px; color:var(--ink-dim); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.verdict{padding:9px 12px; font-size:12.5px; color:var(--ink-2); display:flex; gap:9px; align-items:flex-start}
+.verdict .bar{width:3px; border-radius:2px; align-self:stretch; flex:0 0 3px}
+
+/* hipótesis */
+.hyp{border:1px solid var(--line); border-radius:var(--r-lg); background:var(--surface); padding:12px 13px}
+.hyp+.hyp{margin-top:11px}
+.hyp-hd{display:flex; align-items:flex-start; gap:10px}
+.hyp-id{font-family:var(--mono); font-size:11px; font-weight:600; color:var(--accent); flex:0 0 auto; padding-top:2px}
+.hyp-txt{flex:1; font-size:13.5px; line-height:1.45; color:var(--ink)}
+.evidence{margin-top:10px; padding-top:9px; border-top:1px dashed var(--line); display:flex; flex-wrap:wrap; gap:6px}
+.ev-tag{
+  display:inline-flex; align-items:center; gap:5px; padding:3px 8px; border-radius:5px; font-size:11px;
+  background:var(--sunken); border:1px solid var(--line-soft); color:var(--ink-2); font-family:var(--mono);
+}
+.ev-tag:hover{border-color:var(--accent-line); color:var(--ink)}
+
+/* informe */
+.doc{max-width:none}
+.doc-sec{border-left:2px solid var(--line); padding:2px 0 2px 14px; margin-bottom:18px}
+.doc-sec:hover{border-left-color:var(--accent-line)}
+.doc-sec h4{margin:0 0 5px; font-family:var(--display); font-size:15.5px; font-weight:700}
+.doc-sec p{margin:0 0 8px; font-size:13.5px; line-height:1.62; color:var(--ink-2); max-width:66ch}
+.cite{color:var(--accent); font-weight:500; cursor:pointer; border-bottom:1px dotted var(--accent-line)}
+.placeholder-line{height:9px; background:var(--line-soft); border-radius:3px; margin:6px 0; max-width:66ch}
+
+/* copiloto */
+.copilot{display:flex; flex-direction:column; min-height:0; height:100%}
+.msg{padding:11px 13px; border-bottom:1px solid var(--line-soft)}
+.msg-hd{display:flex; align-items:center; gap:7px; margin-bottom:5px}
+.avatar{
+  width:20px; height:20px; border-radius:5px; display:grid; place-items:center; flex:0 0 auto;
+  font-size:10px; font-weight:700; font-family:var(--mono); background:var(--accent-soft); color:var(--accent); border:1px solid var(--accent-line);
+}
+.msg-who{font-size:12px; font-weight:600}
+.msg-fase{margin-left:auto; font-size:10px; color:var(--ink-faint); font-family:var(--mono)}
+.msg-body{font-size:12.5px; line-height:1.55; color:var(--ink-2)}
+.msg-body strong{color:var(--ink); font-weight:600}
+.src{
+  display:block; margin-top:7px; padding:6px 8px; border-left:2px solid var(--info);
+  background:var(--info-soft); font-size:11.5px; color:var(--ink-2); border-radius:0 4px 4px 0;
+}
+.src b{font-weight:600; color:var(--ink)}
+.composer{flex:0 0 auto; border-top:1px solid var(--line); padding:9px 11px; background:var(--surface)}
+.composer .box{display:flex; gap:7px; align-items:flex-end; background:var(--sunken); border:1px solid var(--line-soft); border-radius:var(--r); padding:7px 9px}
+.composer textarea{flex:1; background:none; border:none; outline:none; resize:none; font-size:12.5px; height:34px; line-height:1.4}
+.suggestions{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:8px}
+.sugg{padding:4px 9px; border-radius:100px; border:1px dashed var(--line); font-size:11px; color:var(--ink-dim)}
+.sugg:hover{border-color:var(--accent-line); color:var(--ink); border-style:solid}
+
+.note{
+  display:flex; gap:9px; padding:9px 11px; border-radius:var(--r); font-size:12px; line-height:1.5;
+  background:var(--warn-soft); border:1px solid color-mix(in srgb,var(--warn) 28%,transparent); color:var(--ink-2);
+}
+.note b{color:var(--ink)}
+.note.info{background:var(--info-soft); border-color:color-mix(in srgb,var(--info) 28%,transparent)}
+
+/* ---- tooltip del gráfico ---- */
+.tl-canvas{position:relative}
+.tl-tip{
+  position:absolute; pointer-events:none; z-index:5; min-width:150px; max-width:260px;
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--r);
+  box-shadow:var(--shadow); padding:7px 9px; font-size:12px; opacity:0; transition:opacity .1s;
+}
+.tl-tip.on{opacity:1}
+.tl-tip .yr{font-family:var(--mono); font-size:12.5px; font-weight:600; color:var(--ink); margin-bottom:5px; display:block}
+.tl-tip .row{display:flex; align-items:center; gap:7px; padding:2.5px 0}
+.tl-tip .row .sw{width:9px; height:2.5px; border-radius:2px; flex:0 0 auto}
+.tl-tip .row .nm{color:var(--ink-2); flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.tl-tip .row .vl{font-family:var(--mono); font-variant-numeric:tabular-nums; font-weight:600; color:var(--ink); white-space:nowrap}
+.tl-tip .row .un{font-size:10px; color:var(--ink-faint); white-space:nowrap}
+.tl-tip .ev{margin-top:6px; padding-top:6px; border-top:1px solid var(--line-soft); font-size:11px; color:var(--accent)}
+
+/* ---- ficha completa del evento (panel inferior) ---- */
+.ficha{
+  flex:0 0 46%; min-height:0; display:none; flex-direction:column;
+  background:var(--surface); border-top:2px solid var(--accent-line);
+}
+.ficha.on{display:flex}
+.ficha-hd{
+  display:flex; align-items:flex-start; gap:12px; padding:11px 16px 9px;
+  border-bottom:1px solid var(--line-soft); flex:0 0 auto;
+}
+.ficha-hd .tt{font-family:var(--display); font-size:19px; font-weight:700; line-height:1.2; margin:0}
+.ficha-hd .meta{font-family:var(--mono); font-size:11px; color:var(--ink-dim); margin-top:2px}
+.ficha-bd{display:grid; grid-template-columns:1.55fr 1fr; gap:0; overflow:hidden; flex:1; min-height:0}
+.ficha-col{overflow-y:auto; padding:13px 16px; min-height:0; scrollbar-width:thin}
+.ficha-col+.ficha-col{border-left:1px solid var(--line-soft); background:var(--surface-2)}
+.ficha-col::-webkit-scrollbar{width:8px}
+.ficha-col::-webkit-scrollbar-thumb{background:var(--line); border-radius:8px; border:2px solid var(--surface)}
+
+.crono{list-style:none; margin:0; padding:0; position:relative}
+.crono::before{content:""; position:absolute; left:57px; top:6px; bottom:6px; width:1px; background:var(--line)}
+.crono li{display:grid; grid-template-columns:52px 1fr; gap:16px; padding:0 0 12px; position:relative}
+.crono .cf{font-family:var(--mono); font-size:10.5px; color:var(--ink-dim); text-align:right; padding-top:1px; white-space:nowrap}
+.crono .ct{font-size:13px; line-height:1.55; color:var(--ink-2)}
+.crono li::after{
+  content:""; position:absolute; left:54.5px; top:5px; width:6px; height:6px; border-radius:50%;
+  background:var(--accent); border:1.5px solid var(--surface);
+}
+.cifra{
+  display:inline; font-family:var(--mono); font-weight:600; font-size:12.5px; color:var(--accent);
+  border-bottom:1.5px dotted var(--accent-line); padding:0 1px; cursor:pointer; background:none;
+}
+.cifra:hover{background:var(--accent-soft); border-bottom-style:solid}
+.cifra::after{content:"↗"; font-size:9px; vertical-align:super; opacity:.6; margin-left:1px}
+
+.cifra-card{
+  display:flex; align-items:baseline; gap:9px; padding:6px 9px; border-radius:var(--r);
+  border:1px solid var(--line-soft); background:var(--surface); width:100%; text-align:left; margin-bottom:5px;
+}
+.cifra-card:hover{border-color:var(--accent-line)}
+.cifra-card .v{font-family:var(--mono); font-weight:600; font-size:13.5px; color:var(--ink); white-space:nowrap}
+.cifra-card .e{font-size:11.5px; color:var(--ink-dim); flex:1; line-height:1.3}
+.cifra-card .link{font-size:10px; color:var(--accent); white-space:nowrap}
+
+.foto{
+  border:1px solid var(--line); border-radius:var(--r); overflow:hidden; background:var(--sunken); margin-bottom:11px;
+}
+.foto .ph{height:120px; display:grid; place-items:center; background:
+  repeating-linear-gradient(45deg,var(--sunken),var(--sunken) 9px,var(--surface-2) 9px,var(--surface-2) 18px)}
+.foto .cap{padding:7px 9px; font-size:11px; line-height:1.4; color:var(--ink-2); border-top:1px solid var(--line-soft)}
+.foto .cred{font-size:10px; color:var(--ink-faint); margin-top:3px}
+
+.quote{border-left:2px solid var(--accent); padding:2px 0 2px 11px; margin:0 0 11px}
+.quote p{margin:0 0 4px; font-size:12.5px; line-height:1.55; color:var(--ink-2); font-style:italic}
+.quote cite{font-size:11px; color:var(--ink-dim); font-style:normal; font-family:var(--mono)}
+.biblio{list-style:none; margin:0; padding:0}
+.biblio li{font-size:11.5px; line-height:1.45; color:var(--ink-2); padding:5px 0 5px 13px; text-indent:-13px}
+.ficha-sec{margin:0 0 8px}
+.ficha-sec+.ficha-sec{margin-top:16px}
+@media (max-width:1000px){.ficha-bd{grid-template-columns:1fr}}
+
+/* ---- barra del explorador (estructura del visualizador del TF) ---- */
+.vbar{
+  display:flex; align-items:center; gap:7px; padding:8px 14px; flex-wrap:wrap;
+  border-bottom:1px solid var(--line); background:var(--surface); flex:0 0 auto;
+}
+.vsep{width:1px; height:18px; background:var(--line); flex:0 0 auto}
+.blbl{font-size:9.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-dim); font-weight:600}
+.symsel{
+  display:flex; align-items:center; gap:8px; padding:5px 11px; border-radius:var(--r);
+  border:1px solid var(--accent-line); background:var(--accent-soft); font-size:12.5px; font-weight:600;
+  color:var(--ink); max-width:290px;
+}
+.symsel:hover{filter:brightness(1.04)}
+.symsel span:nth-child(2){overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.vdrop{position:relative}
+.vmenu{
+  position:absolute; top:calc(100% + 4px); left:0; z-index:40; min-width:206px; display:none;
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow); padding:4px;
+}
+.vdrop.open .vmenu{display:block}
+.vmenu button{
+  display:block; width:100%; text-align:left; padding:6px 9px; border-radius:4px;
+  font-size:12px; color:var(--ink-2);
+}
+.vmenu button:hover{background:var(--surface-2); color:var(--ink)}
+.vmenu button[aria-pressed="true"]{background:var(--accent-soft); color:var(--accent); font-weight:600}
+.vmenu button.libre{color:var(--accent); font-weight:500}
+.vmenu-sep{height:1px; background:var(--line-soft); margin:4px 2px}
+.btn.sm[aria-pressed="true"]{background:var(--accent); color:var(--accent-ink); border-color:var(--accent); font-weight:600}
+
+.ajuste-row{
+  display:none; align-items:center; gap:8px; padding:7px 14px; flex-wrap:wrap;
+  background:var(--surface-2); border-bottom:1px solid var(--line-soft); flex:0 0 auto;
+}
+body.ajustes-on .ajuste-row{display:flex}
+.ajuste-row label{font-size:10.5px; color:var(--ink-dim); font-weight:600; letter-spacing:.02em}
+.ajuste-row input{
+  background:var(--surface); border:1px solid var(--line); border-radius:4px;
+  padding:3px 7px; font-size:11.5px; font-family:var(--mono); color:var(--ink);
+}
+.ajuste-row input:focus{outline:none; border-color:var(--accent-line)}
+.ajuste-row .hint{font-size:10px; color:var(--ink-faint)}
+.stat.hl .v{color:var(--accent)}
+
+/* ---- sidebar de series seleccionadas (explorador) ---- */
+.stage-wrap{position:relative}
+.rail-wide{flex:0 0 312px; transition:flex-basis .3s cubic-bezier(.16,1,.3,1); overflow:hidden}
+body.side-off .rail-wide{flex-basis:0; border-right:none}
+.side-toggle{
+  position:absolute; left:0; top:50%; transform:translateY(-50%); z-index:20;
+  width:16px; height:46px; display:grid; place-items:center;
+  border:0; border-radius:0 6px 6px 0; cursor:pointer;
+  background:var(--surface-2); color:var(--ink-dim); box-shadow:var(--shadow);
+  transition:background .2s ease, color .2s ease;
+}
+.side-toggle:hover{color:var(--ink); background:var(--accent-soft)}
+.side-toggle svg{transition:transform .25s cubic-bezier(.16,1,.3,1)}
+body.side-off .side-toggle svg{transform:rotate(180deg)}
+
+.sercard{border-bottom:1px solid var(--line-soft); background:var(--surface)}
+.sercard.activa{background:var(--surface-2); box-shadow:inset 3px 0 0 var(--accent)}
+.sercard-hd{display:flex; align-items:flex-start; gap:8px; padding:10px 12px 8px; cursor:pointer}
+.sercard-hd .dotc{width:9px; height:9px; border-radius:3px; flex:0 0 auto; margin-top:3px}
+.sercard-hd .tx{flex:1; min-width:0}
+.sercard-hd .nm{font-size:12.5px; font-weight:600; color:var(--ink); line-height:1.3}
+.sercard-hd .sb{font-size:10.5px; color:var(--ink-dim); margin-top:1px; font-family:var(--mono)}
+.sercard-hd .rm{color:var(--ink-faint); font-size:13px; padding:0 3px; line-height:1}
+.sercard-hd .rm:hover{color:var(--crit)}
+.rolechip{
+  font-size:9px; letter-spacing:.05em; text-transform:uppercase; font-weight:700; padding:1.5px 5px;
+  border-radius:3px; background:var(--accent-soft); color:var(--accent); border:1px solid var(--accent-line);
+}
+
+.parm{display:grid; grid-template-columns:88px 1fr; gap:3px 8px; padding:0 12px 10px; font-size:11.5px}
+.parm dt{color:var(--ink-faint); font-size:10px; letter-spacing:.04em; text-transform:uppercase; font-weight:600; padding-top:2px}
+.parm dd{margin:0; color:var(--ink-2); font-family:var(--mono); font-size:11.5px; display:flex; flex-wrap:wrap; gap:4px}
+.parm dd.off{color:var(--ink-faint); font-family:var(--sans); font-style:italic}
+.ptag{
+  display:inline-flex; align-items:center; padding:1px 6px; border-radius:3px; font-size:10.5px;
+  background:var(--sunken); border:1px solid var(--line-soft); color:var(--ink-2); font-family:var(--mono);
+}
+.ptag.on{background:var(--accent-soft); border-color:var(--accent-line); color:var(--accent); font-weight:600}
+
+.ficha-tog{
+  display:flex; align-items:center; gap:6px; width:100%; padding:6px 12px 8px;
+  font-size:10.5px; letter-spacing:.07em; text-transform:uppercase; font-weight:600; color:var(--ink-dim);
+}
+.ficha-tog:hover{color:var(--ink)}
+.ficha-tog .cv{transition:transform .16s; font-size:8px; color:var(--ink-faint)}
+.ficha-tog[aria-expanded="true"] .cv{transform:rotate(90deg)}
+.ficha-tog .est{margin-left:auto; text-transform:none; letter-spacing:0}
+.ficha-bd{display:none; padding:0 12px 12px}
+.ficha-tog[aria-expanded="true"]+.ficha-bd{display:block}
+.ficha-bd dl{display:grid; grid-template-columns:76px 1fr; gap:4px 8px; font-size:11px; margin:0}
+.ficha-bd dt{color:var(--ink-faint); font-size:9.5px; letter-spacing:.04em; text-transform:uppercase; font-weight:600; padding-top:1px}
+.ficha-bd dd{margin:0; color:var(--ink-2); line-height:1.4}
+.ficha-bd .fuente{
+  display:block; margin-top:9px; padding:6px 8px; border-radius:4px; background:var(--sunken);
+  border:1px solid var(--line-soft); font-size:10.5px; color:var(--ink-dim); line-height:1.45;
+}
+.side-add{
+  display:flex; align-items:center; justify-content:center; gap:6px; margin:11px; padding:8px;
+  border:1px dashed var(--line); border-radius:var(--r); color:var(--ink-dim); font-size:12px; width:calc(100% - 22px);
+}
+.side-add:hover{border-color:var(--accent-line); color:var(--accent); border-style:solid}
+
+/* ---- controles editables dentro de la tarjeta de serie ---- */
+.sercard.apagada{opacity:.5}
+.sercard.apagada .edit{opacity:.55}
+.sercard-hd .vis{padding:2px 3px; display:flex; align-items:center}
+.sercard-hd .dotc{width:10px; height:10px; border-radius:3px; border:1.5px solid; box-sizing:border-box}
+.rolechip{cursor:pointer}
+.rolechip:hover{filter:brightness(1.12)}
+.edit{padding:0 12px 9px; display:flex; flex-direction:column; gap:5px}
+.erow{display:grid; grid-template-columns:76px 1fr; align-items:center; gap:8px}
+.ek{font-size:9.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-faint); font-weight:600}
+.ev{display:flex; gap:4px; align-items:center; min-width:0}
+.tg{padding:2.5px 9px; border-radius:4px; border:1px solid var(--line); background:var(--surface); font-size:11px; font-family:var(--mono); color:var(--ink-dim)}
+.tg:hover{border-color:var(--ink-faint); color:var(--ink)}
+.tg[aria-pressed="true"]{background:var(--accent); border-color:var(--accent); color:var(--accent-ink); font-weight:600}
+.esel{width:100%; padding:3px 6px; border-radius:4px; border:1px solid var(--line); background:var(--surface); color:var(--ink-2); font-size:11px; font-family:var(--mono)}
+.esel:focus{outline:none; border-color:var(--accent-line)}
+.parm dt.cab{grid-column:1 / -1; font-size:9px; letter-spacing:.07em; color:var(--ink-faint); border-top:1px solid var(--line-soft); padding:7px 0 3px; margin-top:2px}
+.side-foot{padding:10px 12px; font-size:10.5px; line-height:1.45; color:var(--ink-faint); border-top:1px solid var(--line-soft)}
+.side-foot b{color:var(--ink-dim)}
+
+/* ---- matriz de correlación ---- */
+.corrgrid{font-size:11.5px}
+.corrgrid th{font-size:9.5px; padding:5px 7px}
+.corrgrid td{padding:0; border-bottom:1px solid var(--line-soft)}
+.corrgrid td:first-child{padding:6px 9px 6px 2px; font-size:11.5px}
+.corrgrid td.cc{
+  text-align:center; font-family:var(--mono); font-variant-numeric:tabular-nums;
+  padding:7px 9px; font-weight:600; color:var(--ink); border-left:1px solid var(--surface);
+}
+.corrgrid tbody tr:hover td{background:inherit}
+.corrleg{display:flex; align-items:center; gap:8px; margin-top:10px; font-size:10px; color:var(--ink-dim); font-family:var(--mono)}
+.corrleg .bar{
+  width:110px; height:8px; border-radius:4px; border:1px solid var(--line-soft);
+  background:linear-gradient(90deg, var(--crit), var(--surface), var(--info));
+}
+
+@media (prefers-reduced-motion:reduce){*{transition:none !important; animation:none !important}}
+@media (max-width:1180px){
+  .rail{flex-basis:196px} .rail-r{flex-basis:264px}
+}
+
+/* ---- copiloto flotante: FAB "IA" + tarjeta de chat ---- */
+.ia-fab{
+  position:fixed; right:22px; bottom:22px; z-index:400;
+  width:52px; height:52px; border-radius:50%; cursor:grab;
+  display:grid; place-items:center; touch-action:none;
+  background:var(--accent); color:var(--accent-ink);
+  border:1px solid var(--accent-line);
+  box-shadow:0 4px 14px rgba(0,0,0,.22), 0 0 0 6px color-mix(in srgb,var(--accent) 14%,transparent);
+  font-family:var(--display); font-weight:700; font-size:16px; letter-spacing:.02em;
+  transition:transform .16s ease, box-shadow .2s ease;
+}
+.ia-fab:hover{transform:scale(1.06)}
+.ia-fab.arrastrando{cursor:grabbing; transform:scale(1.1)}
+.ia-fab-dot{
+  position:absolute; top:-3px; right:-3px; min-width:18px; height:18px; padding:0 4px;
+  border-radius:100px; background:var(--crit); color:#fff; border:2px solid var(--ground);
+  font-family:var(--mono); font-size:10px; font-weight:600; display:grid; place-items:center;
+}
+.ia-fab-dot[hidden]{display:none}
+
+.ia-panel{
+  position:fixed; right:22px; bottom:86px; z-index:401;
+  width:min(27vw,430px); min-width:300px; height:min(64vh,620px); min-height:280px;
+  display:flex; flex-direction:column; overflow:hidden;
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg);
+  box-shadow:0 10px 40px -8px rgba(0,0,0,.34), var(--shadow);
+}
+.ia-panel[hidden]{display:none}
+.ia-hd{
+  flex:0 0 auto; display:flex; align-items:center; gap:9px; padding:9px 10px;
+  border-bottom:1px solid var(--line); background:var(--surface-2); cursor:grab; user-select:none;
+}
+.ia-hd.arrastrando{cursor:grabbing}
+.ia-back{width:22px; height:22px; display:grid; place-items:center; border-radius:var(--r); border:1px solid var(--line); background:var(--surface); color:var(--ink-dim); flex:0 0 auto}
+.ia-back[hidden]{display:none}
+.ia-av{
+  width:26px; height:26px; flex:0 0 auto; border-radius:7px; display:grid; place-items:center;
+  font-family:var(--mono); font-size:10.5px; font-weight:600;
+  background:var(--accent-soft); color:var(--accent); border:1px solid var(--accent-line);
+}
+.ia-hd-tx{flex:1; min-width:0}
+.ia-hd-nm{font-size:12.5px; font-weight:600; color:var(--ink); line-height:1.25; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.ia-hd-sub{font-size:10.5px; color:var(--ink-faint); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.ia-body{flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden}
+.ia-body[hidden]{display:none}
+.ia-msgs{flex:1; min-height:0; overflow:auto}
+
+.ia-grupo{padding:9px 11px 4px; font-size:10px; font-weight:600; letter-spacing:.07em; text-transform:uppercase; color:var(--ink-faint); font-family:var(--mono)}
+.ia-item{
+  width:100%; display:flex; align-items:flex-start; gap:9px; text-align:left;
+  padding:8px 11px; border:none; background:none; cursor:pointer; border-bottom:1px solid var(--line-soft);
+}
+.ia-item:hover{background:var(--surface-2)}
+.ia-item .tx{flex:1; min-width:0}
+.ia-item .nm{font-size:12.5px; font-weight:600; color:var(--ink); line-height:1.3}
+.ia-item .ds{font-size:11px; color:var(--ink-dim); line-height:1.4; margin-top:2px}
+.ia-item .mini{font-size:10px; color:var(--ink-faint); font-family:var(--mono); margin-top:3px}
+.ia-lista-scroll{flex:1; min-height:0; overflow:auto}
+
+.ia-resize{position:absolute; left:0; top:0; width:14px; height:14px; cursor:nwse-resize}
+@media (max-width:900px){
+  .ia-panel{width:calc(100vw - 24px); right:12px; height:min(70vh,560px)}
+}
+
+</style>
+
+<div class="app">
+  <!-- ============================ TOPBAR ============================ -->
+  <header class="topbar">
+    <div class="brand">
+      <svg class="glyph" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M3 21V13.5C3 7.7 7 3.5 12 3.5S21 7.7 21 13.5V21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".38"/>
+        <path d="M4.5 21l3.2-5.1 3 3.4 3.4-7.3 2.6 4.6 2.8-3.2" stroke="var(--accent)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <div class="brand-name">La Cueva del <em>Economista</em></div>
+    </div>
+
+    <nav class="modswitch" aria-label="Módulos">
+      <button data-mod="tiempo" aria-current="true">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1.5 13h13M3 13V9.5M6.2 13V6M9.4 13V3.5M12.6 13V7.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Línea de Tiempo
+      </button>
+      <button data-mod="mesa">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.6" y="2.4" width="12.8" height="11.2" rx="1.8" stroke="currentColor" stroke-width="1.5"/><path d="M1.6 6.2h12.8M6.4 6.2v7.4" stroke="currentColor" stroke-width="1.5"/></svg>
+        Mesa de Trabajo
+      </button>
+    </nav>
+
+    <div class="topright">
+      <div class="proj">
+        <span class="lbl">Proyecto</span>
+        <span class="proj-name">Riesgo país y régimen cambiario</span>
+      </div>
+      <span class="chip ok"><span class="dot"></span>615 series</span>
+      <span class="chip info"><span class="dot"></span>24 fuentes</span>
+      <button class="iconbtn" id="theme" title="Cambiar tema" aria-label="Cambiar tema">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="3.4" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v1.6M8 13.4V15M15 8h-1.6M2.6 8H1M12.9 3.1l-1.1 1.1M4.2 11.8l-1.1 1.1M12.9 12.9l-1.1-1.1M4.2 4.2L3.1 3.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="main">
+    <!-- ==================================================================
+         MÓDULO 1 — LÍNEA DE TIEMPO
+         ================================================================== -->
+    <section class="module on" id="mod-tiempo">
+      <aside class="rail">
+        <div class="panel-hd"><span class="lbl">Capas</span></div>
+        <div class="scroll">
+          <div class="group-hd">Instituciones</div>
+          <label class="layer" style="color:var(--s4)"><input type="checkbox" checked data-layer="pres"><span class="name">Presidencias</span><span class="meta">40</span></label>
+          <label class="layer" style="color:var(--s5)"><input type="checkbox" data-layer="mecon"><span class="name">Ministros de Economía</span><span class="meta">61</span></label>
+          <label class="layer" style="color:var(--s1)"><input type="checkbox" data-layer="bcra"><span class="name">Presidentes del BCRA</span><span class="meta">1935→</span></label>
+
+          <div class="group-hd">Eventos</div>
+          <label class="layer" style="color:var(--s2)"><input type="checkbox" checked data-evt="monetario"><span class="swatch" style="background:var(--s2)"></span><span class="name">Monetarios y cambiarios</span><span class="meta">19</span></label>
+          <label class="layer" style="color:var(--s3)"><input type="checkbox" checked data-evt="crisis"><span class="swatch" style="background:var(--s3)"></span><span class="name">Crisis</span><span class="meta">11</span></label>
+          <label class="layer" style="color:var(--s1)"><input type="checkbox" checked data-evt="externo"><span class="swatch" style="background:var(--s1)"></span><span class="name">Sector externo</span><span class="meta">9</span></label>
+          <label class="layer" style="color:var(--s4)"><input type="checkbox" checked data-evt="fiscal"><span class="swatch" style="background:var(--s4)"></span><span class="name">Fiscales</span><span class="meta">6</span></label>
+          <label class="layer" style="color:var(--s5)"><input type="checkbox" checked data-evt="politico"><span class="swatch" style="background:var(--s5)"></span><span class="name">Políticos</span><span class="meta">3</span></label>
+          <label class="layer" style="color:var(--ink-dim)"><input type="checkbox" checked data-evt="social"><span class="swatch" style="background:var(--ink-dim)"></span><span class="name">Sociales</span><span class="meta">1</span></label>
+
+          <div class="group-hd">Series históricas <span id="serie-cnt" class="num" style="font-size:10px; color:var(--accent); letter-spacing:0">3/4</span></div>
+          <div id="serie-box">
+            <label class="layer" style="color:var(--s1)" title="Ferreres · Maddison Project"><input type="checkbox" data-serie="pbipc"><span class="swatch" style="background:var(--s1)"></span><span class="name">PBI per cápita</span><span class="meta">1880</span></label>
+            <label class="layer" style="color:var(--s3)" title="INDEC · Ferreres · IPC provinciales"><input type="checkbox" data-serie="infl"><span class="swatch" style="background:var(--s3)"></span><span class="name">Inflación anual</span><span class="meta">1900</span></label>
+            <label class="layer" style="color:var(--s4)" title="BCRA · elaboración propia"><input type="checkbox" data-serie="tcr"><span class="swatch" style="background:var(--s4)"></span><span class="name">Tipo de cambio real</span><span class="meta">1913</span></label>
+            <label class="layer" style="color:var(--s2)" title="MECON · Reinhart-Rogoff"><input type="checkbox" data-serie="deuda"><span class="swatch" style="background:var(--s2)"></span><span class="name">Deuda pública / PBI</span><span class="meta">1880</span></label>
+            <label class="layer" style="color:var(--s5)" title="MECON · Secretaría de Hacienda"><input type="checkbox" data-serie="fiscal"><span class="swatch" style="background:var(--s5)"></span><span class="name">Resultado primario / PBI</span><span class="meta">1900</span></label>
+            <label class="layer" style="color:var(--s1)" title="INDEC · MOxLAD"><input type="checkbox" data-serie="apertura"><span class="swatch" style="background:var(--s1)"></span><span class="name">Apertura comercial</span><span class="meta">1880</span></label>
+            <label class="layer" style="color:var(--s2)" title="INDEC · MOxLAD"><input type="checkbox" data-serie="toi"><span class="swatch" style="background:var(--s2)"></span><span class="name">Términos de intercambio</span><span class="meta">1880</span></label>
+            <label class="layer" style="color:var(--s3)" title="Ferreres · INDEC"><input type="checkbox" data-serie="salario"><span class="swatch" style="background:var(--s3)"></span><span class="name">Salario real</span><span class="meta">1880</span></label>
+            <label class="layer" style="color:var(--s5)" title="INDEC · EPH"><input type="checkbox" data-serie="desempleo"><span class="swatch" style="background:var(--s5)"></span><span class="name">Desempleo</span><span class="meta">1974</span></label>
+            <label class="layer" style="color:var(--s4)" title="INDEC · censos nacionales"><input type="checkbox" data-serie="poblacion"><span class="swatch" style="background:var(--s4)"></span><span class="name">Población</span><span class="meta">1880</span></label>
+          </div>
+
+          <div class="pad" style="padding:12px 13px">
+            <div class="note info" style="margin-bottom:9px"><span>ℹ</span><div><b>Catálogo cerrado de 10 series troncales</b>, todas <b>anuales</b>, hasta 4 a la vez. No es el catálogo completo de la Mesa: son las que cuentan la historia larga y admiten empalme hasta 1880.</div></div>
+            <div class="note"><span>⚠</span><div><b>Cobertura real:</b> hoy la serie más antigua del catálogo arranca en <span class="num">1970</span> y el 84% en <span class="num">2000</span>. La banda gris marca lo que falta construir.</div></div>
+          </div>
+        </div>
+      </aside>
+
+      <div class="stage">
+        <div class="tl-bar">
+          <div>
+            <div class="tl-title">Historia económica argentina</div>
+            <div class="tl-sub"><span class="num">1880</span> — <span class="num">2025</span> · 49 eventos · 40 presidencias · series anuales</div>
+          </div>
+          <div class="spacer"></div>
+
+          <div class="ctrl">
+            <span class="lbl">Comparar en</span>
+            <div class="seg" id="modos" role="group" aria-label="Modo de escala">
+              <button data-modo="idx" aria-pressed="true" title="Todas las series en base 100 en el primer año visible. Elimina el problema de escala.">Índice 100</button>
+              <button data-modo="log" title="Nivel en escala logarítmica. Para series con órdenes de magnitud muy distintos.">Log</button>
+              <button data-modo="panel" title="Un panel por serie, cada uno con su propio eje y su escala real.">Paneles</button>
+            </div>
+            <button class="btn sm primary" id="var-toggle" aria-pressed="true" title="Muestra la variación interanual en un panel debajo del gráfico">Δ i.a.</button>
+          </div>
+
+          <div class="ctrl">
+            <span class="lbl">Período</span>
+            <div class="seg" id="ranges" role="group" aria-label="Rango temporal">
+              <button data-range="1880,2025" aria-pressed="true">Todo</button>
+              <button data-range="1880,1930">Agroexp.</button>
+              <button data-range="1930,1976">Sustitución</button>
+              <button data-range="1976,2001">Apertura</button>
+              <button data-range="2001,2025">Post-conv.</button>
+            </div>
+          </div>
+
+          <div class="ctrl">
+            <span class="lbl">Zoom</span>
+            <span class="chip neutral num" id="zoom-lbl">1880–2025</span>
+            <button class="btn sm" id="zoom-reset" title="Volver a 1880–2025 (o doble clic en el gráfico)">Reset</button>
+          </div>
+
+          <button class="btn sm"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 2v8m0 0L4.8 6.8M8 10l3.2-3.2M2.5 13h11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Exportar</button>
+        </div>
+
+        <div class="tl-canvas">
+          <svg class="tl-svg" id="tlsvg" viewBox="0 0 1000 460" preserveAspectRatio="xMidYMin meet" role="img" aria-label="Línea de tiempo económica argentina"></svg>
+          <div class="tl-tip" id="tl-tip"></div>
+          <div class="tl-hint">Rueda para acercar · arrastrar para desplazar · doble clic para reiniciar · la barra de abajo mueve la ventana</div>
+        </div>
+        <section class="ficha" id="ficha" aria-label="Ficha del evento"></section>
+      </div>
+
+      <aside class="rail rail-r">
+        <div class="panel-hd"><span class="lbl">Evento seleccionado</span></div>
+        <div class="scroll">
+          <div id="evt-detail"></div>
+          <div class="panel-hd" style="border-top:1px solid var(--line)"><span class="lbl">Todos los eventos</span></div>
+          <div id="evt-list"></div>
+        </div>
+      </aside>
+    </section>
+
+    <!-- ==================================================================
+         MÓDULO 2 — MESA DE TRABAJO
+         ================================================================== -->
+    <section class="module" id="mod-mesa">
+      <div class="stage">
+        <nav class="subnav" aria-label="Secciones de la mesa">
+          <button data-view="explorar" aria-current="true">Explorar</button>
+          <span class="sep"></span>
+          <button data-view="tests">Tests</button>
+          <button data-view="transf">Transformaciones</button>
+          <button data-view="modelado">Modelado</button>
+          <span class="sep"></span>
+          <button data-view="lab">Laboratorio</button>
+          <div class="spacer"></div>
+          <span class="chip neutral" style="margin-right:8px">7 pasos en el estudio</span>
+        </nav>
+
+        <!-- ---------- EXPLORAR ---------- -->
+        <div class="view on" id="v-explorar">
+          <div class="stage-wrap" style="display:flex; flex:1; min-height:0">
+            <button class="side-toggle" id="side-toggle" title="Mostrar u ocultar el panel de series" aria-label="Mostrar u ocultar el panel de series">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M9.5 3.5L5 8l4.5 4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 2.5v11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" opacity=".55"/></svg>
+            </button>
+            <aside class="rail rail-wide">
+              <div class="panel-hd">
+                <span class="lbl">Series del gráfico</span>
+                <span class="chip neutral num" id="ex-side-cnt">1</span>
+              </div>
+              <div class="scroll" id="ex-side"></div>
+            </aside>
+
+            <div class="stage">
+              <!-- barra principal -->
+              <div class="vbar">
+                <button class="symsel" id="symbol-selector" title="Buscar serie por nombre o categoría">
+                  <span style="opacity:.7">🔍</span>
+                  <span id="symbol-current">EMBI+ Argentina · Riesgo país</span>
+                  <span style="color:var(--ink-faint); font-size:10px">▾</span>
+                </button>
+                <span class="vsep"></span>
+
+                <span class="blbl">Modo</span>
+                <div class="seg" id="ex-modo" role="group" aria-label="Modo">
+                  <button data-v="ind" aria-pressed="true">Individual</button>
+                  <button data-v="cmp">Comparar</button>
+                </div>
+                <span class="vsep"></span>
+
+                <div class="seg" id="ex-tipo" role="group" aria-label="Tipo de gráfico">
+                  <button data-v="line" aria-pressed="true" title="Línea">📈</button>
+                  <button data-v="area" title="Área">⛰</button>
+                  <button data-v="candle" title="Velas — requiere una frecuencia más gruesa que la nativa">🕯</button>
+                </div>
+                <span class="vsep"></span>
+
+                <span class="blbl">Frec.</span>
+                <div class="seg" id="ex-freq" role="group" aria-label="Frecuencia">
+                  <button data-v="D" aria-pressed="true">D</button>
+                  <button data-v="W">S</button>
+                  <button data-v="M">M</button>
+                  <button data-v="Q">T</button>
+                  <button data-v="A">A</button>
+                </div>
+                <span class="vsep"></span>
+
+                <div class="vdrop">
+                  <button class="btn sm" id="dd-transf">Δ Transformar ▾</button>
+                  <div class="vmenu" id="menu-transf">
+                    <button data-t="dif">Δ Diferenciar</button>
+                    <button data-t="log">Log</button>
+                  </div>
+                </div>
+                <div class="vdrop">
+                  <button class="btn sm" id="dd-defl">÷ Deflactar ▾</button>
+                  <div class="vmenu" id="menu-defl">
+                    <button data-d="pbi" title="% del PBI nominal (corriente), a la misma frecuencia que la serie">÷ PBI ARS</button>
+                    <button data-d="pbi_const" title="% del PBI real (precios constantes de 2004)">÷ PBI Const.</button>
+                    <button data-d="pbi_usd" title="% del PBI en USD (MEP)">÷ PBI USD</button>
+                    <button data-d="mep" title="Pasa la serie a USD dividiendo por el dólar MEP">÷ MEP</button>
+                    <button data-d="cer" title="Pesos constantes deflactando por CER (base = última fecha)">÷ CER</button>
+                    <button data-d="ipc_usa" title="Deflacta por el IPC de EE.UU. (ETF TIP). Sólo tiene sentido en series en USD.">÷ IPC USA</button>
+                    <div class="vmenu-sep"></div>
+                    <button data-d="libre" class="libre">÷ Otra serie del catálogo…</button>
+                  </div>
+                </div>
+                <span class="vsep"></span>
+
+                <button class="btn sm" id="btn-ajustes">⚙ Ajustes ▾</button>
+                <div class="spacer"></div>
+                <span class="chip warn">solo visual — no modifica el proyecto</span>
+                <button class="btn sm ghost" id="ex-limpiar">✕ Limpiar</button>
+              </div>
+
+              <!-- fila de ajustes 1 -->
+              <div class="ajuste-row" id="ma-row">
+                <label for="ma-win">Media móvil</label>
+                <input type="number" id="ma-win" value="0" min="0" max="500" style="width:62px">
+                <span class="hint">obs. (0 = desactivado)</span>
+                <span class="vsep"></span>
+                <label>Variación</label>
+                <div class="seg" id="ex-var" role="group" aria-label="Variación">
+                  <button data-v="none" aria-pressed="true">Niveles</button>
+                  <button data-v="yoy">i.a.</button>
+                  <button data-v="qoq">i.t.</button>
+                  <button data-v="mom">i.m.</button>
+                  <button data-v="wow">i.s.</button>
+                </div>
+                <button class="btn sm" id="ex-barras">▥ Barras</button>
+              </div>
+
+              <!-- fila de ajustes 2 -->
+              <div class="ajuste-row" id="axis-row">
+                <label for="ax-from">Desde</label><input type="date" id="ax-from" value="1998-01-01">
+                <label for="ax-to">Hasta</label><input type="date" id="ax-to" value="2025-06-30">
+                <span class="vsep"></span>
+                <label for="ax-base" title="Fecha para Base 100 en modo Comparar">Base 100</label>
+                <input type="date" id="ax-base">
+                <span class="vsep"></span>
+                <label for="ax-ymin">Y mín</label><input type="number" id="ax-ymin" placeholder="Auto" step="any" style="width:76px">
+                <label for="ax-ymax">Y máx</label><input type="number" id="ax-ymax" placeholder="Auto" step="any" style="width:76px">
+                <button class="btn sm" id="ax-reset">↺ Auto</button>
+              </div>
+
+              <div class="scroll pad">
+                <!-- estadísticos ARRIBA del gráfico -->
+                <div class="card" style="margin-bottom:14px">
+                  <div class="card-hd">
+                    <h3 id="ex-titulo">EMBI+ Argentina · Riesgo país</h3>
+                    <span class="chip neutral" id="ex-uni">pb</span>
+                    <span class="chip neutral" id="ex-freqlbl">diaria</span>
+                    <div class="spacer"></div>
+                    <span class="lbl" id="ex-rango">1998-01-02 → 2025-06-30</span>
+                    <div class="seg" id="ex-quick" role="group" aria-label="Rango rápido">
+                      <button data-q="1M">1M</button><button data-q="3M">3M</button><button data-q="6M">6M</button>
+                      <button data-q="ytd">YTD</button><button data-q="1A">1A</button><button data-q="5A">5A</button>
+                      <button data-q="all" aria-pressed="true">Todo</button>
+                    </div>
+                  </div>
+                  <div class="stat-row" id="ex-stats"></div>
+                  <div class="card-bd" style="padding:8px 8px 2px; position:relative" id="ex-wrap">
+                    <svg id="expl-chart" viewBox="0 0 940 300" style="width:100%; height:auto; display:block" role="img" aria-label="Serie seleccionada"></svg>
+                    <div class="tl-tip" id="ex-tip"></div>
+                  </div>
+                  <div class="tl-hint" style="padding:0 0 8px">Rueda para acercar · arrastrar para desplazar · doble clic para reiniciar</div>
+                </div>
+
+                <!-- INDIVIDUAL: distribución y estadísticos completos -->
+                <div id="ind-panel">
+                  <div class="card">
+                    <div class="card-hd"><h3>Distribución y estadísticos</h3><div class="spacer"></div>
+                      <span class="chip neutral">sobre el rango visible</span></div>
+                    <div class="stat-row" id="ind-stats"></div>
+                    <div class="card-bd" style="padding:8px">
+                      <svg id="ind-hist" viewBox="0 0 440 150" style="width:100%; max-width:520px; height:auto; display:block" role="img" aria-label="Histograma de la serie"></svg>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- COMPARAR: cuadro, correlaciones y dispersión -->
+                <div id="cmp-panel" style="display:none">
+                  <div class="card" style="margin-bottom:14px" id="spread-card">
+                    <div class="card-hd">
+                      <h3 id="spread-tit">Spread</h3>
+                      <span class="chip ok" id="spread-val">—</span>
+                      <div class="spacer"></div>
+                      <span class="chip warn" id="spread-nota" style="display:none">unidades distintas — el spread es indicativo</span>
+                    </div>
+                    <div class="card-bd" style="padding:8px 8px 0">
+                      <svg id="cmp-spread" viewBox="0 0 940 190" style="width:100%; height:auto; display:block" role="img" aria-label="Spread entre las dos series"></svg>
+                    </div>
+                  </div>
+
+                  <div class="card" style="margin-bottom:14px">
+                    <div class="card-hd"><h3>Cuadro comparativo serie a serie</h3><div class="spacer"></div>
+                      <span class="chip neutral" id="cmp-obs">—</span></div>
+                    <div class="tablewrap" id="cmp-tabla"></div>
+                  </div>
+
+                  <div class="card" style="margin-bottom:14px">
+                    <div class="card-hd"><h3>Matriz de correlación de Pearson</h3><div class="spacer"></div>
+                      <button class="btn sm ghost">⬇ CSV</button></div>
+                    <div class="card-bd" id="cmp-corr" style="padding:10px 12px 12px"></div>
+                  </div>
+
+                  <div class="card">
+                    <div class="card-hd"><h3>Matriz de dispersión</h3><div class="spacer"></div>
+                      <span class="chip neutral">diagonal = distribución</span>
+                      <button class="btn sm ghost">⬇ PNG</button></div>
+                    <div class="card-bd" style="padding:10px">
+                      <div style="overflow-x:auto">
+                        <svg id="cmp-scatter" viewBox="0 0 500 500" style="width:100%; min-width:420px; height:auto; display:block" role="img" aria-label="Matriz de dispersión entre series"></svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+        <!-- ---------- TESTS ---------- -->
+        <div class="view" id="v-tests">
+          <div class="toolbar">
+            <span class="lbl">Batería sobre</span>
+            <span class="chip info">4 series del proyecto</span>
+            <div class="seg" role="group" aria-label="Tests">
+              <button aria-pressed="true">Raíz unitaria</button><button>Quiebres</button><button>Correlograma</button><button>Heterocedasticidad</button>
+            </div>
+            <div class="spacer"></div>
+            <button class="btn sm">Configurar</button>
+            <button class="btn primary sm">Correr batería</button>
+          </div>
+          <div class="scroll pad">
+            <div class="card">
+              <div class="card-hd"><h3>Estacionariedad — ADF · KPSS · Phillips-Perron</h3><div class="spacer"></div><span class="chip neutral num">rezagos: AIC</span><span class="chip neutral">constante</span></div>
+              <div class="tablewrap">
+                <table>
+                  <thead><tr><th>Serie</th><th>Transf.</th><th class="n">ADF (p)</th><th class="n">KPSS (p)</th><th class="n">PP (p)</th><th>Orden</th><th>Veredicto</th></tr></thead>
+                  <tbody>
+                    <tr><td>EMBI+ Argentina</td><td class="num">nivel</td><td class="n">0,214</td><td class="n">0,010</td><td class="n">0,187</td><td class="num">I(1)</td><td><span class="chip crit"><span class="dot"></span>No estacionaria</span></td></tr>
+                    <tr><td>EMBI+ Argentina</td><td class="num">Δlog</td><td class="n">0,001</td><td class="n">0,100</td><td class="n">0,001</td><td class="num">I(0)</td><td><span class="chip ok"><span class="dot"></span>Estacionaria</span></td></tr>
+                    <tr><td>Tipo de cambio real</td><td class="num">log</td><td class="n">0,081</td><td class="n">0,024</td><td class="n">0,073</td><td class="num">I(1)</td><td><span class="chip warn"><span class="dot"></span>Ambiguo</span></td></tr>
+                    <tr><td>Reservas / PBI</td><td class="num">nivel</td><td class="n">0,338</td><td class="n">0,010</td><td class="n">0,401</td><td class="num">I(1)</td><td><span class="chip crit"><span class="dot"></span>No estacionaria</span></td></tr>
+                    <tr><td>Resultado primario</td><td class="num">nivel</td><td class="n">0,019</td><td class="n">0,100</td><td class="n">0,011</td><td class="num">I(0)</td><td><span class="chip ok"><span class="dot"></span>Estacionaria</span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="verdict" style="border-top:1px solid var(--line-soft)">
+                <span class="bar" style="background:var(--warn)"></span>
+                <div><b>Lectura del copiloto:</b> tres series I(1) y una I(0) — la mezcla desaconseja un VAR en niveles. Con TCR ambiguo conviene un test de quiebre antes de decidir: un quiebre en 2002 puede estar sesgando el ADF hacia no rechazar.</div>
+              </div>
+            </div>
+
+            <div class="grid2" style="margin-top:14px">
+              <div class="card">
+                <div class="card-hd"><h3>Quiebres estructurales — Bai-Perron</h3><div class="spacer"></div><span class="chip neutral">máx. 5</span></div>
+                <div class="card-bd" style="padding:8px 8px 0">
+                  <svg id="break-chart" viewBox="0 0 440 160" style="width:100%; height:auto; display:block" role="img" aria-label="Quiebres estructurales detectados"></svg>
+                </div>
+                <div class="tablewrap">
+                  <table>
+                    <thead><tr><th>Fecha</th><th class="n">Estadístico</th><th>Evento coincidente</th></tr></thead>
+                    <tbody>
+                      <tr><td class="num">2001-12</td><td class="n">48,2</td><td>Default soberano</td></tr>
+                      <tr><td class="num">2005-06</td><td class="n">21,7</td><td>Canje de deuda I</td></tr>
+                      <tr><td class="num">2018-05</td><td class="n">33,9</td><td>Crisis cambiaria</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-hd"><h3>Correlograma — Δlog EMBI+</h3><div class="spacer"></div><span class="chip neutral num">Ljung-Box p = 0,042</span></div>
+                <div class="card-bd" style="padding:10px">
+                  <svg id="acf-chart" viewBox="0 0 440 170" style="width:100%; height:auto; display:block" role="img" aria-label="Función de autocorrelación"></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ---------- TRANSFORMACIONES ---------- -->
+        <div class="view" id="v-transf">
+          <div class="toolbar">
+            <span class="lbl">Series derivadas del proyecto</span>
+            <span class="chip info">6 construidas</span>
+            <div class="spacer"></div>
+            <button class="btn sm">Importar CSV</button>
+            <button class="btn primary sm">＋ Nueva serie</button>
+          </div>
+          <div class="scroll pad">
+            <div class="grid2">
+              <div class="card">
+                <div class="card-hd"><h3>Constructor</h3><div class="spacer"></div><span class="chip ok"><span class="dot"></span>fórmula válida</span></div>
+                <div class="card-bd">
+                  <div class="lbl" style="margin-bottom:5px">Expresión</div>
+                  <div style="background:var(--sunken); border:1px solid var(--line); border-radius:var(--r); padding:10px 12px; font-family:var(--mono); font-size:13px; line-height:1.6">
+                    <span style="color:var(--s4)">log</span>(<span style="color:var(--s1)">tcn_oficial</span> × <span style="color:var(--s1)">ipc_eeuu</span> ÷ <span style="color:var(--s1)">ipc_arg</span>)
+                  </div>
+                  <div class="lbl" style="margin:14px 0 5px">Cadena aplicada</div>
+                  <div style="display:flex; flex-wrap:wrap; gap:6px; align-items:center">
+                    <span class="ev-tag">alinear · trimestral</span><span style="color:var(--ink-faint)">→</span>
+                    <span class="ev-tag">interpolar huecos ≤ 2</span><span style="color:var(--ink-faint)">→</span>
+                    <span class="ev-tag">base 100 = 2004Q1</span><span style="color:var(--ink-faint)">→</span>
+                    <span class="ev-tag">log</span>
+                  </div>
+                  <div class="note info" style="margin-top:14px"><span>ℹ</span><div>Cada serie derivada guarda su <b>receta</b>: quién la construyó, de qué series y con qué transformaciones. Es lo que hace reproducible el trabajo — y lo que el informe cita en el anexo.</div></div>
+                </div>
+              </div>
+
+              <div class="card">
+                <div class="card-hd"><h3>Previsualización — TCR multilateral</h3><div class="spacer"></div><span class="chip neutral">base 100 = 2004Q1</span></div>
+                <div class="card-bd" style="padding:8px 8px 0">
+                  <svg id="transf-chart" viewBox="0 0 440 200" style="width:100%; height:auto; display:block" role="img" aria-label="Previsualización de la serie transformada"></svg>
+                </div>
+                <div class="stat-row" style="border-top:1px solid var(--line-soft)">
+                  <div class="stat"><div class="k">Obs.</div><div class="v">86</div></div>
+                  <div class="stat"><div class="k">Desde</div><div class="v">2004Q1</div></div>
+                  <div class="stat"><div class="k">Huecos</div><div class="v">2</div></div>
+                  <div class="stat"><div class="k">Outliers</div><div class="v">1</div></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card" style="margin-top:14px">
+              <div class="card-hd"><h3>Series construidas</h3></div>
+              <div class="tablewrap">
+                <table>
+                  <thead><tr><th>Serie</th><th>Receta</th><th class="n">Obs.</th><th>Frecuencia</th><th>Usada en</th></tr></thead>
+                  <tbody>
+                    <tr><td>TCR multilateral</td><td class="num">log(tcn × ipc_us ÷ ipc_ar)</td><td class="n">86</td><td>Trimestral</td><td><span class="chip neutral">VECM</span> <span class="chip neutral">OLS</span></td></tr>
+                    <tr><td>Resultado primario / PBI</td><td class="num">rp_nominal ÷ pbi_nominal</td><td class="n">86</td><td>Trimestral</td><td><span class="chip neutral">VECM</span></td></tr>
+                    <tr><td>Reservas / Importaciones</td><td class="num">res_brutas ÷ (imp × 12)</td><td class="n">110</td><td>Trimestral</td><td><span class="chip neutral">OLS</span></td></tr>
+                    <tr><td>Δlog EMBI+</td><td class="num">dif_log(embi_arg)</td><td class="n">109</td><td>Trimestral</td><td><span class="chip neutral">GARCH</span> <span class="chip neutral">Granger</span></td></tr>
+                    <tr><td>Brecha cambiaria</td><td class="num">(ccl ÷ oficial) − 1</td><td class="n">64</td><td>Trimestral</td><td><span class="chip neutral">—</span></td></tr>
+                    <tr><td>Dummy default</td><td class="num">1 si t ∈ [2001Q4, 2005Q2]</td><td class="n">86</td><td>Trimestral</td><td><span class="chip neutral">OLS</span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ---------- MODELADO ---------- -->
+        <div class="view" id="v-modelado">
+          <div class="toolbar">
+            <span class="lbl">Estudio</span>
+            <span class="chip info">7 pasos</span>
+            <div class="spacer"></div>
+            <button class="btn sm">Duplicar estudio</button>
+            <button class="btn sm">Exportar a LaTeX</button>
+            <button class="btn primary sm">＋ Agregar paso</button>
+          </div>
+          <div class="scroll pad">
+            <div class="note info" style="margin-bottom:14px"><span>ℹ</span><div>Cada paso es <b>declarativo</b>: herramienta + series + transformación + parámetros. Se ejecuta en el servidor y queda guardado con su resultado completo, así el copiloto y el informe pueden citarlo por id.</div></div>
+
+            <div class="step">
+              <div class="step-hd">
+                <span class="step-n">5</span>
+                <span class="step-name">VECM — Johansen</span>
+                <span class="step-args">dep: embi_arg · indeps: tcr, res_pbi, rp_pbi · rezagos: 2 · det: ci</span>
+                <div class="spacer"></div>
+                <span class="chip ok"><span class="dot"></span>ok</span>
+                <button class="btn ghost sm">⋯</button>
+              </div>
+              <div class="card-bd" style="padding:0">
+                <div class="stat-row">
+                  <div class="stat"><div class="k">Rango coint.</div><div class="v">1</div></div>
+                  <div class="stat"><div class="k">Traza (r=0)</div><div class="v">54,8</div></div>
+                  <div class="stat"><div class="k">Crítico 5%</div><div class="v">47,9</div></div>
+                  <div class="stat"><div class="k">α (ajuste)</div><div class="v">−0,31</div></div>
+                  <div class="stat"><div class="k">Vida media</div><div class="v">1,9 T</div></div>
+                  <div class="stat"><div class="k">AIC</div><div class="v">−12,4</div></div>
+                </div>
+                <div style="padding:10px 12px 4px"><svg id="vecm-chart" viewBox="0 0 900 190" style="width:100%; height:auto; display:block" role="img" aria-label="Ajuste del modelo y residuos"></svg></div>
+                <div class="tablewrap">
+                  <table>
+                    <thead><tr><th>Vector de cointegración</th><th class="n">Coef.</th><th class="n">EE</th><th class="n">t</th><th class="n">p</th></tr></thead>
+                    <tbody>
+                      <tr><td>log TCR</td><td class="n">−0,842</td><td class="n">0,193</td><td class="n">−4,36</td><td class="n">0,000</td></tr>
+                      <tr><td>Reservas / PBI</td><td class="n">−2,117</td><td class="n">0,604</td><td class="n">−3,50</td><td class="n">0,001</td></tr>
+                      <tr><td>Resultado primario / PBI</td><td class="n">−1,368</td><td class="n">0,721</td><td class="n">−1,90</td><td class="n">0,061</td></tr>
+                      <tr><td>Constante</td><td class="n">9,214</td><td class="n">—</td><td class="n">—</td><td class="n">—</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="verdict" style="border-top:1px solid var(--line-soft)">
+                <span class="bar" style="background:var(--ok)"></span>
+                <div><b>Crítico:</b> el vector es económicamente coherente (más reservas y mejor resultado primario ⇒ menor spread) y el α negativo confirma corrección al equilibrio. El resultado primario queda al borde del 10% — reportarlo como tal, no como significativo.</div>
+              </div>
+            </div>
+
+            <div class="step">
+              <div class="step-hd">
+                <span class="step-n">6</span>
+                <span class="step-name">Diagnósticos sobre residuos</span>
+                <span class="step-args">Ljung-Box · Breusch-Godfrey · ARCH-LM · Jarque-Bera · RESET · CUSUM</span>
+                <div class="spacer"></div>
+                <span class="chip warn"><span class="dot"></span>2 alertas</span>
+                <button class="btn ghost sm">⋯</button>
+              </div>
+              <div class="tablewrap">
+                <table>
+                  <thead><tr><th>Prueba</th><th>Hipótesis nula</th><th class="n">Estadístico</th><th class="n">p</th><th>Semáforo</th></tr></thead>
+                  <tbody>
+                    <tr><td>Ljung-Box (12)</td><td>Sin autocorrelación</td><td class="n">14,8</td><td class="n">0,252</td><td><span class="chip ok"><span class="dot"></span>ok</span></td></tr>
+                    <tr><td>Breusch-Godfrey (4)</td><td>Sin autocorrelación</td><td class="n">6,1</td><td class="n">0,192</td><td><span class="chip ok"><span class="dot"></span>ok</span></td></tr>
+                    <tr><td>ARCH-LM (8)</td><td>Sin heterocedasticidad</td><td class="n">21,4</td><td class="n">0,006</td><td><span class="chip crit"><span class="dot"></span>rechaza</span></td></tr>
+                    <tr><td>Jarque-Bera</td><td>Normalidad</td><td class="n">38,7</td><td class="n">0,000</td><td><span class="chip warn"><span class="dot"></span>colas pesadas</span></td></tr>
+                    <tr><td>RESET (2)</td><td>Forma funcional correcta</td><td class="n">1,9</td><td class="n">0,158</td><td><span class="chip ok"><span class="dot"></span>ok</span></td></tr>
+                    <tr><td>CUSUM</td><td>Parámetros estables</td><td class="n">—</td><td class="n">—</td><td><span class="chip ok"><span class="dot"></span>dentro de bandas</span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="verdict" style="border-top:1px solid var(--line-soft)">
+                <span class="bar" style="background:var(--crit)"></span>
+                <div><b>Crítico:</b> el ARCH-LM rechaza — hay agrupamiento de volatilidad sin modelar. Dos caminos: errores estándar HAC (rápido, conserva el VECM) o un GARCH sobre los residuos (explica la volatilidad, es un paso más). <button class="btn sm" style="margin-left:6px">Agregar paso GARCH</button></div>
+              </div>
+            </div>
+
+            <div class="step">
+              <div class="step-hd">
+                <span class="step-n">7</span>
+                <span class="step-name">Granger — causalidad</span>
+                <span class="step-args">embi_arg ← tcr, res_pbi · rezagos: 1..4</span>
+                <div class="spacer"></div>
+                <span class="chip ok"><span class="dot"></span>ok</span>
+                <button class="btn ghost sm">⋯</button>
+              </div>
+              <div class="tablewrap">
+                <table>
+                  <thead><tr><th>Dirección</th><th class="n">lag 1</th><th class="n">lag 2</th><th class="n">lag 3</th><th class="n">lag 4</th><th>Conclusión</th></tr></thead>
+                  <tbody>
+                    <tr><td>TCR → EMBI+</td><td class="n">0,412</td><td class="n">0,088</td><td class="n">0,031</td><td class="n">0,047</td><td><span class="chip ok"><span class="dot"></span>precede</span></td></tr>
+                    <tr><td>EMBI+ → TCR</td><td class="n">0,004</td><td class="n">0,011</td><td class="n">0,019</td><td class="n">0,064</td><td><span class="chip ok"><span class="dot"></span>precede</span></td></tr>
+                    <tr><td>Reservas → EMBI+</td><td class="n">0,201</td><td class="n">0,342</td><td class="n">0,288</td><td class="n">0,377</td><td><span class="chip neutral">no precede</span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="verdict" style="border-top:1px solid var(--line-soft)">
+                <span class="bar" style="background:var(--warn)"></span>
+                <div><b>Metodólogo:</b> bidireccional entre TCR y EMBI+ — es precedencia temporal, no causalidad económica. No escribas "el tipo de cambio real causa el riesgo país": escribí que se anticipan mutuamente, consistente con retroalimentación.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ---------- LABORATORIO ---------- -->
+        <div class="view" id="v-lab">
+          <div class="toolbar">
+            <span class="lbl">Informe</span>
+            <span class="chip info">4 de 7 secciones escritas</span>
+            <span class="chip ok"><span class="dot"></span>18 citas verificadas</span>
+            <span class="chip warn"><span class="dot"></span>2 sin respaldo</span>
+            <div class="spacer"></div>
+            <button class="btn sm">Vista previa</button>
+            <button class="btn sm">Exportar .docx</button>
+            <button class="btn primary sm">Pedir revisión al Crítico</button>
+          </div>
+          <div style="display:flex; flex:1; min-height:0">
+            <div class="scroll pad" style="flex:1">
+              <div class="card" style="margin-bottom:16px">
+                <div class="card-hd"><h3>Pregunta de investigación</h3><div class="spacer"></div><button class="btn ghost sm">Editar</button></div>
+                <div class="card-bd">
+                  <p style="margin:0; font-family:var(--display); font-size:17px; line-height:1.4; text-wrap:balance">¿En qué medida el régimen cambiario y la posición de reservas explican la dinámica del riesgo país argentino entre 1998 y 2025?</p>
+                  <div class="evidence" style="border-top:none; padding-top:12px">
+                    <span class="ev-tag">frecuencia: trimestral</span>
+                    <span class="ev-tag">4 series</span>
+                    <span class="ev-tag">2 series derivadas</span>
+                    <span class="ev-tag">ventana: 1998Q1–2025Q2</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="lbl" style="margin-bottom:9px">Hipótesis y evidencia</div>
+
+              <div class="hyp">
+                <div class="hyp-hd">
+                  <span class="hyp-id">H1</span>
+                  <span class="hyp-txt">Existe una relación de largo plazo entre el spread soberano, el tipo de cambio real y la posición de reservas.</span>
+                  <span class="chip ok"><span class="dot"></span>respaldada</span>
+                </div>
+                <div class="evidence">
+                  <span class="ev-tag">paso 5 · VECM r=1</span>
+                  <span class="ev-tag">traza 54,8 &gt; 47,9</span>
+                  <span class="ev-tag">α = −0,31</span>
+                  <span class="ev-tag">📖 Enders, cap. 6</span>
+                </div>
+              </div>
+
+              <div class="hyp">
+                <div class="hyp-hd">
+                  <span class="hyp-id">H2</span>
+                  <span class="hyp-txt">El resultado fiscal primario tiene efecto significativo sobre el spread una vez controlado el nivel de reservas.</span>
+                  <span class="chip warn"><span class="dot"></span>parcial</span>
+                </div>
+                <div class="evidence">
+                  <span class="ev-tag">paso 5 · p = 0,061</span>
+                  <span class="ev-tag">⚠ al borde del 10%</span>
+                  <span class="ev-tag">falta prueba de robustez</span>
+                </div>
+              </div>
+
+              <div class="hyp">
+                <div class="hyp-hd">
+                  <span class="hyp-id">H3</span>
+                  <span class="hyp-txt">Los episodios de default generan quiebres estructurales que alteran la relación de largo plazo.</span>
+                  <span class="chip neutral"><span class="dot"></span>pendiente</span>
+                </div>
+                <div class="evidence">
+                  <span class="ev-tag">quiebre 2001-12 detectado</span>
+                  <span class="ev-tag">falta: VECM por submuestra</span>
+                </div>
+              </div>
+
+              <div class="lbl" style="margin:22px 0 10px">Documento</div>
+              <div class="doc">
+                <div class="doc-sec">
+                  <h4>1 · Introducción</h4>
+                  <p>El riesgo país argentino, medido por el EMBI+, muestra una volatilidad excepcional incluso para estándares emergentes: entre 1998 y 2025 recorrió un rango de <span class="num">185</span> a <span class="num">6.391</span> puntos básicos. Esta investigación pregunta cuánto de esa dinámica responde a fundamentos observables — régimen cambiario y posición de reservas — y cuánto a quiebres institucionales <span class="cite">(Calvo &amp; Reinhart, 2002)</span>.</p>
+                </div>
+                <div class="doc-sec">
+                  <h4>2 · Marco teórico y antecedentes</h4>
+                  <p>La literatura de spreads soberanos identifica tres familias de determinantes: solvencia fiscal, liquidez externa y contagio <span class="cite">(Edwards, 1984)</span>. Para el caso argentino, <span class="cite">Damill, Frenkel &amp; Rapetti (2005)</span> documentan el rol del régimen cambiario como amplificador…</p>
+                </div>
+                <div class="doc-sec">
+                  <h4>3 · Datos</h4>
+                  <p>Se emplean cuatro series trimestrales del catálogo (1998Q1–2025Q2) y dos series derivadas cuya receta se detalla en el anexo. Todas las fuentes, coberturas y fechas de descarga se listan en el <span class="cite">Cuadro A.1</span>.</p>
+                </div>
+                <div class="doc-sec">
+                  <h4>4 · Metodología</h4>
+                  <p>Dado el orden de integración mixto (tres series I(1) y una I(0)) se descarta el VAR en niveles y se procede con el método de Johansen…</p>
+                </div>
+                <div class="doc-sec" style="opacity:.55">
+                  <h4>5 · Resultados</h4>
+                  <div class="placeholder-line" style="width:92%"></div>
+                  <div class="placeholder-line" style="width:78%"></div>
+                  <div class="placeholder-line" style="width:85%"></div>
+                  <button class="btn sm" style="margin-top:8px">Redactar con la evidencia de los pasos 5–7</button>
+                </div>
+                <div class="doc-sec" style="opacity:.55">
+                  <h4>6 · Conclusiones</h4>
+                  <div class="placeholder-line" style="width:88%"></div>
+                  <div class="placeholder-line" style="width:64%"></div>
+                </div>
+                <div class="doc-sec" style="opacity:.55">
+                  <h4>7 · Anexo — recetas, fuentes y salidas completas</h4>
+                  <div class="placeholder-line" style="width:70%"></div>
+                </div>
+              </div>
+            </div>
+
+            <aside class="rail rail-r" style="flex-basis:262px">
+              <div class="panel-hd"><span class="lbl">Bibliografía citada</span><div class="spacer"></div><button class="btn ghost sm">＋</button></div>
+              <div class="scroll">
+                <div class="evtlist-item"><span class="y">✓</span><span class="t">Enders, W. — <i>Applied Econometric Time Series</i><br><span style="color:var(--ink-faint); font-size:11px">corpus · cap. 6 citado 3 veces</span></span></div>
+                <div class="evtlist-item"><span class="y">✓</span><span class="t">Damill, Frenkel &amp; Rapetti (2005)<br><span style="color:var(--ink-faint); font-size:11px">biblioteca propia · citado 2 veces</span></span></div>
+                <div class="evtlist-item"><span class="y">✓</span><span class="t">Calvo &amp; Reinhart (2002) — <i>Fear of Floating</i><br><span style="color:var(--ink-faint); font-size:11px">corpus · citado 1 vez</span></span></div>
+                <div class="evtlist-item"><span class="y" style="color:var(--warn)">!</span><span class="t">Edwards (1984)<br><span style="color:var(--warn); font-size:11px">cita sin fuente en el corpus</span></span></div>
+                <div class="pad" style="padding:12px 13px">
+                  <div class="note"><span>⚠</span><div>El Bibliógrafo marca las citas que <b>no puede verificar</b> contra el corpus. Nada entra al informe sin fuente localizable.</div></div>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </div>
+
+      <!-- El copiloto salió del rail fijo: ahora vive en el FAB "IA" movible (al final del documento). -->
+    </section>
+  </div>
+</div>
+
+<!-- ============================ COPILOTO IA (flotante) ============================ -->
+<button class="ia-fab" id="ia-fab" title="Consultar a los agentes — arrastralo para moverlo" aria-label="Abrir el copiloto">
+  <span class="ia-fab-tx">IA</span>
+  <span class="ia-fab-dot" id="ia-fab-dot" title="3 mensajes sin leer">3</span>
+</button>
+
+<section class="ia-panel" id="ia-panel" hidden aria-label="Copiloto">
+  <header class="ia-hd" id="ia-hd">
+    <button class="ia-back" id="ia-back" title="Volver al listado de agentes" aria-label="Volver al listado de agentes" hidden>
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M9.5 3.5L5 8l4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <span class="ia-av" id="ia-hd-av">IA</span>
+    <div class="ia-hd-tx">
+      <div class="ia-hd-nm" id="ia-hd-nm">Copiloto</div>
+      <div class="ia-hd-sub" id="ia-hd-sub">elegí con quién hablar</div>
+    </div>
+    <button class="iconbtn" id="ia-min" title="Minimizar" aria-label="Minimizar el copiloto">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3.5 8h9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+    </button>
+  </header>
+
+  <!-- vista 1: listado de agentes -->
+  <div class="ia-body" id="ia-lista"></div>
+
+  <!-- vista 2: chat -->
+  <div class="ia-body" id="ia-chat" hidden>
+    <div class="ia-msgs" id="ia-msgs"></div>
+    <div class="composer">
+      <div class="suggestions" id="ia-sugg"></div>
+      <div class="box">
+        <textarea id="ia-input" placeholder="Escribí tu consulta…" aria-label="Mensaje al copiloto"></textarea>
+        <button class="btn primary sm" style="flex:0 0 auto">Enviar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="ia-resize" id="ia-resize" title="Redimensionar" aria-hidden="true"></div>
+</section>
+
+<script>
+"use strict";
+
+/* ====================== DATOS (reales / semilla) ====================== */
+const PRES = [
+ ["1880","1886","Julio A. Roca","c"],["1886","1890","Juárez Celman","c"],["1890","1892","Carlos Pellegrini","c"],
+ ["1892","1895","Luis Sáenz Peña","c"],["1895","1898","José E. Uriburu","c"],["1898","1904","Roca (2°)","c"],
+ ["1904","1906","Manuel Quintana","c"],["1906","1910","Figueroa Alcorta","c"],["1910","1914","Roque Sáenz Peña","c"],
+ ["1914","1916","Victorino de la Plaza","c"],["1916","1922","Hipólito Yrigoyen","c"],["1922","1928","Marcelo T. de Alvear","c"],
+ ["1928","1930","Yrigoyen (2°)","c"],["1930","1932","José F. Uriburu","f"],["1932","1938","Agustín P. Justo","c"],
+ ["1938","1942","Roberto M. Ortiz","c"],["1942","1943","Ramón Castillo","c"],["1943","1946","Ramírez / Farrell","f"],
+ ["1946","1955","Juan D. Perón","c"],["1955","1958","Lonardi / Aramburu","f"],["1958","1962","Arturo Frondizi","c"],
+ ["1962","1963","José M. Guido","t"],["1963","1966","Arturo Illia","c"],["1966","1970","Juan C. Onganía","f"],
+ ["1970","1971","Roberto Levingston","f"],["1971","1973","Alejandro Lanusse","f"],["1973","1974","Cámpora / Perón","c"],
+ ["1974","1976","M. E. Martínez de Perón","c"],["1976","1981","Jorge R. Videla","f"],["1981","1982","Viola / Galtieri","f"],
+ ["1982","1983","Reynaldo Bignone","f"],["1983","1989","Raúl Alfonsín","c"],["1989","1999","Carlos S. Menem","c"],
+ ["1999","2001","Fernando de la Rúa","c"],["2001","2003","Rodríguez Saá / Duhalde","t"],["2003","2007","Néstor Kirchner","c"],
+ ["2007","2015","Cristina Fernández","c"],["2015","2019","Mauricio Macri","c"],["2019","2023","Alberto Fernández","c"],
+ ["2023","2025","Javier Milei","c"]
+];
+
+const EVT = [
+ [1881,"Ley de Unificación Monetaria","monetario","Se crea el peso moneda nacional y se unifica el caos de monedas provinciales que circulaban desde la organización nacional."],
+ [1885,"Suspensión de la convertibilidad","monetario","Primer episodio de inconvertibilidad: el papel deja de canjearse por oro y comienza la emisión discrecional."],
+ [1890,"Crisis de Baring — Pánico del 90","crisis","Cesación de pagos, caída de Juárez Celman y colapso del crédito externo. Es el primer ciclo completo de endeudamiento, euforia y default de la historia argentina."],
+ [1891,"Creación del Banco de la Nación","monetario","Respuesta institucional al colapso bancario de 1890."],
+ [1899,"Ley de Conversión — Caja de Conversión","monetario","Tipo de cambio fijo respaldado en oro. Ancla nominal del modelo agroexportador durante quince años."],
+ [1914,"Cierre de la Caja de Conversión","externo","La Gran Guerra corta el flujo de capitales y el comercio; se suspende la convertibilidad."],
+ [1929,"Crack de Wall Street","externo","Colapso del comercio mundial y fin del ciclo agroexportador clásico."],
+ [1930,"Golpe de Estado","politico","Primer golpe militar del siglo XX. Comienza la sucesión de gobiernos de facto que atraviesa el siglo."],
+ [1931,"Control de cambios","monetario","Primer régimen de control cambiario de la historia argentina."],
+ [1933,"Pacto Roca-Runciman","externo","Acuerdo comercial con el Reino Unido a cambio de cuota de carnes."],
+ [1935,"Creación del BCRA","monetario","Nace el Banco Central bajo la misión Prebisch: por primera vez hay política monetaria autónoma."],
+ [1946,"Nacionalización del BCRA y los depósitos","monetario","Estatización del sistema financiero y creación del IAPI para el comercio exterior."],
+ [1949,"Crisis de balanza de pagos","crisis","Se agotan las reservas acumuladas durante la guerra; termina la expansión de posguerra."],
+ [1952,"Plan de Estabilización","fiscal","Primer ajuste peronista: congelamiento de precios y salarios."],
+ [1955,"Revolución Libertadora","politico","Derrocamiento de Perón. Ingreso al FMI y al Banco Mundial en 1956."],
+ [1959,"Plan Frondizi-Alsogaray","fiscal","Devaluación, apertura al capital extranjero y acuerdo con el FMI."],
+ [1967,"Plan Krieger Vasena","monetario","Devaluación del 40% e intento de anclar expectativas con tipo de cambio fijo."],
+ [1973,"Pacto Social (Gelbard)","fiscal","Congelamiento de precios y salarios acordado entre la CGT y la CGE."],
+ [1975,"Rodrigazo","crisis","Devaluación del 160% y tarifazo. Quiebre inflacionario definitivo: la inflación argentina no vuelve a un dígito hasta los años noventa."],
+ [1976,"Plan Martínez de Hoz","monetario","Apertura comercial y financiera; reforma del sistema bancario en 1977."],
+ [1978,"La Tablita cambiaria","monetario","Pauta de devaluación decreciente anunciada. Genera fuerte atraso del tipo de cambio real."],
+ [1980,"Crisis bancaria — caída del BIR","crisis","Quiebra del Banco de Intercambio Regional y corrida sistémica."],
+ [1982,"Guerra de Malvinas","politico","Cierre financiero externo total y salida desordenada del régimen militar."],
+ [1982,"Estatización de la deuda privada","fiscal","Seguros de cambio: el Estado absorbe deuda privada, con Cavallo en el BCRA."],
+ [1985,"Plan Austral","monetario","Nueva moneda, desagio y congelamiento. La inflación cae de 30% a 2% mensual en pocos meses."],
+ [1988,"Plan Primavera","monetario","Último intento heterodoxo del gobierno de Alfonsín; colapsa en febrero de 1989."],
+ [1989,"Hiperinflación","crisis","Dos hiperinflaciones (1989 y 1990) y entrega anticipada del poder. Pico de 3.079% anual."],
+ [1990,"Plan Bonex","monetario","Canje compulsivo de depósitos a plazo fijo por bonos en dólares a diez años."],
+ [1991,"Ley de Convertibilidad","monetario","Un peso igual a un dólar por ley. Ancla nominal durante una década y quiebre estructural en casi toda serie nominal."],
+ [1992,"Plan Brady","externo","Reestructuración de la deuda con la banca comercial."],
+ [1995,"Efecto Tequila","crisis","Contagio de la crisis mexicana: corrida de depósitos, caída del PBI y desempleo de dos dígitos."],
+ [1998,"Inicio de la recesión larga","crisis","Contagio ruso y devaluación brasileña. Cuatro años de deflación y deterioro fiscal."],
+ [2001,"Corralito y default","crisis","Restricción a los retiros bancarios, estallido del 19 y 20 de diciembre, y la mayor cesación de pagos de la historia hasta ese momento."],
+ [2002,"Fin de la Convertibilidad","monetario","Devaluación y pesificación asimétrica de contratos."],
+ [2005,"Canje de deuda I","externo","Quita cercana al 65% con adhesión del 76%."],
+ [2008,"Estatización de las AFJP","fiscal","El sistema previsional vuelve al Estado y se crea el Fondo de Garantía de Sustentabilidad."],
+ [2010,"Canje de deuda II","externo","La adhesión acumulada llega al 93%."],
+ [2011,"Cepo cambiario","monetario","Restricciones a la compra de divisas. Aparece la brecha cambiaria como variable persistente."],
+ [2014,"Default técnico — holdouts","crisis","El fallo Griesa bloquea los pagos a los bonistas reestructurados."],
+ [2015,"Salida del cepo","monetario","Unificación cambiaria con devaluación cercana al 40%."],
+ [2016,"Acuerdo con holdouts","externo","Vuelta a los mercados internacionales de deuda tras quince años."],
+ [2018,"Crisis cambiaria y acuerdo con el FMI","crisis","Fuga de capitales, salto del dólar y el mayor préstamo de la historia del organismo: 57.000 millones de dólares."],
+ [2019,"Reperfilamiento y cepo","crisis","Postergación unilateral de vencimientos y reinstalación del control de cambios."],
+ [2020,"Pandemia","social","Caída del PBI del 9,9% y emisión monetaria récord."],
+ [2020,"Reestructuración de deuda","externo","Canje con bonistas privados bajo ley extranjera y local."],
+ [2022,"Acuerdo de Facilidades Extendidas","externo","Refinanciación del stand-by de 2018 con el FMI."],
+ [2023,"Devaluación y shock fiscal","monetario","Salto cambiario del 54% al asumir el nuevo gobierno."],
+ [2024,"Ajuste fiscal y desinflación","fiscal","Superávit financiero y desaceleración desde tres dígitos anuales."],
+ [2025,"Bandas cambiarias","monetario","Flexibilización del cepo con flotación entre bandas."]
+];
+
+/* ====== FICHAS DE EVENTO (contenido largo) ======
+   Modelo propuesto para cueva/datos/historia/eventos/<id>.json
+   Campos: resumen · cronologia[] · cifras[] · series[] · medios[] · citas[] · biblio[] · relacionados[] · proc
+   {{c:N}} en el texto = referencia a cifras[N] → se renderiza como número clickeable. */
+const FICHAS = {
+  32:{ // Corralito y default
+    id:"corralito-default-2001", desde:"2001-11-30", hasta:"2002-01-06",
+    resumen:"Tres semanas que terminaron con el régimen monetario, el gobierno y el acceso al crédito externo.",
+    cronologia:[
+      {f:"2001-11-30", t:"Los depósitos caen {{c:0}} en un solo día. En el año ya se habían ido casi el 20% de los depósitos del sistema."},
+      {f:"2001-12-01", t:"Cavallo anuncia por cadena nacional el límite de retiro de {{c:1}}. La prensa lo bautiza «corralito» esa misma semana."},
+      {f:"2001-12-05", t:"El FMI suspende el desembolso de 1.260 millones de dólares. Sin ese giro, el cronograma de vencimientos se vuelve impagable."},
+      {f:"2001-12-13", t:"Paro general de la CGT. Comienzan los saqueos en el conurbano y en ciudades del interior."},
+      {f:"2001-12-19", t:"Estado de sitio y cacerolazo espontáneo. Renuncia Cavallo."},
+      {f:"2001-12-20", t:"De la Rúa renuncia y sale en helicóptero de la Casa Rosada. La represión deja 39 muertos en todo el país."},
+      {f:"2001-12-23", t:"Rodríguez Saá anuncia ante la Asamblea Legislativa la suspensión de pagos sobre {{c:2}} de deuda: el default soberano más grande hasta ese momento."},
+      {f:"2002-01-06", t:"Duhalde deroga la Convertibilidad. El peso pasa de 1 a 1,40 por dólar en el mercado oficial y flota poco después."},
+      {f:"2002-02-03", t:"Pesificación asimétrica: los depósitos en dólares se convierten a 1,40 y las deudas a 1,00. El costo lo absorben los bancos y el Estado."}
+    ],
+    cifras:[
+      {v:"1.800 M USD", et:"Retiro de depósitos en un día", serie:null, anio:2001, fuente:"BCRA"},
+      {v:"250 USD semanales", et:"Tope de extracción del corralito", serie:null, anio:2001, fuente:"Decreto 1570/2001"},
+      {v:"81.800 M USD", et:"Deuda declarada en default", serie:"deuda", anio:2002, fuente:"MECON"},
+      {v:"−10,9%", et:"Caída del PBI en 2002", serie:"pbipc", anio:2002, fuente:"INDEC"},
+      {v:"21,5%", et:"Desempleo en mayo de 2002", serie:"desempleo", anio:2002, fuente:"INDEC · EPH"},
+      {v:"+166%", et:"Salto de la deuda / PBI en 2002", serie:"deuda", anio:2002, fuente:"MECON"},
+      {v:"−23%", et:"Caída del salario real en 2002", serie:"salario", anio:2002, fuente:"INDEC"}
+    ],
+    series:["pbipc","desempleo","deuda","salario"],
+    medio:{epigrafe:"Cacerolazo frente al Congreso de la Nación, 20 de diciembre de 2001.", credito:"Archivo General de la Nación", licencia:"Uso educativo — verificar antes de publicar"},
+    citas:[
+      {t:"La combinación de tipo de cambio fijo, apertura financiera y déficit fiscal creciente hizo que el ajuste recayera íntegramente sobre el nivel de actividad y el empleo.", fuente:"Damill & Frenkel (2003)", pag:47},
+      {t:"Argentina 2001 es el caso testigo de una crisis gemela: crisis bancaria y crisis de deuda soberana ocurriendo simultáneamente y realimentándose.", fuente:"Reinhart & Rogoff (2009)", pag:142}
+    ],
+    biblio:["Damill, M. & Frenkel, R. (2003). Argentina: macroeconomic performance and crisis.","Reinhart, C. & Rogoff, K. (2009). This Time is Different, cap. 10.","Gerchunoff, P. & Llach, L. (2018). El ciclo de la ilusión y el desencanto, cap. 12."],
+    relacionados:[33,34],
+    proc:{verificado:true, revisado:"2026-08-28", nivel:"episodio"}
+  },
+
+  18:{ // Rodrigazo
+    id:"rodrigazo-1975", desde:"1975-06-04", hasta:"1975-07-31",
+    resumen:"El ajuste que partió en dos la historia inflacionaria argentina: antes y después de 1975.",
+    cronologia:[
+      {f:"1975-06-02", t:"Celestino Rodrigo asume como ministro de Economía con un plan de sinceramiento de precios relativos."},
+      {f:"1975-06-04", t:"Se anuncia una devaluación del {{c:0}} en el mercado comercial y del 100% en el financiero."},
+      {f:"1975-06-05", t:"Aumentos de tarifas: la nafta sube {{c:1}} y la electricidad más del 75%."},
+      {f:"1975-06-27", t:"La CGT rompe con el gobierno y convoca al primer paro general contra un gobierno peronista."},
+      {f:"1975-07-17", t:"Rodrigo renuncia. Los acuerdos salariales terminan homologando aumentos superiores al 100%."},
+      {f:"1975-12-31", t:"La inflación del año cierra en {{c:2}}. La inflación argentina no vuelve a un dígito anual hasta 1993."}
+    ],
+    cifras:[
+      {v:"160%", et:"Devaluación del tipo de cambio comercial", serie:"tcr", anio:1975, fuente:"BCRA"},
+      {v:"+181%", et:"Aumento del precio de la nafta", serie:null, anio:1975, fuente:"Secretaría de Energía"},
+      {v:"182%", et:"Inflación anual 1975", serie:"infl", anio:1975, fuente:"INDEC"},
+      {v:"−26%", et:"Caída del salario real en 1976", serie:"salario", anio:1976, fuente:"Ferreres"}
+    ],
+    series:["infl","salario","tcr"],
+    medio:{epigrafe:"Movilización de la CGT contra el plan económico, julio de 1975.", credito:"Archivo Télam", licencia:"Uso educativo — verificar antes de publicar"},
+    citas:[
+      {t:"El Rodrigazo marca el fin del régimen de inflación moderada y el comienzo de la alta inflación crónica que dominaría los veinte años siguientes.", fuente:"Gerchunoff & Llach (2018)", pag:378}
+    ],
+    biblio:["Gerchunoff, P. & Llach, L. (2018). El ciclo de la ilusión y el desencanto, cap. 9.","Di Tella, G. (1983). Perón-Perón 1973-1976."],
+    relacionados:[19],
+    proc:{verificado:false, revisado:null, nivel:"episodio"}
+  },
+
+  28:{ // Convertibilidad
+    id:"convertibilidad-1991", desde:"1991-04-01", hasta:"2002-01-06",
+    resumen:"Diez años de tipo de cambio fijo por ley: el ancla nominal más duradera y el quiebre estructural más profundo de las series argentinas.",
+    cronologia:[
+      {f:"1991-03-27", t:"El Congreso sanciona la Ley 23.928. Cavallo lleva menos de dos meses como ministro."},
+      {f:"1991-04-01", t:"Entra en vigencia: {{c:0}} y el BCRA queda obligado a respaldar la base monetaria con reservas."},
+      {f:"1992-01-01", t:"Se crea el peso convertible, que reemplaza al austral a razón de 1 a 10.000."},
+      {f:"1993-12-31", t:"La inflación anual cae a {{c:1}}, la más baja desde 1944."},
+      {f:"1995-03-01", t:"El Tequila prueba el régimen: caen {{c:2}} de depósitos en tres meses y el desempleo trepa al 18,4%."},
+      {f:"1998-08-01", t:"Tras las crisis rusa y brasileña la economía entra en recesión. Sin poder devaluar, el ajuste va a precios y empleo."},
+      {f:"2002-01-06", t:"La Ley 25.561 deroga la Convertibilidad después de diez años y nueve meses."}
+    ],
+    cifras:[
+      {v:"1 peso = 1 dólar", et:"Paridad fijada por ley", serie:"tcr", anio:1991, fuente:"Ley 23.928"},
+      {v:"3,4%", et:"Inflación anual 1993", serie:"infl", anio:1993, fuente:"INDEC"},
+      {v:"18%", et:"Caída de depósitos durante el Tequila", serie:null, anio:1995, fuente:"BCRA"},
+      {v:"−28%", et:"Apreciación real acumulada 1991-1998", serie:"tcr", anio:1998, fuente:"Elaboración propia"}
+    ],
+    series:["infl","tcr","desempleo"],
+    medio:{epigrafe:"Domingo Cavallo presenta el plan de convertibilidad, marzo de 1991.", credito:"Archivo Clarín", licencia:"Uso educativo — verificar antes de publicar"},
+    citas:[
+      {t:"La convertibilidad resolvió el problema inflacionario al costo de eliminar todos los instrumentos de política macroeconómica frente a un shock externo.", fuente:"Damill & Frenkel (2003)", pag:31}
+    ],
+    biblio:["Damill, M. & Frenkel, R. (2003).","Gerchunoff, P. & Llach, L. (2018), cap. 11.","Calvo, G. & Reinhart, C. (2002). Fear of Floating."],
+    relacionados:[32,26],
+    proc:{verificado:true, revisado:"2026-08-28", nivel:"regimen"}
+  }
+};
+
+/* ====== SERIES HISTÓRICAS TRONCALES ======
+   Catálogo CERRADO y curado para la Línea de Tiempo: 10 series, todas ANUALES.
+   Se eligieron por tener (o poder tener) cobertura larga y por contar la historia
+   económica. Máximo 4 activas a la vez — más de eso es ilegible sobre 145 años.
+   `tipo`: "nivel" (índice o monto, admite var. i.a.) · "tasa" (ya es %, no se re-varía)
+   Valores = anclas históricas aproximadas, interpoladas. Datos ILUSTRATIVOS. */
+const SERIES_HIST = {
+  pbipc: {nom:"PBI per cápita", uni:"índice 1880=100", tipo:"nivel", color:"--s1", desde:1880,
+    fuente:"Ferreres · Maddison Project",
+    anclas:[[1880,100],[1890,118],[1900,150],[1913,236],[1917,196],[1920,215],[1929,282],[1932,235],[1940,268],[1945,285],[1948,330],[1952,312],[1961,378],[1970,455],[1974,505],[1980,498],[1985,420],[1989,388],[1994,505],[1998,556],[2002,431],[2007,588],[2011,652],[2015,640],[2019,592],[2020,530],[2022,596],[2025,585]]},
+
+  infl: {nom:"Inflación anual", uni:"% anual", tipo:"tasa", color:"--s3", desde:1900,
+    fuente:"INDEC · Ferreres · IPC provinciales",
+    anclas:[[1900,1],[1914,2],[1918,25],[1920,10],[1929,-2],[1932,-5],[1940,2],[1945,20],[1950,25],[1955,12],[1959,114],[1962,28],[1966,32],[1970,13],[1972,58],[1974,24],[1975,182],[1976,444],[1978,176],[1980,101],[1982,165],[1983,434],[1984,688],[1985,385],[1986,82],[1987,175],[1988,388],[1989,3079],[1990,2314],[1991,172],[1992,25],[1993,11],[1994,4],[1995,3],[1996,0.2],[1998,0.9],[1999,-1.2],[2001,-1.1],[2002,41],[2003,4],[2005,12],[2007,9],[2010,26],[2013,28],[2015,27],[2016,41],[2017,25],[2018,48],[2019,54],[2020,36],[2021,51],[2022,95],[2023,211],[2024,118],[2025,32]]},
+
+  tcr: {nom:"Tipo de cambio real", uni:"índice 1997=100", tipo:"nivel", color:"--s4", desde:1913,
+    fuente:"BCRA · elaboración propia",
+    anclas:[[1913,120],[1920,135],[1929,100],[1933,150],[1940,140],[1946,90],[1949,120],[1955,130],[1959,170],[1965,150],[1970,140],[1975,180],[1979,80],[1981,95],[1982,160],[1985,175],[1989,200],[1991,100],[1994,88],[1998,85],[2001,80],[2002,280],[2004,230],[2007,200],[2011,150],[2015,120],[2016,175],[2019,180],[2021,150],[2023,130],[2024,105],[2025,110]]},
+
+  deuda: {nom:"Deuda pública / PBI", uni:"% del PBI", tipo:"tasa", color:"--s2", desde:1880,
+    fuente:"MECON · Reinhart-Rogoff",
+    anclas:[[1880,15],[1885,35],[1890,60],[1895,55],[1900,50],[1913,35],[1920,32],[1929,30],[1932,45],[1940,35],[1946,25],[1955,15],[1965,18],[1970,20],[1976,25],[1980,35],[1982,55],[1985,70],[1989,90],[1993,30],[1998,38],[2001,54],[2002,166],[2005,80],[2011,39],[2015,53],[2019,90],[2021,81],[2023,85],[2025,78]]},
+
+  fiscal: {nom:"Resultado primario / PBI", uni:"% del PBI", tipo:"tasa", color:"--s5", desde:1900,
+    fuente:"MECON · Secretaría de Hacienda",
+    anclas:[[1900,-1],[1913,-0.5],[1920,-2.5],[1929,-1.5],[1932,-3.5],[1940,-1.5],[1946,-2],[1955,-3],[1962,-4.5],[1970,-2],[1975,-9],[1980,-4],[1983,-8],[1989,-5],[1993,1.5],[1998,0.5],[2001,-1.5],[2003,2.3],[2004,3.9],[2008,3],[2012,-0.2],[2015,-3.8],[2018,-2.4],[2020,-6.4],[2022,-2.3],[2024,1.8],[2025,1.5]]},
+
+  apertura: {nom:"Apertura comercial", uni:"(X+M) / PBI, %", tipo:"tasa", color:"--s1", desde:1880,
+    fuente:"INDEC · MOxLAD",
+    anclas:[[1880,35],[1890,40],[1900,45],[1913,50],[1920,45],[1929,40],[1932,25],[1940,20],[1945,15],[1955,18],[1965,14],[1970,12],[1976,15],[1980,15],[1985,17],[1990,15],[1995,19],[1998,22],[2002,40],[2005,38],[2010,35],[2015,25],[2019,32],[2020,28],[2023,30],[2025,33]]},
+
+  toi: {nom:"Términos de intercambio", uni:"índice 2004=100", tipo:"nivel", color:"--s2", desde:1880,
+    fuente:"INDEC · MOxLAD",
+    anclas:[[1880,90],[1890,85],[1900,88],[1913,100],[1920,110],[1929,95],[1932,60],[1937,80],[1940,75],[1948,130],[1952,105],[1955,95],[1965,85],[1973,105],[1975,90],[1980,90],[1986,70],[1990,75],[1995,88],[2000,85],[2004,100],[2008,130],[2011,145],[2015,120],[2018,115],[2020,110],[2022,135],[2025,120]]},
+
+  salario: {nom:"Salario real", uni:"índice 1970=100", tipo:"nivel", color:"--s3", desde:1880,
+    fuente:"Ferreres · INDEC",
+    anclas:[[1880,40],[1890,42],[1900,55],[1914,65],[1920,62],[1929,75],[1932,68],[1940,70],[1948,100],[1952,95],[1955,105],[1965,105],[1970,100],[1974,125],[1976,70],[1980,85],[1985,80],[1989,60],[1994,80],[1998,82],[2001,75],[2002,55],[2008,80],[2013,90],[2015,88],[2019,75],[2023,62],[2025,68]]},
+
+  desempleo: {nom:"Desempleo", uni:"% de la PEA", tipo:"tasa", color:"--s5", desde:1974,
+    fuente:"INDEC · EPH",
+    anclas:[[1974,3],[1980,2.5],[1985,6],[1989,8],[1993,10],[1995,18.4],[1998,12.8],[2001,18.3],[2002,21.5],[2005,11.6],[2007,8.5],[2011,7.2],[2015,6.5],[2019,9.8],[2020,13.1],[2022,6.9],[2023,6.1],[2025,7.5]]},
+
+  poblacion: {nom:"Población", uni:"millones", tipo:"nivel", color:"--s4", desde:1880,
+    fuente:"INDEC · censos nacionales",
+    anclas:[[1880,2.5],[1895,4.0],[1914,7.9],[1930,11.9],[1947,15.9],[1960,20.0],[1970,23.4],[1980,28.0],[1991,32.6],[2001,36.3],[2010,40.1],[2022,46.0],[2025,47.1]]}
+};
+
+// activas por defecto (máximo MAX_SERIES)
+const MAX_SERIES = 4;
+let SERIES_ON = ["pbipc","infl","tcr"];
+
+// interpolación lineal entre anclas + micro-ruido determinista (para que se vea como dato anual)
+function hashY(y,k){const s=Math.sin(y*12.9898+k*78.233)*43758.5453; return s-Math.floor(s);}
+function serieAnual(key){
+  const s=SERIES_HIST[key], a=s.anclas, out=[];
+  const ini=a[0][0], fin=a[a.length-1][0];
+  let j=0;
+  for(let y=ini;y<=fin;y++){
+    while(j<a.length-2 && a[j+1][0]<y) j++;
+    const [y0,v0]=a[j], [y1,v1]=a[Math.min(j+1,a.length-1)];
+    const t = y1===y0?0:(y-y0)/(y1-y0);
+    let v = v0+(v1-v0)*t;
+    const amp = Math.abs(v)*0.035 + 0.2;
+    v += (hashY(y,key.length)-0.5)*amp*(y1-y0>3?1:0.25);
+    out.push([y, v]);
+  }
+  return out;
+}
+const SERIE_CACHE={};
+function datos(key){ return SERIE_CACHE[key] || (SERIE_CACHE[key]=serieAnual(key)); }
+
+// transformación según el modo de comparación
+function transformar(pts, modo, desdeAnio){
+  if(modo==="var"){
+    const o=[];
+    for(let i=1;i<pts.length;i++){
+      const prev=pts[i-1][1];
+      if(Math.abs(prev)<1e-9) continue;
+      o.push([pts[i][0], (pts[i][1]/prev-1)*100]);
+    }
+    return o;
+  }
+  if(modo==="idx"){
+    const base = pts.find(p=>p[0]>=desdeAnio) || pts[0];
+    if(!base || Math.abs(base[1])<1e-9) return pts;
+    return pts.map(p=>[p[0], p[1]/base[1]*100]);
+  }
+  return pts; // "nivel" y "log" usan el dato crudo
+}
+
+const COLOR_EVT = {monetario:"--s2", crisis:"--s3", externo:"--s1", fiscal:"--s4", politico:"--s5", social:"--ink-dim"};
+
+
+/* ====================== HELPERS ====================== */
+const $ = (s,r=document)=>r.querySelector(s);
+const $$ = (s,r=document)=>[...r.querySelectorAll(s)];
+const svgEl = (t,a={})=>{const e=document.createElementNS("http://www.w3.org/2000/svg",t);for(const k in a)e.setAttribute(k,a[k]);return e;};
+const esc = s => String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+
+/* ====================== TEMA ====================== */
+$("#theme").addEventListener("click",()=>{
+  const root=document.documentElement;
+  const dark = root.getAttribute("data-theme")==="dark" ||
+    (!root.hasAttribute("data-theme") && matchMedia("(prefers-color-scheme:dark)").matches);
+  root.setAttribute("data-theme", dark?"light":"dark");
+  drawTimeline(); drawCharts();
+});
+
+/* ====================== NAVEGACIÓN ====================== */
+$$(".modswitch button").forEach(b=>b.addEventListener("click",()=>{
+  $$(".modswitch button").forEach(x=>x.setAttribute("aria-current", x===b));
+  $$(".module").forEach(m=>m.classList.toggle("on", m.id==="mod-"+b.dataset.mod));
+  if(b.dataset.mod==="tiempo") drawTimeline(); else drawCharts();
+}));
+$$(".subnav button[data-view]").forEach(b=>b.addEventListener("click",()=>{
+  $$(".subnav button[data-view]").forEach(x=>x.setAttribute("aria-current", x===b));
+  $$(".view").forEach(v=>v.classList.toggle("on", v.id==="v-"+b.dataset.view));
+  drawCharts();
+}));
+$$(".seg").forEach(seg=>seg.addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  if(seg.id==="ranges"){ const [a,z]=b.dataset.range.split(",").map(Number); setRange(a,z); return; }
+  $$("button",seg).forEach(x=>x.setAttribute("aria-pressed", x===b));
+}));
+
+/* ====================== LÍNEA DE TIEMPO ====================== */
+const LIM=[1880,2025];                 // dominio total
+let RANGE=[1880,2025], SEL=32;
+let MODO="idx";                        // idx | log | panel
+let VAR_ON=true;                       // panel Δ interanual abajo
+let FICHA=null, MARCA=null;            // ficha abierta · cifra resaltada
+let HOVER_CAPAS=[], VAR_CAPAS=[];      // estado para el tooltip
+const W=1000, PAD={l:52,r:16,t:16,b:22};
+const BAND_PRES={y:16,h:26}, BAND_EVT={y:52,h:16};
+const PLOT={y:80,h:290}, MINI={y:398,h:34};
+let VAR_Y=0, VAR_H=0, H=460;
+
+function layout(){
+  const comp = FICHA!==null;                       // ficha abierta ⇒ gráfico compacto
+  PLOT.h = comp ? (VAR_ON?126:170) : (VAR_ON?200:290);
+  VAR_H  = VAR_ON ? (comp?56:86) : 0;
+  VAR_Y  = PLOT.y+PLOT.h+26;
+  MINI.y = (VAR_ON ? VAR_Y+VAR_H : PLOT.y+PLOT.h) + 26;
+  MINI.h = comp?26:34;
+  H = MINI.y+MINI.h+16;
+}
+
+function cssv(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
+function xs(y){const [a,z]=RANGE; return PAD.l + (y-a)/(z-a)*(W-PAD.l-PAD.r);}
+function xsMini(y){return PAD.l + (y-LIM[0])/(LIM[1]-LIM[0])*(W-PAD.l-PAD.r);}
+function anioEn(xSvg){const [a,z]=RANGE; return a + (xSvg-PAD.l)/(W-PAD.l-PAD.r)*(z-a);}
+
+function visibleEvents(){
+  const on=new Set($$("[data-evt]").filter(c=>c.checked).map(c=>c.dataset.evt));
+  return EVT.map((e,i)=>({e,i})).filter(({e})=>on.has(e[2]) && e[0]>=RANGE[0] && e[0]<=RANGE[1]);
+}
+function fmt(v){
+  const abs=Math.abs(v);
+  if(abs>=1000) return Math.round(v).toLocaleString("es-AR");
+  if(abs>=100) return v.toFixed(0);
+  if(abs>=10) return v.toFixed(1);
+  return v.toFixed(abs<1?2:1);
+}
+function ticksY(mn,mx,n=4){
+  const span=(mx-mn)||1, paso0=span/n;
+  const mag=Math.pow(10,Math.floor(Math.log10(paso0)));
+  const paso=[1,2,2.5,5,10].map(m=>m*mag).find(p=>p>=paso0)||10*mag;
+  const out=[];
+  for(let v=Math.ceil(mn/paso)*paso; v<=mx+1e-9; v+=paso) out.push(v);
+  return out;
+}
+
+function drawTimeline(){
+  layout();
+  const svg=$("#tlsvg"); svg.innerHTML="";
+  svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+  const ink=cssv("--ink"), faint=cssv("--ink-faint"), line=cssv("--line"), soft=cssv("--line-soft"), surf=cssv("--surface");
+  const g=svgEl("g"); svg.appendChild(g);
+  const [a,z]=RANGE, span=z-a;
+  HOVER_CAPAS=[]; VAR_CAPAS=[];
+
+  /* rejilla y eje de años */
+  const stepY = span>110?20 : span>55?10 : span>22?5 : span>9?2 : 1;
+  const baseY = VAR_ON ? VAR_Y+VAR_H : PLOT.y+PLOT.h;
+  for(let y=Math.ceil(a/stepY)*stepY; y<=z; y+=stepY){
+    g.appendChild(svgEl("line",{x1:xs(y),x2:xs(y),y1:BAND_PRES.y,y2:baseY,stroke:soft,"stroke-width":1}));
+    const t=svgEl("text",{x:xs(y),y:baseY+15,"text-anchor":"middle",fill:faint,"font-size":10.5,"font-family":"var(--mono)"});
+    t.textContent=y; g.appendChild(t);
+  }
+
+  /* presidencias */
+  const lblP=svgEl("text",{x:4,y:BAND_PRES.y+17,fill:faint,"font-size":9}); lblP.textContent="GOB."; g.appendChild(lblP);
+  if($('[data-layer="pres"]').checked){
+    PRES.forEach(([ini,fin,nom,tipo])=>{
+      const y0=+ini, y1=+fin; if(y1<a||y0>z) return;
+      const x0=xs(Math.max(y0,a)), x1=xs(Math.min(y1,z)), w=Math.max(1,x1-x0);
+      const col = tipo==="f"?cssv("--facto") : tipo==="t"?cssv("--warn") : cssv("--const");
+      const grp=svgEl("g",{class:"pres-block"});
+      grp.appendChild(svgEl("rect",{x:x0,y:BAND_PRES.y,width:w,height:BAND_PRES.h,rx:2,fill:col,"fill-opacity":tipo==="f"?.30:.17,stroke:col,"stroke-opacity":.5,"stroke-width":1}));
+      if(w>52){
+        const t=svgEl("text",{x:x0+5,y:BAND_PRES.y+17,fill:ink,"font-size":10.5});
+        t.textContent = w>128 ? nom : nom.split(" ").slice(-1)[0];
+        grp.appendChild(t);
+      }
+      const ti=svgEl("title"); ti.textContent=`${nom} (${ini}–${fin})`; grp.appendChild(ti);
+      g.appendChild(grp);
+    });
+  }
+
+  /* eventos */
+  const lblE=svgEl("text",{x:4,y:BAND_EVT.y+12,fill:faint,"font-size":9}); lblE.textContent="EVT."; g.appendChild(lblE);
+  visibleEvents().forEach(({e,i})=>{
+    const x=xs(e[0]), col=cssv(COLOR_EVT[e[2]]||"--ink-dim"), tieneFicha=!!FICHAS[i];
+    const grp=svgEl("g",{class:"evt-pin"+(i===SEL?" sel":""),"data-i":i,tabindex:"0",role:"button"});
+    grp.appendChild(svgEl("line",{x1:x,x2:x,y1:BAND_EVT.y+10,y2:PLOT.y+PLOT.h,stroke:col,"stroke-width":i===SEL?1.6:1,"stroke-opacity":i===SEL?.75:.26,"stroke-dasharray":i===SEL?"":"3 3"}));
+    grp.appendChild(svgEl("circle",{class:"pin-head",cx:x,cy:BAND_EVT.y+8,r:i===SEL?5:3.6,fill:tieneFicha?col:surf,stroke:col,"stroke-width":i===SEL?2.5:1.6}));
+    const ti=svgEl("title"); ti.textContent=`${e[0]} — ${e[1]}${tieneFicha?" (ficha completa)":""}`; grp.appendChild(ti);
+    g.appendChild(grp);
+  });
+  const sel=EVT[SEL];
+  if(sel && sel[0]>=a && sel[0]<=z){
+    const x=xs(sel[0]), anchor = x>W-190?"end":"start";
+    const t=svgEl("text",{x:x+(anchor==="end"?-8:8),y:BAND_EVT.y+2,fill:ink,"font-size":11.5,"font-weight":600,"text-anchor":anchor});
+    t.textContent=sel[1]; g.appendChild(t);
+  }
+
+  /* series */
+  const activas = SERIES_ON.filter(k=>SERIES_HIST[k]);
+  const dentro = p => p[0]>=a-1 && p[0]<=z+1;
+
+  if(MODO==="panel"){
+    const n=Math.max(1,activas.length), gap=7, hh=(PLOT.h-gap*(n-1))/n;
+    activas.forEach((k,idx)=>{
+      const s=SERIES_HIST[k], col=cssv(s.color), y0=PLOT.y+idx*(hh+gap);
+      const pts=datos(k).filter(dentro);
+      g.appendChild(svgEl("rect",{x:PAD.l,y:y0,width:W-PAD.l-PAD.r,height:hh,fill:cssv("--surface-2"),"fill-opacity":.5,rx:3}));
+      if(pts.length<2){
+        const t=svgEl("text",{x:(PAD.l+W-PAD.r)/2,y:y0+hh/2,fill:faint,"font-size":10,"text-anchor":"middle"});
+        t.textContent=`${s.nom} — sin datos en el rango`; g.appendChild(t); return;
+      }
+      const vals=pts.map(p=>p[1]), mn=Math.min(...vals), mx=Math.max(...vals), rg=(mx-mn)||1;
+      const Y=v=>y0+hh-6-((v-mn)/rg)*(hh-14);
+      let d=""; pts.forEach((p,i)=>d+=(i?" L":"M")+xs(p[0]).toFixed(1)+" "+Y(p[1]).toFixed(1));
+      g.appendChild(svgEl("path",{d,fill:"none",stroke:col,"stroke-width":1.7,"stroke-linejoin":"round"}));
+      [mx,mn].forEach((v,vi)=>{
+        const t=svgEl("text",{x:PAD.l-6,y:vi?y0+hh-2:y0+9,"text-anchor":"end",fill:faint,"font-size":9,"font-family":"var(--mono)"});
+        t.textContent=fmt(v); g.appendChild(t);
+      });
+      const lb=svgEl("text",{x:PAD.l+6,y:y0+11,fill:col,"font-size":10.5,"font-weight":600});
+      lb.textContent=`${s.nom} · ${s.uni}`; g.appendChild(lb);
+      HOVER_CAPAS.push({k,s,pts,Y});
+    });
+  } else {
+    const capas = activas.map(k=>{
+      const s=SERIES_HIST[k];
+      let pts = transformar(datos(k), MODO==="log"?"nivel":MODO, a).filter(dentro);
+      if(MODO==="log") pts = pts.filter(p=>p[1]>0);
+      return {k,s,pts};
+    }).filter(c=>c.pts.length>1);
+
+    const todos = capas.flatMap(c=>c.pts.map(p=>MODO==="log"?Math.log10(p[1]):p[1]));
+    const mn = todos.length?Math.min(...todos):0, mx = todos.length?Math.max(...todos):1;
+    const rg=(mx-mn)||1, pad=rg*0.08, lo=mn-pad, hi=mx+pad;
+    const Y=v=>PLOT.y+PLOT.h-((v-lo)/(hi-lo))*PLOT.h;
+
+    ticksY(lo,hi,PLOT.h>200?4:3).forEach(v=>{
+      const y=Y(v); if(y<PLOT.y-1||y>PLOT.y+PLOT.h+1) return;
+      g.appendChild(svgEl("line",{x1:PAD.l,x2:W-PAD.r,y1:y,y2:y,stroke:soft,"stroke-width":1}));
+      const t=svgEl("text",{x:PAD.l-7,y:y+3.5,"text-anchor":"end",fill:faint,"font-size":10,"font-family":"var(--mono)"});
+      t.textContent = MODO==="log" ? fmt(Math.pow(10,v)) : fmt(v);
+      g.appendChild(t);
+    });
+    if(MODO==="idx" && 100>=lo && 100<=hi)
+      g.appendChild(svgEl("line",{x1:PAD.l,x2:W-PAD.r,y1:Y(100),y2:Y(100),stroke:line,"stroke-width":1.2,"stroke-dasharray":"5 4"}));
+    const ejeT=svgEl("text",{x:PAD.l-7,y:PLOT.y-6,"text-anchor":"end",fill:faint,"font-size":9,"letter-spacing":".05em"});
+    ejeT.textContent = MODO==="idx"?`ÍNDICE ${Math.round(a)}=100` : "NIVEL (LOG)";
+    g.appendChild(ejeT);
+
+    capas.forEach(c=>{
+      const col=cssv(c.s.color);
+      let d=""; c.pts.forEach((p,i)=>{
+        const v=MODO==="log"?Math.log10(p[1]):p[1];
+        d+=(i?" L":"M")+xs(p[0]).toFixed(1)+" "+Y(v).toFixed(1);
+      });
+      g.appendChild(svgEl("path",{d,fill:"none",stroke:col,"stroke-width":1.9,"stroke-linejoin":"round","stroke-linecap":"round","stroke-opacity":.92}));
+      const last=c.pts[c.pts.length-1], lv=MODO==="log"?Math.log10(last[1]):last[1];
+      g.appendChild(svgEl("circle",{cx:xs(last[0]),cy:Y(lv),r:3,fill:col}));
+      c.Y=Y; c.raw = v=>MODO==="log"?Math.log10(v):v;
+      HOVER_CAPAS.push(c);
+    });
+
+    let lx=PAD.l+4;
+    capas.forEach(({s})=>{
+      const col=cssv(s.color);
+      g.appendChild(svgEl("line",{x1:lx,x2:lx+13,y1:PLOT.y+11,y2:PLOT.y+11,stroke:col,"stroke-width":2.4,"stroke-linecap":"round"}));
+      const t=svgEl("text",{x:lx+18,y:PLOT.y+14.5,fill:cssv("--ink-2"),"font-size":10.5});
+      t.textContent=s.nom; g.appendChild(t);
+      lx += 18 + s.nom.length*5.9 + 16;
+    });
+    if(MODO==="idx" && activas.some(k=>SERIES_HIST[k].tipo==="tasa")){
+      const t=svgEl("text",{x:W-PAD.r,y:PLOT.y+14.5,"text-anchor":"end",fill:cssv("--warn"),"font-size":10});
+      t.textContent="⚠ hay series que ya son tasas — el índice base 100 las distorsiona"; g.appendChild(t);
+    }
+  }
+
+  /* banda sin cobertura */
+  if(a<1970){
+    const x0=xs(a), x1=xs(Math.min(1970,z));
+    g.appendChild(svgEl("rect",{class:"gapband",x:x0,y:PLOT.y,width:Math.max(0,x1-x0),height:PLOT.h}));
+    if(x1-x0>190){
+      const t=svgEl("text",{x:(x0+x1)/2,y:PLOT.y+PLOT.h-8,fill:faint,"font-size":10.5,"text-anchor":"middle"});
+      t.textContent="sin cobertura en el catálogo actual — series a construir"; g.appendChild(t);
+    }
+  }
+  g.appendChild(svgEl("line",{x1:PAD.l,x2:W-PAD.r,y1:PLOT.y+PLOT.h,y2:PLOT.y+PLOT.h,stroke:line,"stroke-width":1}));
+
+  dibujarVar(g);
+
+  /* marca de cifra (al tocar un número de la ficha) */
+  if(MARCA && SERIES_ON.includes(MARCA.serie)){
+    const c=HOVER_CAPAS.find(c=>c.k===MARCA.serie);
+    const p=c&&c.pts.find(q=>q[0]===MARCA.anio);
+    if(p&&c.Y){
+      const cx=xs(p[0]), cy=c.Y(c.raw?c.raw(p[1]):p[1]);
+      g.appendChild(svgEl("circle",{cx,cy,r:11,fill:"none",stroke:cssv("--accent"),"stroke-width":2,"stroke-opacity":.9}));
+      g.appendChild(svgEl("circle",{cx,cy,r:4.5,fill:cssv("--accent")}));
+      const t=svgEl("text",{x:cx,y:cy-17,"text-anchor":"middle",fill:cssv("--accent"),"font-size":11,"font-weight":600,"font-family":"var(--mono)"});
+      t.textContent=`${MARCA.anio} · ${fmt(p[1])}`; g.appendChild(t);
+    }
+  }
+
+  /* minimapa */
+  const mg=svgEl("g",{id:"mini"});
+  mg.appendChild(svgEl("rect",{x:PAD.l,y:MINI.y,width:W-PAD.l-PAD.r,height:MINI.h,fill:cssv("--sunken"),stroke:soft,"stroke-width":1,rx:4}));
+  const ref0=activas[0];
+  if(ref0){
+    const pts=datos(ref0), vals=pts.map(p=>p[1]);
+    const mn=Math.min(...vals), mx=Math.max(...vals), rg=(mx-mn)||1;
+    let d="";
+    pts.forEach((p,i)=>d+=(i?" L":"M")+xsMini(p[0]).toFixed(1)+" "+(MINI.y+MINI.h-4-((p[1]-mn)/rg)*(MINI.h-8)).toFixed(1));
+    mg.appendChild(svgEl("path",{d,fill:"none",stroke:cssv(SERIES_HIST[ref0].color),"stroke-width":1.2,"stroke-opacity":.55}));
+  }
+  EVT.forEach(e=>{
+    if(e[2]!=="crisis") return;
+    mg.appendChild(svgEl("line",{x1:xsMini(e[0]),x2:xsMini(e[0]),y1:MINI.y+2,y2:MINI.y+MINI.h-2,stroke:cssv("--crit"),"stroke-width":1,"stroke-opacity":.3}));
+  });
+  const bx0=xsMini(a), bx1=xsMini(z);
+  mg.appendChild(svgEl("rect",{x:PAD.l,y:MINI.y,width:bx0-PAD.l,height:MINI.h,fill:cssv("--ground"),"fill-opacity":.62}));
+  mg.appendChild(svgEl("rect",{x:bx1,y:MINI.y,width:W-PAD.r-bx1,height:MINI.h,fill:cssv("--ground"),"fill-opacity":.62}));
+  mg.appendChild(svgEl("rect",{id:"brush",x:bx0,y:MINI.y,width:Math.max(3,bx1-bx0),height:MINI.h,fill:cssv("--accent"),"fill-opacity":.10,stroke:cssv("--accent"),"stroke-width":1.2,rx:3,style:"cursor:grab"}));
+  [["bh-i",bx0],["bh-f",bx1]].forEach(([id,x])=>
+    mg.appendChild(svgEl("rect",{id,x:x-3,y:MINI.y,width:6,height:MINI.h,fill:cssv("--accent"),"fill-opacity":.55,rx:2,style:"cursor:ew-resize"})));
+  [LIM[0],LIM[1]].forEach((y,i)=>{
+    const t=svgEl("text",{x:i?W-PAD.r:PAD.l,y:MINI.y+MINI.h+12,"text-anchor":i?"end":"start",fill:faint,"font-size":9,"font-family":"var(--mono)"});
+    t.textContent=y; mg.appendChild(t);
+  });
+  g.appendChild(mg);
+  g.appendChild(svgEl("g",{id:"hover"}));
+
+  $("#zoom-lbl").textContent = `${Math.round(a)}–${Math.round(z)}`;
+  renderEvtList(); renderEvtDetail();
+}
+
+/* ---------- interacción: zoom, pan, brush ---------- */
+function setRange(a,z){
+  const min=6;                                  // no menos de 6 años de ventana
+  let A=Math.max(LIM[0],a), Z=Math.min(LIM[1],z);
+  if(Z-A<min){ const c=(A+Z)/2; A=Math.max(LIM[0],c-min/2); Z=Math.min(LIM[1],A+min); }
+  RANGE=[A,Z];
+  $$("#ranges button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.range===`${Math.round(A)},${Math.round(Z)}`));
+  drawTimeline();
+}
+function svgX(ev){const r=$("#tlsvg").getBoundingClientRect(); return (ev.clientX-r.left)/r.width*W;}
+function svgY(ev){const r=$("#tlsvg").getBoundingClientRect(); return (ev.clientY-r.top)/r.height*H;}
+
+$("#tlsvg").addEventListener("wheel",ev=>{
+  const y=svgY(ev); if(y>MINI.y-10) return;
+  ev.preventDefault();
+  const foco=Math.min(LIM[1],Math.max(LIM[0],anioEn(svgX(ev))));
+  const [a,z]=RANGE, f=ev.deltaY>0?1.18:1/1.18;
+  setRange(foco-(foco-a)*f, foco+(z-foco)*f);
+},{passive:false});
+
+let drag=null;
+$("#tlsvg").addEventListener("mousedown",ev=>{
+  const x=svgX(ev), y=svgY(ev);
+  if(y>=MINI.y && y<=MINI.y+MINI.h){
+    const t=ev.target.id;
+    drag = (t==="bh-i"||t==="bh-f") ? {tipo:t} : {tipo:"brush", x0:x, r0:[...RANGE]};
+    if(drag.tipo==="brush" && (x<xsMini(RANGE[0])||x>xsMini(RANGE[1]))){
+      const anio=LIM[0]+(x-PAD.l)/(W-PAD.l-PAD.r)*(LIM[1]-LIM[0]);
+      const w=RANGE[1]-RANGE[0]; setRange(anio-w/2, anio+w/2); drag.r0=[...RANGE];
+    }
+  } else if(y>=PLOT.y && y<=PLOT.y+PLOT.h && !ev.target.closest(".evt-pin")){
+    drag={tipo:"pan", x0:x, r0:[...RANGE]};
+    $("#tlsvg").style.cursor="grabbing";
+  }
+});
+addEventListener("mousemove",ev=>{
+  if(!drag) return;
+  const x=svgX(ev);
+  const anioMini = LIM[0]+(x-PAD.l)/(W-PAD.l-PAD.r)*(LIM[1]-LIM[0]);
+  if(drag.tipo==="pan"){
+    const [a,z]=drag.r0, dAnios=(drag.x0-x)/(W-PAD.l-PAD.r)*(z-a);
+    let A=a+dAnios, Z=z+dAnios;
+    if(A<LIM[0]){Z+=LIM[0]-A; A=LIM[0];}
+    if(Z>LIM[1]){A-=Z-LIM[1]; Z=LIM[1];}
+    setRange(A,Z);
+  } else if(drag.tipo==="brush"){
+    const [a,z]=drag.r0, d=(x-drag.x0)/(W-PAD.l-PAD.r)*(LIM[1]-LIM[0]);
+    let A=a+d, Z=z+d;
+    if(A<LIM[0]){Z+=LIM[0]-A; A=LIM[0];}
+    if(Z>LIM[1]){A-=Z-LIM[1]; Z=LIM[1];}
+    setRange(A,Z);
+  } else if(drag.tipo==="bh-i"){ setRange(Math.min(anioMini,RANGE[1]-6), RANGE[1]); }
+  else if(drag.tipo==="bh-f"){ setRange(RANGE[0], Math.max(anioMini,RANGE[0]+6)); }
+});
+addEventListener("mouseup",()=>{ drag=null; $("#tlsvg").style.cursor=""; });
+$("#tlsvg").addEventListener("dblclick",ev=>{
+  const p=ev.target.closest(".evt-pin");
+  if(p){ SEL=+p.dataset.i; abrirFicha(SEL); return; }
+  setRange(LIM[0],LIM[1]);
+});
+$("#tlsvg").addEventListener("click",ev=>{
+  const p=ev.target.closest(".evt-pin"); if(!p) return;
+  SEL=+p.dataset.i;
+  if(FICHA!==null) abrirFicha(SEL); else drawTimeline();
+});
+$("#zoom-reset").addEventListener("click",()=>setRange(LIM[0],LIM[1]));
+$("#var-toggle").addEventListener("click",function(){
+  VAR_ON=!VAR_ON; this.setAttribute("aria-pressed",VAR_ON);
+  this.classList.toggle("primary",VAR_ON); drawTimeline();
+});
+
+/* ---------- modos de escala ---------- */
+$$("#modos button").forEach(b=>b.addEventListener("click",()=>{
+  $$("#modos button").forEach(x=>x.setAttribute("aria-pressed", x===b));
+  MODO=b.dataset.modo; drawTimeline();
+}));
+
+/* ---------- selector de series (máx. 4) ---------- */
+function pintarSelectorSeries(){
+  $("#serie-cnt").textContent = `${SERIES_ON.length}/${MAX_SERIES}`;
+  $$("#serie-box input").forEach(inp=>{
+    const on=SERIES_ON.includes(inp.dataset.serie);
+    inp.checked=on;
+    const lleno = SERIES_ON.length>=MAX_SERIES && !on;
+    inp.disabled=lleno;
+    inp.closest("label").style.opacity = lleno?.45:1;
+  });
+}
+$("#serie-box").addEventListener("change",ev=>{
+  const k=ev.target.dataset.serie; if(!k) return;
+  if(ev.target.checked){ if(SERIES_ON.length<MAX_SERIES) SERIES_ON.push(k); }
+  else SERIES_ON=SERIES_ON.filter(s=>s!==k);
+  pintarSelectorSeries(); drawTimeline();
+});
+
+/* ====================== PANEL Δ INTERANUAL ====================== */
+function dibujarVar(g){
+  if(!VAR_ON) return;
+  const faint=cssv("--ink-faint"), soft=cssv("--line-soft"), line=cssv("--line");
+  const [a,z]=RANGE;
+  const capas = SERIES_ON.map(k=>{
+    const s=SERIES_HIST[k], base=datos(k), o=[];
+    for(let i=1;i<base.length;i++){
+      const [y,v]=base[i], prev=base[i-1][1];
+      if(y<a-1||y>z+1) continue;
+      // niveles → variación %; tasas → diferencia en puntos porcentuales
+      o.push([y, s.tipo==="tasa" ? v-prev : (Math.abs(prev)<1e-9?0:(v/prev-1)*100)]);
+    }
+    return {k,s,pts:o};
+  }).filter(c=>c.pts.length>1);
+  if(!capas.length) return;
+
+  const vals=capas.flatMap(c=>c.pts.map(p=>p[1]));
+  let mn=Math.min(...vals,0), mx=Math.max(...vals,0);
+  // recorte: la hiperinflación (+2900 p.p.) aplasta todo lo demás
+  const p95=[...vals].map(Math.abs).sort((x,y)=>x-y)[Math.floor(vals.length*0.94)]||1;
+  const tope=Math.min(Math.max(Math.abs(mn),mx), p95*2.4);
+  mn=Math.max(mn,-tope); mx=Math.min(mx,tope);
+  const rg=(mx-mn)||1;
+  const Y=v=>VAR_Y+VAR_H-((Math.max(mn,Math.min(mx,v))-mn)/rg)*VAR_H;
+
+  g.appendChild(svgEl("rect",{x:PAD.l,y:VAR_Y,width:W-PAD.l-PAD.r,height:VAR_H,fill:cssv("--sunken"),"fill-opacity":.55,rx:3}));
+  ticksY(mn,mx,2).forEach(v=>{
+    const y=Y(v); if(y<VAR_Y-1||y>VAR_Y+VAR_H+1) return;
+    g.appendChild(svgEl("line",{x1:PAD.l,x2:W-PAD.r,y1:y,y2:y,stroke:soft,"stroke-width":1}));
+    const t=svgEl("text",{x:PAD.l-7,y:y+3.5,"text-anchor":"end",fill:faint,"font-size":9,"font-family":"var(--mono)"});
+    t.textContent=fmt(v); g.appendChild(t);
+  });
+  if(0>=mn&&0<=mx) g.appendChild(svgEl("line",{x1:PAD.l,x2:W-PAD.r,y1:Y(0),y2:Y(0),stroke:line,"stroke-width":1.2}));
+
+  if(capas.length===1){ // una sola serie: barras, se leen mejor
+    const c=capas[0], col=cssv(c.s.color), n=c.pts.length;
+    const bw=Math.max(1.2,(W-PAD.l-PAD.r)/n*0.62);
+    c.pts.forEach(p=>{
+      const v=Math.max(mn,Math.min(mx,p[1]));
+      g.appendChild(svgEl("rect",{x:xs(p[0])-bw/2,y:Math.min(Y(0),Y(v)),width:bw,height:Math.abs(Y(v)-Y(0))||0.8,
+        fill:v>=0?cssv("--ok"):cssv("--crit"),"fill-opacity":.75}));
+    });
+  } else {
+    capas.forEach(({s,pts})=>{
+      let d=""; pts.forEach((p,i)=>d+=(i?" L":"M")+xs(p[0]).toFixed(1)+" "+Y(p[1]).toFixed(1));
+      g.appendChild(svgEl("path",{d,fill:"none",stroke:cssv(s.color),"stroke-width":1.4,"stroke-opacity":.85,"stroke-linejoin":"round"}));
+    });
+  }
+  const t=svgEl("text",{x:PAD.l+5,y:VAR_Y+11,fill:faint,"font-size":9.5,"letter-spacing":".05em"});
+  t.textContent="Δ INTERANUAL — % en niveles · p.p. en tasas"+(tope<Math.max(...vals.map(Math.abs))?" · recortado":"");
+  g.appendChild(t);
+  VAR_CAPAS=capas;
+}
+
+/* ====================== TOOLTIP ====================== */
+function moverTip(ev){
+  const tip=$("#tl-tip"), x=svgX(ev), y=svgY(ev);
+  const dentroPlot = y>=PLOT.y && y<=PLOT.y+PLOT.h;
+  const dentroVar  = VAR_ON && y>=VAR_Y && y<=VAR_Y+VAR_H;
+  if(drag || (!dentroPlot&&!dentroVar) || x<PAD.l || x>W-PAD.r){ tip.classList.remove("on"); $("#hover").innerHTML=""; return; }
+
+  const anio=Math.round(anioEn(x));
+  const hv=$("#hover"); hv.innerHTML="";
+  hv.appendChild(svgEl("line",{x1:xs(anio),x2:xs(anio),y1:PLOT.y,y2:(VAR_ON?VAR_Y+VAR_H:PLOT.y+PLOT.h),
+    stroke:cssv("--ink-dim"),"stroke-width":1,"stroke-dasharray":"3 3","stroke-opacity":.7}));
+
+  let filas="";
+  (dentroVar?VAR_CAPAS:HOVER_CAPAS).forEach(c=>{
+    const p=c.pts.find(q=>q[0]===anio); if(!p) return;
+    const col=cssv(c.s.color);
+    if(!dentroVar && c.Y) hv.appendChild(svgEl("circle",{cx:xs(anio),cy:c.Y(c.raw?c.raw(p[1]):p[1]),r:3.6,fill:col,stroke:cssv("--surface"),"stroke-width":1.6}));
+    const uni = dentroVar ? (c.s.tipo==="tasa"?"p.p.":"%") : (MODO==="idx"?`índice ${Math.round(RANGE[0])}=100`:c.s.uni);
+    filas+=`<div class="row"><span class="sw" style="background:${col}"></span><span class="nm">${esc(c.s.nom)}</span><span class="vl">${fmt(p[1])}</span><span class="un">${esc(uni)}</span></div>`;
+  });
+  if(!filas){ tip.classList.remove("on"); return; }
+
+  const ev0=EVT.find(e=>e[0]===anio);
+  tip.innerHTML=`<span class="yr">${anio}</span>${filas}`+(ev0?`<div class="ev">● ${esc(ev0[1])}</div>`:"");
+  tip.classList.add("on");
+
+  const r=$("#tlsvg").getBoundingClientRect(), c=$(".tl-canvas").getBoundingClientRect();
+  const px=r.left-c.left+xs(anio)/W*r.width, py=ev.clientY-c.top;
+  const flip = px > c.width-190;
+  tip.style.left=(px+(flip?-12-tip.offsetWidth:14))+"px";
+  tip.style.top=Math.max(4,Math.min(py-20, c.height-tip.offsetHeight-8))+"px";
+}
+$("#tlsvg").addEventListener("mousemove",moverTip);
+$("#tlsvg").addEventListener("mouseleave",()=>{$("#tl-tip").classList.remove("on"); const h=$("#hover"); if(h)h.innerHTML="";});
+
+/* ====================== FICHA DEL EVENTO ====================== */
+function abrirFicha(i){
+  FICHA=i; $("#ficha").classList.add("on");
+  const e=EVT[i], f=FICHAS[i];
+  const tipoLabel={monetario:"Monetario y cambiario",crisis:"Crisis",externo:"Sector externo",fiscal:"Fiscal",politico:"Político",social:"Social"}[e[2]]||e[2];
+
+  if(!f){
+    $("#ficha").innerHTML=`
+      <div class="ficha-hd">
+        <div style="flex:1"><h2 class="tt">${esc(e[1])}</h2><div class="meta">${e[0]} · ${esc(tipoLabel)}</div></div>
+        <button class="btn sm" id="ficha-x">Cerrar ✕</button>
+      </div>
+      <div class="ficha-col" style="padding:22px 16px">
+        <div class="note"><span>⚠</span><div><b>Ficha pendiente de redacción.</b> Este evento tiene resumen y fecha, pero todavía no la cronología detallada, las cifras enlazadas, la imagen ni la bibliografía. En la plataforma real cada ficha es un archivo curado con estado de verificación propio.</div></div>
+        <p style="font-size:13.5px; line-height:1.6; color:var(--ink-2); max-width:70ch; margin-top:14px">${esc(e[3])}</p>
+      </div>`;
+  } else {
+    const crono=f.cronologia.map(c=>{
+      const txt=esc(c.t).replace(/\{\{c:(\d+)\}\}/g,(m,n)=>{
+        const cf=f.cifras[+n]; if(!cf) return m;
+        return `<button class="cifra" data-serie="${cf.serie||""}" data-anio="${cf.anio}" title="${esc(cf.et)} · ${esc(cf.fuente)}">${esc(cf.v)}</button>`;
+      });
+      return `<li><span class="cf">${esc(c.f.slice(5))}<br><span style="opacity:.6">${c.f.slice(0,4)}</span></span><span class="ct">${txt}</span></li>`;
+    }).join("");
+
+    const cifras=f.cifras.map(cf=>
+      `<button class="cifra-card" data-serie="${cf.serie||""}" data-anio="${cf.anio}">
+         <span class="v">${esc(cf.v)}</span><span class="e">${esc(cf.et)}<br><span style="font-size:10px;opacity:.75">${esc(cf.fuente)}</span></span>
+         ${cf.serie?'<span class="link">ver en el gráfico ↗</span>':'<span class="link" style="color:var(--ink-faint)">sin serie</span>'}
+       </button>`).join("");
+
+    const citas=f.citas.map(c=>`<blockquote class="quote"><p>«${esc(c.t)}»</p><cite>${esc(c.fuente)}, p. ${c.pag}</cite></blockquote>`).join("");
+    const biblio=f.biblio.map(b=>`<li>${esc(b)}</li>`).join("");
+    const rel=(f.relacionados||[]).map(r=>`<button class="ev-tag" data-goto="${r}">${esc(EVT[r][1])} · ${EVT[r][0]}</button>`).join(" ");
+    const est=f.proc.verificado
+      ? `<span class="chip ok"><span class="dot"></span>verificado ${f.proc.revisado}</span>`
+      : `<span class="chip warn"><span class="dot"></span>sin verificar</span>`;
+
+    $("#ficha").innerHTML=`
+      <div class="ficha-hd">
+        <div style="flex:1">
+          <h2 class="tt">${esc(e[1])}</h2>
+          <div class="meta">${f.desde} → ${f.hasta} · ${esc(tipoLabel)} · nivel: ${esc(f.proc.nivel)}</div>
+        </div>
+        ${est}
+        <span class="chip neutral">${f.cifras.length} cifras</span>
+        <button class="btn sm" id="ficha-x">Cerrar ✕</button>
+      </div>
+      <div class="ficha-bd">
+        <div class="ficha-col">
+          <p style="font-size:14px; line-height:1.55; color:var(--ink); margin:0 0 15px; max-width:66ch">${esc(f.resumen)}</p>
+          <div class="lbl ficha-sec">Cronología</div>
+          <ul class="crono">${crono}</ul>
+        </div>
+        <div class="ficha-col">
+          <div class="foto">
+            <div class="ph"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" style="color:var(--ink-faint)"><rect x="2.5" y="4.5" width="19" height="15" rx="2" stroke="currentColor" stroke-width="1.4"/><circle cx="8.5" cy="10" r="1.8" stroke="currentColor" stroke-width="1.4"/><path d="M3 17l5.5-5 4 3.5 3.5-2.5 5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg></div>
+            <div class="cap">${esc(f.medio.epigrafe)}<div class="cred">${esc(f.medio.credito)} · ${esc(f.medio.licencia)}</div></div>
+          </div>
+          <div class="lbl ficha-sec">Cifras clave</div>
+          ${cifras}
+          <div class="lbl ficha-sec">De la bibliografía</div>
+          ${citas}
+          <div class="lbl ficha-sec">Fuentes</div>
+          <ul class="biblio">${biblio}</ul>
+          ${rel?`<div class="lbl ficha-sec">Eventos relacionados</div><div style="display:flex;flex-wrap:wrap;gap:6px">${rel}</div>`:""}
+          <div style="display:flex; gap:7px; margin-top:16px; flex-wrap:wrap">
+            <button class="btn sm">Citar en el informe</button>
+            <button class="btn sm ghost">Copiar enlace</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  $("#ficha-x").addEventListener("click",cerrarFicha);
+  $$("#ficha .cifra, #ficha .cifra-card").forEach(b=>b.addEventListener("click",()=>irACifra(b.dataset.serie,+b.dataset.anio)));
+  $$("#ficha [data-goto]").forEach(b=>b.addEventListener("click",()=>{SEL=+b.dataset.goto; abrirFicha(SEL);}));
+
+  // encuadrar el gráfico en el evento
+  const y0=f?+f.desde.slice(0,4):e[0], y1=f?+f.hasta.slice(0,4):e[0];
+  setRange(y0-9, y1+9);
+}
+function cerrarFicha(){ FICHA=null; $("#ficha").classList.remove("on"); drawTimeline(); }
+
+function irACifra(serie,anio){
+  if(serie && SERIES_HIST[serie]){
+    if(!SERIES_ON.includes(serie)){
+      if(SERIES_ON.length>=MAX_SERIES) SERIES_ON.shift();   // libera lugar
+      SERIES_ON.push(serie);
+      pintarSelectorSeries();
+    }
+    MARCA={serie,anio};
+  }
+  const w=Math.max(14,RANGE[1]-RANGE[0]);
+  setRange(anio-w/2, anio+w/2);
+  setTimeout(()=>{MARCA=null; drawTimeline();},2600);
+}
+
+function renderEvtList(){
+  const box=$("#evt-list");
+  box.innerHTML = visibleEvents().map(({e,i})=>
+    `<div class="evtlist-item" data-i="${i}" role="option" aria-selected="${i===SEL}">
+       <span class="y">${e[0]}</span><span class="t">${esc(e[1])}</span>
+     </div>`).join("");
+  $$(".evtlist-item",box).forEach(el=>el.addEventListener("click",()=>{
+    SEL=+el.dataset.i;
+    if(FICHA!==null) abrirFicha(SEL); else drawTimeline();
+    el.scrollIntoView({block:"nearest"});
+  }));
+}
+
+function renderEvtDetail(){
+  const e=EVT[SEL]; if(!e) return;
+  const tipoLabel={monetario:"Monetario y cambiario",crisis:"Crisis",externo:"Sector externo",fiscal:"Fiscal",politico:"Político",social:"Social"}[e[2]]||e[2];
+  const pres=PRES.find(p=>+p[0]<=e[0] && e[0]<+p[1]) || PRES[PRES.length-1];
+  $("#evt-detail").innerHTML=`
+    <div class="evt-card">
+      <div class="evt-date">${e[0]} · ${esc(tipoLabel)}</div>
+      <div class="evt-title">${esc(e[1])}</div>
+      <div class="evt-desc">${esc(e[3])}</div>
+      <dl class="kv">
+        <dt>Gobierno</dt><dd>${esc(pres[2])}</dd>
+        <dt>Series</dt><dd>7 series con quiebre detectado en ±2 años</dd>
+        <dt>Bibliografía</dt><dd>3 fuentes del corpus mencionan este evento</dd>
+      </dl>
+      <button class="btn sm ${FICHAS[SEL]?"primary":""}" id="ver-ficha" style="margin-top:12px; width:100%; justify-content:center">
+        ${FICHAS[SEL] ? "Ver ficha completa ↓" : "Ficha pendiente de redacción"}
+      </button>
+    </div>`;
+  $("#ver-ficha").addEventListener("click",()=>abrirFicha(SEL));
+}
+
+
+/* ====================== GRÁFICOS DE LA MESA ====================== */
+function rnd(seed){let s=seed; return ()=>{s=(s*1103515245+12345)&0x7fffffff; return s/0x7fffffff;};}
+
+function lineChart(id,{data,w,h,color,area=true,grid=true,band=null}){
+  const svg=$(id); if(!svg) return; svg.innerHTML="";
+  const pl={l:38,r:10,t:10,b:20};
+  const mn=Math.min(...data), mx=Math.max(...data), rng=(mx-mn)||1;
+  const X=i=>pl.l+i/(data.length-1)*(w-pl.l-pl.r);
+  const Y=v=>h-pl.b-((v-mn)/rng)*(h-pl.t-pl.b);
+  const line=cssv("--line-soft"), faint=cssv("--ink-faint");
+  if(grid) for(let k=0;k<=3;k++){
+    const y=pl.t+k/3*(h-pl.t-pl.b);
+    svg.appendChild(svgEl("line",{x1:pl.l,x2:w-pl.r,y1:y,y2:y,stroke:line,"stroke-width":1}));
+    const t=svgEl("text",{x:pl.l-6,y:y+3.5,"text-anchor":"end",fill:faint,"font-size":9.5,"font-family":"var(--mono)"});
+    t.textContent=Math.round(mx-k/3*rng).toLocaleString("es-AR"); svg.appendChild(t);
+  }
+  if(band){ svg.appendChild(svgEl("rect",{x:X(band[0]),y:pl.t,width:X(band[1])-X(band[0]),height:h-pl.t-pl.b,fill:cssv("--crit"),"fill-opacity":.08})); }
+  let d="",ar="";
+  data.forEach((v,i)=>{d+=(i?" L":"M")+X(i).toFixed(1)+" "+Y(v).toFixed(1);});
+  if(area){ ar=d+` L${X(data.length-1).toFixed(1)} ${h-pl.b} L${X(0).toFixed(1)} ${h-pl.b} Z`;
+    svg.appendChild(svgEl("path",{d:ar,fill:color,"fill-opacity":.10,stroke:"none"})); }
+  svg.appendChild(svgEl("path",{d,fill:"none",stroke:color,"stroke-width":1.8,"stroke-linejoin":"round"}));
+  svg.appendChild(svgEl("circle",{cx:X(data.length-1),cy:Y(data[data.length-1]),r:3,fill:color}));
+}
+
+function drawCharts(){
+  const r=rnd(7);
+  // EMBI: pico 2001-02, pico 2018-19
+  const embi=[]; for(let i=0;i<110;i++){
+    let base=550+280*Math.sin(i/9)+r()*180;
+    if(i>14&&i<22) base=1800+3600*Math.exp(-Math.abs(i-18)/2.2);
+    if(i>78&&i<92) base=900+1500*Math.exp(-Math.abs(i-85)/3.5);
+    embi.push(Math.max(180,base));
+  }
+  const tr=[]; for(let i=0;i<86;i++) tr.push(100+55*Math.sin(i/11)-i*0.28+r()*9);
+  lineChart("#transf-chart",{data:tr,w:440,h:200,color:cssv("--s4")});
+
+  const bk=[]; for(let i=0;i<110;i++){ let v=60+r()*20; if(i>20)v+=45; if(i>70)v-=25; if(i>88)v+=60; bk.push(v); }
+  lineChart("#break-chart",{data:bk,w:440,h:160,color:cssv("--s2"),area:false});
+  // marcas de quiebre
+  const bs=$("#break-chart");
+  [20,50,88].forEach(i=>{
+    const x=38+i/109*(440-48);
+    bs.appendChild(svgEl("line",{x1:x,x2:x,y1:10,y2:140,stroke:cssv("--crit"),"stroke-width":1.4,"stroke-dasharray":"4 3","stroke-opacity":.8}));
+  });
+
+  // ACF
+  const acf=$("#acf-chart"); if(acf){
+    acf.innerHTML="";
+    const w=440,h=170,pl={l:30,r:10,t:10,b:22}, n=18;
+    const vals=[1,.42,.21,.14,-.05,.09,.03,-.11,-.06,.02,.07,-.03,.01,-.08,.04,.02,-.02,.03];
+    const Y=v=>pl.t+(1-v)/2*(h-pl.t-pl.b);
+    acf.appendChild(svgEl("line",{x1:pl.l,x2:w-pl.r,y1:Y(0),y2:Y(0),stroke:cssv("--line"),"stroke-width":1}));
+    [.19,-.19].forEach(b=>acf.appendChild(svgEl("line",{x1:pl.l,x2:w-pl.r,y1:Y(b),y2:Y(b),stroke:cssv("--crit"),"stroke-width":1,"stroke-dasharray":"4 3","stroke-opacity":.65})));
+    vals.forEach((v,i)=>{
+      const x=pl.l+8+i*((w-pl.l-pl.r-16)/(n-1));
+      const sig=Math.abs(v)>.19;
+      acf.appendChild(svgEl("line",{x1:x,x2:x,y1:Y(0),y2:Y(v),stroke:sig?cssv("--accent"):cssv("--ink-dim"),"stroke-width":3.2,"stroke-linecap":"round"}));
+    });
+    const t=svgEl("text",{x:pl.l,y:h-6,fill:cssv("--ink-faint"),"font-size":9.5,"font-family":"var(--mono)"});
+    t.textContent="rezagos 1 … 18"; acf.appendChild(t);
+  }
+
+  // VECM: ajuste + residuos
+  const vs=$("#vecm-chart"); if(vs){
+    vs.innerHTML="";
+    const w=900,h=190,pl={l:40,r:12,t:10,b:18}, n=86;
+    const obs=[],fit=[];
+    for(let i=0;i<n;i++){ const base=6.4+.9*Math.sin(i/9)-i*.004; obs.push(base+(r()-.5)*.42); fit.push(base); }
+    const all=[...obs,...fit], mn=Math.min(...all), mx=Math.max(...all), rg=mx-mn;
+    const X=i=>pl.l+i/(n-1)*(w-pl.l-pl.r), Y=v=>pl.t+(1-(v-mn)/rg)*(h-pl.t-pl.b-46);
+    let d1="",d2="";
+    obs.forEach((v,i)=>d1+=(i?" L":"M")+X(i).toFixed(1)+" "+Y(v).toFixed(1));
+    fit.forEach((v,i)=>d2+=(i?" L":"M")+X(i).toFixed(1)+" "+Y(v).toFixed(1));
+    vs.appendChild(svgEl("path",{d:d1,fill:"none",stroke:cssv("--ink-dim"),"stroke-width":1.4,"stroke-opacity":.75}));
+    vs.appendChild(svgEl("path",{d:d2,fill:"none",stroke:cssv("--accent"),"stroke-width":2}));
+    const l1=svgEl("text",{x:w-12,y:pl.t+10,"text-anchor":"end",fill:cssv("--ink-dim"),"font-size":10}); l1.textContent="observado"; vs.appendChild(l1);
+    const l2=svgEl("text",{x:w-12,y:pl.t+24,"text-anchor":"end",fill:cssv("--accent"),"font-size":10,"font-weight":600}); l2.textContent="ajustado"; vs.appendChild(l2);
+    // residuos
+    const ry=h-40;
+    vs.appendChild(svgEl("line",{x1:pl.l,x2:w-pl.r,y1:ry,y2:ry,stroke:cssv("--line"),"stroke-width":1}));
+    obs.forEach((v,i)=>{
+      const e=(v-fit[i])*46;
+      vs.appendChild(svgEl("line",{x1:X(i),x2:X(i),y1:ry,y2:ry-e,stroke:Math.abs(e)>22?cssv("--crit"):cssv("--s1"),"stroke-width":2,"stroke-linecap":"round","stroke-opacity":.8}));
+    });
+    const l3=svgEl("text",{x:pl.l,y:h-4,fill:cssv("--ink-faint"),"font-size":9.5}); l3.textContent="residuos"; vs.appendChild(l3);
+  }
+}
+
+/* ====== SERIES SELECCIONADAS (sidebar del explorador) ======
+   Cada serie lleva sus PROPIOS parámetros (transformación, deflactor) y su ficha de
+   procedencia. Frecuencia, variación, media móvil y rango son del gráfico: compartidos. */
+const EX_SEL=[
+  {id:"embi_arg", nom:"EMBI+ Argentina", sub:"Riesgo país soberano", uni:"pb", color:"--s1",
+   rol:"dependiente", on:true, transf:new Set(), defl:null, semilla:11, pico:"2002",
+   ficha:{organismo:"BCRP · JP Morgan EMBI+", cobertura:"1998-01-02 → 2025-06-30", frecuencia:"Diaria (hábiles)",
+     unidad:"Puntos básicos sobre Tesoro EE.UU.", metodo:"Spread ponderado por capitalización de bonos soberanos en USD",
+     estacional:"No corresponde", revisiones:"Definitiva", descarga:"2025-07-02 · diaria",
+     licencia:"Uso público con atribución", verificado:true,
+     nota:"Serie de mercado: no se revisa hacia atrás. Los feriados de EE.UU. y Argentina generan huecos que NO son faltantes."}},
+
+  {id:"tcr_multi", nom:"Tipo de cambio real", sub:"Multilateral, base 1997=100", uni:"índice", color:"--s4",
+   rol:"explicativa", on:true, transf:new Set(["log"]), defl:null, semilla:23, pico:"2002",
+   ficha:{organismo:"BCRA · elaboración propia", cobertura:"1997-01-31 → 2025-06-30", frecuencia:"Mensual",
+     unidad:"Índice base 1997=100", metodo:"log(TCN × IPC_socios ÷ IPC_ARG), ponderado por comercio",
+     estacional:"No", revisiones:"Sujeta a revisión del IPC", descarga:"2025-07-02 · mensual",
+     licencia:"Serie propia — publicable con la receta", verificado:false,
+     nota:"Serie DERIVADA: su calidad depende del empalme de IPC 2007-2015. Declarar el empalme usado en el anexo."}},
+
+  {id:"res_pbi", nom:"Reservas / PBI", sub:"Reservas brutas sobre PBI nominal", uni:"% del PBI", color:"--s2",
+   rol:"explicativa", on:true, transf:new Set(), defl:"pbi", semilla:37, pico:"2002",
+   ficha:{organismo:"BCRA · INDEC", cobertura:"1998-03-31 → 2025-03-31", frecuencia:"Trimestral",
+     unidad:"% del PBI nominal", metodo:"Reservas brutas fin de período ÷ PBI nominal trimestral anualizado",
+     estacional:"No", revisiones:"El PBI se revisa hasta 2 trimestres", descarga:"2025-07-02 · trimestral",
+     licencia:"Uso público con atribución", verificado:true,
+     nota:"Huecos en 2002Q1-Q2 por el feriado bancario. NO interpolar: es justo donde ocurre el quiebre."}}
+];
+let EX_ACTIVA=0;
+
+const EX_ROL={dependiente:"dep", explicativa:"expl"};
+function exNombreDefl(d){ return d ? (EX_DEFL[d]||d) : null; }
+
+function pintarSidebar(){
+  const box=$("#ex-side"), cmp = EX.modo==="cmp";
+  $("#ex-side-cnt").textContent = cmp ? `${EX_SEL.filter(s=>s.on).length}/${EX_SEL.length}` : "1";
+
+  box.innerHTML = EX_SEL.map((s,i)=>{
+    const activa = !cmp && i===EX_ACTIVA;
+    const graficada = cmp ? s.on : i===EX_ACTIVA;
+    const f=s.ficha;
+    const est=f.verificado
+      ? '<span class="chip ok" style="font-size:9.5px"><span class="dot"></span>verificada</span>'
+      : '<span class="chip warn" style="font-size:9.5px"><span class="dot"></span>sin verificar</span>';
+
+    const opciones=[["","sin deflactar"],...Object.entries(EX_DEFL)]
+      .map(([k,v])=>`<option value="${k}"${s.defl===k?" selected":""}>${k?"÷ "+esc(v):esc(v)}</option>`).join("")
+      +`<option value="libre"${s.defl==="libre"?" selected":""}>÷ otra serie del catálogo…</option>`;
+
+    return `
+      <div class="sercard${activa?" activa":""}${graficada?"":" apagada"}" data-i="${i}">
+        <div class="sercard-hd">
+          <button class="vis" data-vis="${i}" title="${graficada?"Ocultar del gráfico":"Mostrar en el gráfico"}" aria-pressed="${graficada}">
+            <span class="dotc" style="background:${graficada?`var(${s.color})`:"transparent"}; border-color:var(${s.color})"></span>
+          </button>
+          <span class="tx">
+            <span class="nm">${esc(s.nom)}</span>
+            <span class="sb">${esc(s.id)} · ${esc(s.uni)}</span>
+          </span>
+          <button class="rolechip" data-rol="${i}" title="Cambiar rol">${EX_ROL[s.rol]}</button>
+        </div>
+
+        <div class="edit">
+          <div class="erow">
+            <span class="ek">Transformar</span>
+            <span class="ev">
+              <button class="tg" data-t="log" data-i="${i}" aria-pressed="${s.transf.has("log")}">log</button>
+              <button class="tg" data-t="dif" data-i="${i}" aria-pressed="${s.transf.has("dif")}">Δ dif.</button>
+            </span>
+          </div>
+          <div class="erow">
+            <span class="ek">Deflactar</span>
+            <span class="ev"><select class="esel" data-defl="${i}">${opciones}</select></span>
+          </div>
+        </div>
+
+        <dl class="parm">
+          <dt class="cab">Del gráfico · compartido</dt>
+          <dt>Frecuencia</dt><dd><span class="ptag on">${{D:"D · diaria",W:"S · semanal",M:"M · mensual",Q:"T · trimestral",A:"A · anual"}[EX.freq]}</span></dd>
+          <dt>Variación</dt>${EX.variacion!=="none"
+            ? `<dd><span class="ptag on">${{yoy:"i.a.",qoq:"i.t.",mom:"i.m.",wow:"i.s."}[EX.variacion]}</span>${EX.barras?'<span class="ptag">▥ barras</span>':""}</dd>`
+            : `<dd class="off">niveles</dd>`}
+          <dt>Media móvil</dt>${EX.ma>1?`<dd><span class="ptag on">${EX.ma} obs.</span></dd>`:`<dd class="off">desactivada</dd>`}
+          <dt>Gráfico</dt><dd><span class="ptag">${{line:"línea",area:"área",candle:"velas"}[EX.tipo]}</span></dd>
+          <dt>Rango</dt><dd>${exFmtFecha(EX.rango[0],0)} → ${exFmtFecha(EX.rango[1],0)}</dd>
+        </dl>
+
+        <button class="ficha-tog" aria-expanded="false"><span class="cv">▶</span> Ficha ${est}</button>
+        <div class="ficha-bd">
+          <dl>
+            <dt>Organismo</dt><dd>${esc(f.organismo)}</dd>
+            <dt>Cobertura</dt><dd class="num">${esc(f.cobertura)}</dd>
+            <dt>Frec. nativa</dt><dd>${esc(f.frecuencia)}</dd>
+            <dt>Unidad</dt><dd>${esc(f.unidad)}</dd>
+            <dt>Método</dt><dd>${esc(f.metodo)}</dd>
+            <dt>Estacional</dt><dd>${esc(f.estacional)}</dd>
+            <dt>Revisiones</dt><dd>${esc(f.revisiones)}</dd>
+            <dt>Descarga</dt><dd class="num">${esc(f.descarga)}</dd>
+            <dt>Licencia</dt><dd>${esc(f.licencia)}</dd>
+          </dl>
+          <span class="fuente"><b>Nota:</b> ${esc(f.nota)}</span>
+        </div>
+      </div>`;
+  }).join("")
+  + `<div class="side-foot">${cmp
+       ? "Cada serie se transforma por separado. Frecuencia, variación y media móvil son del gráfico."
+       : "En <b>Comparar</b> se grafican varias series a la vez, cada una con su propia transformación."}</div>`
+  + `<button class="side-add" id="ex-add">＋ Agregar serie</button>`;
+
+  // ---- interacción ----
+  $$(".sercard",box).forEach(c=>{
+    const i=+c.dataset.i;
+    c.addEventListener("click",e=>{
+      if(e.target.closest("button,select")) return;
+      EX_ACTIVA=i; sincronizarBarra(); exRender();
+    });
+  });
+  $$("[data-vis]",box).forEach(b=>b.addEventListener("click",()=>{
+    const i=+b.dataset.vis;
+    if(EX.modo==="cmp"){
+      EX_SEL[i].on=!EX_SEL[i].on;
+      if(!EX_SEL.some(s=>s.on)) EX_SEL[i].on=true;      // al menos una visible
+    } else EX_ACTIVA=i;
+    sincronizarBarra(); exRender();
+  }));
+  $$("[data-t]",box).forEach(b=>b.addEventListener("click",()=>{
+    const s=EX_SEL[+b.dataset.i], t=b.dataset.t;
+    s.transf.has(t)?s.transf.delete(t):s.transf.add(t);
+    sincronizarBarra(); exRender();
+  }));
+  $$("[data-defl]",box).forEach(sel=>sel.addEventListener("change",()=>{
+    const s=EX_SEL[+sel.dataset.defl], v=sel.value;
+    if(v==="libre"){
+      const cual=prompt("Deflactar por cualquier serie del catálogo.\nEscribí el id o el nombre (ej. ipc_nacional, pbi_nominal, tcn_oficial):","ipc_nacional");
+      if(!cual){ sel.value=s.defl||""; return; }
+      s.defl="libre"; EX_DEFL.libre=cual;
+    } else s.defl = v||null;
+    sincronizarBarra(); exRender();
+  }));
+  $$("[data-rol]",box).forEach(b=>b.addEventListener("click",()=>{
+    const s=EX_SEL[+b.dataset.rol];
+    s.rol = s.rol==="dependiente" ? "explicativa" : "dependiente";
+    pintarSidebar();
+  }));
+  $$(".ficha-tog",box).forEach(b=>b.addEventListener("click",()=>
+    b.setAttribute("aria-expanded", b.getAttribute("aria-expanded")!=="true")));
+  $("#ex-add").addEventListener("click",()=>{
+    $$("button",$("#ex-modo")).forEach(x=>x.setAttribute("aria-pressed", x.dataset.v==="cmp"));
+    EX.modo="cmp"; EX_SEL.forEach(s=>s.on=true); exRender();
+  });
+}
+
+// la barra refleja los parámetros de la serie activa
+function sincronizarBarra(){
+  const s=EX_SEL[EX_ACTIVA]; if(!s) return;
+  $("#symbol-current").textContent=`${s.nom} · ${s.sub}`;
+  $("#ex-titulo").textContent=`${s.nom} · ${s.sub}`;
+  $$("#menu-transf button").forEach(b=>b.setAttribute("aria-pressed", s.transf.has(b.dataset.t)));
+  $$("#menu-defl button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.d===s.defl));
+  $("#dd-defl").textContent = s.defl ? "÷ "+exNombreDefl(s.defl)+" ▾" : "÷ Deflactar ▾";
+  $("#dd-transf").textContent = s.transf.size ? "Δ "+[...s.transf].join(" · ")+" ▾" : "Δ Transformar ▾";
+}
+
+$("#side-toggle").addEventListener("click",()=>document.body.classList.toggle("side-off"));
+
+/* ====================== EXPLORADOR ======================
+   Parámetros POR SERIE: transformación y deflactor (viven en EX_SEL[i]).
+   Parámetros DEL GRÁFICO (compartidos): frecuencia, variación, media móvil, tipo, rango. */
+const EX = {
+  modo:"ind", tipo:"line", freq:"D", ma:0, variacion:"none", barras:false,
+  t0:1998.0, t1:2025.5, rango:null, dragX:null, vis:[]
+};
+const EX_DEFL={pbi:"PBI ARS",pbi_const:"PBI Const.",pbi_usd:"PBI USD",mep:"MEP",cer:"CER",ipc_usa:"IPC USA"};
+const EX_PASO={D:1/252, W:1/52, M:1/12, Q:1/4, A:1};
+const _baseCache={};
+
+function exBase(s){
+  if(_baseCache[s.id]) return _baseCache[s.id];
+  const n=1400, out=[], r=rnd(s.semilla); let ruido=0;
+  for(let i=0;i<n;i++){
+    const t=1998+(i/(n-1))*27.5;
+    let base;
+    if(s.id==="embi_arg"){
+      base=620+240*Math.sin(i/98)+130*Math.sin(i/33);
+      if(t>2001.2&&t<2003.4) base=1500+4900*Math.exp(-Math.abs(t-2002.15)/0.55);
+      if(t>2018.2&&t<2020.9) base=800+1700*Math.exp(-Math.abs(t-2019.7)/0.75);
+      if(t>2022.5&&t<2024.2) base=1400+900*Math.exp(-Math.abs(t-2023.3)/0.6);
+      base=Math.max(150,base);
+    } else if(s.id==="tcr_multi"){
+      base=95+18*Math.sin(i/120);
+      if(t>2002) base=250-58*Math.min(1,(t-2002)/6);
+      if(t>2011) base=190-70*Math.min(1,(t-2011)/5);
+      if(t>2018) base=125+55*Math.min(1,(t-2018)/2);
+      if(t>2023.9) base=110;
+      base=Math.max(60,base+9*Math.sin(i/40));
+    } else {
+      base=9+3.4*Math.sin(i/85);
+      if(t>2002&&t<2007) base=11+4*Math.min(1,(t-2002)/4);
+      if(t>2011) base=13-6*Math.min(1,(t-2011)/6);
+      if(t>2019) base=7+2*Math.sin(i/50);
+      base=Math.max(1.5,base);
+    }
+    ruido = ruido*0.93+(r()-0.5)*base*0.045;
+    out.push([t, Math.max(0.4, base+ruido)]);
+  }
+  return _baseCache[s.id]=out;
+}
+
+function exAgregar(s,freq){
+  const b=exBase(s);
+  if(freq==="D") return b.map(p=>[p[0],p[1],p[1],p[1],p[1]]);
+  const paso=EX_PASO[freq], cubos=new Map();
+  b.forEach(([t,v])=>{ const k=Math.floor(t/paso); (cubos.get(k)||cubos.set(k,[]).get(k)).push(v); });
+  return [...cubos.entries()].sort((a,b)=>a[0]-b[0]).map(([k,vs])=>
+    [k*paso+paso/2, vs[0], Math.max(...vs), Math.min(...vs), vs[vs.length-1]]);
+}
+
+function exSerie(s){
+  let d=exAgregar(s,EX.freq);
+  if(s.defl){
+    const f=t=>({pbi:1+(t-1998)*0.09, pbi_const:1+(t-1998)*0.03, pbi_usd:1+(t-1998)*0.05,
+                 mep:1+(t-1998)*0.11, cer:1+(t-1998)*0.13, ipc_usa:1+(t-1998)*0.02,
+                 libre:1+(t-1998)*0.07}[s.defl]||1);
+    d=d.map(p=>[p[0],p[1]/f(p[0]),p[2]/f(p[0]),p[3]/f(p[0]),p[4]/f(p[0])]);
+  }
+  const lags={yoy:{D:252,W:52,M:12,Q:4,A:1}, qoq:{D:63,W:13,M:3,Q:1,A:1},
+              mom:{D:21,W:4,M:1,Q:1,A:1},   wow:{D:5,W:1,M:1,Q:1,A:1}};
+  if(EX.variacion!=="none"){
+    const L=lags[EX.variacion][EX.freq]||1, o=[];
+    for(let i=L;i<d.length;i++){
+      const prev=d[i-L][4];
+      if(Math.abs(prev)>1e-9){const v=(d[i][4]/prev-1)*100; o.push([d[i][0],v,v,v,v]);}
+    }
+    d=o;
+  }
+  if(s.transf.has("log")) d=d.filter(p=>p[4]>0).map(p=>[p[0],Math.log(p[1]),Math.log(p[2]),Math.log(p[3]),Math.log(p[4])]);
+  if(s.transf.has("dif")){const o=[]; for(let i=1;i<d.length;i++){const v=d[i][4]-d[i-1][4]; o.push([d[i][0],v,v,v,v]);} d=o;}
+  return d;
+}
+function exMediaMovil(d){
+  if(!EX.ma||EX.ma<2) return null;
+  const o=[]; let s=0;
+  for(let i=0;i<d.length;i++){
+    s+=d[i][4]; if(i>=EX.ma) s-=d[i-EX.ma][4];
+    if(i>=EX.ma-1) o.push([d[i][0], s/EX.ma]);
+  }
+  return o;
+}
+function exFmtFecha(t,span){
+  const y=Math.floor(t), m=Math.round((t-y)*12);
+  const mm=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"][Math.min(11,Math.max(0,m))];
+  if(span>9) return String(y);
+  if(span>1.6) return `${mm}-${String(y).slice(2)}`;
+  return `${mm} ${y}`;
+}
+
+const EXW=940, EXH=300, EXP={l:56,r:14,t:14,b:26};
+function exX(t){const [a,z]=EX.rango; return EXP.l+(t-a)/(z-a)*(EXW-EXP.l-EXP.r);}
+function exT(x){const [a,z]=EX.rango; return a+(x-EXP.l)/(EXW-EXP.l-EXP.r)*(z-a);}
+function exEnUso(){ return EX.modo==="cmp" ? EX_SEL.filter(s=>s.on) : EX_SEL.slice(EX_ACTIVA,EX_ACTIVA+1); }
+
+function exRender(){
+  if(!EX.rango) EX.rango=[EX.t0,EX.t1];
+  const svg=$("#expl-chart"); if(!svg) return;
+  svg.innerHTML="";
+  const faint=cssv("--ink-faint"), soft=cssv("--line-soft"), line=cssv("--line");
+  const [a,z]=EX.rango, span=z-a;
+  const enUso=exEnUso(), comparar = EX.modo==="cmp" && enUso.length>1;
+
+  // en Comparar, unidades distintas ⇒ base 100 (si no, una serie aplasta a las otras)
+  const unidades=new Set(enUso.map(s=>s.uni));
+  const base100 = comparar && unidades.size>1;
+
+  const capas=enUso.map(s=>{
+    let d=exSerie(s).filter(p=>p[0]>=a-0.02&&p[0]<=z+0.02);
+    if(base100 && d.length){
+      const b=d[0][4] || 1;
+      d=d.map(p=>[p[0],p[1]/b*100,p[2]/b*100,p[3]/b*100,p[4]/b*100]);
+    }
+    return {s,d};
+  }).filter(c=>c.d.length>1);
+  EX.capas=capas; EX.vis=capas[0]?capas[0].d:[];
+
+  if(!capas.length){
+    const t=svgEl("text",{x:EXW/2,y:EXH/2,"text-anchor":"middle",fill:faint,"font-size":12});
+    t.textContent="Sin observaciones en el rango"; svg.appendChild(t); exStats([]); return;
+  }
+
+  const vs=capas.flatMap(c=>c.d.flatMap(p=>[p[2],p[3]]));
+  let lo=Math.min(...vs), hi=Math.max(...vs);
+  const ymin=parseFloat($("#ax-ymin").value), ymax=parseFloat($("#ax-ymax").value);
+  if(!isNaN(ymin)) lo=ymin;
+  if(!isNaN(ymax)) hi=ymax;
+  const pad=((hi-lo)||1)*0.07; lo-=pad; hi+=pad;
+  const Y=v=>EXH-EXP.b-((v-lo)/(hi-lo))*(EXH-EXP.t-EXP.b);
+  EX.Y=Y;
+
+  ticksY(lo,hi,4).forEach(v=>{
+    const y=Y(v); if(y<EXP.t-1||y>EXH-EXP.b+1) return;
+    svg.appendChild(svgEl("line",{x1:EXP.l,x2:EXW-EXP.r,y1:y,y2:y,stroke:soft,"stroke-width":1}));
+    const t=svgEl("text",{x:EXP.l-7,y:y+3.5,"text-anchor":"end",fill:faint,"font-size":10,"font-family":"var(--mono)"});
+    t.textContent=fmt(v); svg.appendChild(t);
+  });
+  if((EX.variacion!=="none"||base100) && 0>=lo && 0<=hi)
+    svg.appendChild(svgEl("line",{x1:EXP.l,x2:EXW-EXP.r,y1:Y(base100?100:0),y2:Y(base100?100:0),stroke:line,"stroke-width":1.2,"stroke-dasharray":base100?"5 4":""}));
+
+  const pasoX = span>18?5 : span>9?2 : span>3.5?1 : span>1.4?0.25 : 1/12;
+  for(let t=Math.ceil(a/pasoX)*pasoX; t<=z; t+=pasoX){
+    svg.appendChild(svgEl("line",{x1:exX(t),x2:exX(t),y1:EXP.t,y2:EXH-EXP.b,stroke:soft,"stroke-width":1}));
+    const lb=svgEl("text",{x:exX(t),y:EXH-EXP.b+15,"text-anchor":"middle",fill:faint,"font-size":10,"font-family":"var(--mono)"});
+    lb.textContent=exFmtFecha(t,span); svg.appendChild(lb);
+  }
+
+  capas.forEach(({s,d})=>{
+    const col=cssv(s.color);
+    if(!comparar && EX.tipo==="candle" && EX.freq!=="D"){
+      const bw=Math.max(1.4,(EXW-EXP.l-EXP.r)/d.length*0.6);
+      d.forEach(p=>{
+        const x=exX(p[0]), sube=p[4]>=p[1], c=sube?cssv("--ok"):cssv("--crit");
+        svg.appendChild(svgEl("line",{x1:x,x2:x,y1:Y(p[2]),y2:Y(p[3]),stroke:c,"stroke-width":1}));
+        svg.appendChild(svgEl("rect",{x:x-bw/2,y:Math.min(Y(p[1]),Y(p[4])),width:bw,
+          height:Math.max(1,Math.abs(Y(p[4])-Y(p[1]))),fill:c,"fill-opacity":.85}));
+      });
+    } else if(!comparar && EX.barras && EX.variacion!=="none"){
+      const bw=Math.max(1,(EXW-EXP.l-EXP.r)/d.length*0.65);
+      d.forEach(p=>svg.appendChild(svgEl("rect",{x:exX(p[0])-bw/2,y:Math.min(Y(0),Y(p[4])),width:bw,
+        height:Math.abs(Y(p[4])-Y(0))||0.8,fill:p[4]>=0?cssv("--ok"):cssv("--crit"),"fill-opacity":.8})));
+    } else {
+      let path=""; d.forEach((p,i)=>path+=(i?" L":"M")+exX(p[0]).toFixed(1)+" "+Y(p[4]).toFixed(1));
+      if(EX.tipo==="area" && !comparar)
+        svg.appendChild(svgEl("path",{d:path+` L${exX(d[d.length-1][0]).toFixed(1)} ${EXH-EXP.b} L${exX(d[0][0]).toFixed(1)} ${EXH-EXP.b} Z`,
+          fill:col,"fill-opacity":.13,stroke:"none"}));
+      svg.appendChild(svgEl("path",{d:path,fill:"none",stroke:col,"stroke-width":1.7,"stroke-linejoin":"round"}));
+    }
+  });
+
+  // media móvil: se aplica a TODAS las series del gráfico
+  if(EX.ma>1){
+    let dibujada=false;
+    capas.forEach(({s})=>{
+      let serie=exSerie(s);
+      if(base100 && serie.length){
+        const rec=serie.filter(p=>p[0]>=a-0.02&&p[0]<=z+0.02);
+        const b=rec.length?rec[0][4]:1;
+        if(b) serie=serie.map(p=>[p[0],p[1]/b*100,p[2]/b*100,p[3]/b*100,p[4]/b*100]);
+      }
+      const mm=exMediaMovil(serie); if(!mm) return;
+      const mv=mm.filter(p=>p[0]>=a-0.02&&p[0]<=z+0.02);
+      if(mv.length<2) return;
+      let pm=""; mv.forEach((p,i)=>pm+=(i?" L":"M")+exX(p[0]).toFixed(1)+" "+Y(p[1]).toFixed(1));
+      svg.appendChild(svgEl("path",{d:pm,fill:"none",stroke:comparar?cssv(s.color):cssv("--accent"),
+        "stroke-width":1.6,"stroke-dasharray":"5 3","stroke-opacity":comparar?.85:1}));
+      dibujada=true;
+    });
+    if(dibujada){
+      const t=svgEl("text",{x:EXW-EXP.r,y:EXP.t+(comparar?26:11),"text-anchor":"end",fill:cssv("--ink-dim"),"font-size":10,"font-weight":600});
+      t.textContent=`- - media móvil ${EX.ma} obs.${comparar?" (todas las series)":""}`; svg.appendChild(t);
+    }
+  }
+
+  // leyenda / cadena aplicada
+  if(comparar){
+    let lx=EXP.l+4;
+    capas.forEach(({s})=>{
+      const col=cssv(s.color);
+      svg.appendChild(svgEl("line",{x1:lx,x2:lx+13,y1:EXP.t+9,y2:EXP.t+9,stroke:col,"stroke-width":2.4,"stroke-linecap":"round"}));
+      const t=svgEl("text",{x:lx+18,y:EXP.t+12.5,fill:cssv("--ink-2"),"font-size":10.5});
+      t.textContent=s.nom; svg.appendChild(t);
+      lx+=18+s.nom.length*5.9+16;
+    });
+    if(base100){
+      const t=svgEl("text",{x:EXW-EXP.r,y:EXP.t+12.5,"text-anchor":"end",fill:cssv("--warn"),"font-size":10});
+      t.textContent="unidades distintas → base 100 al inicio del rango"; svg.appendChild(t);
+    }
+  } else {
+    const s=enUso[0], chips=[];
+    if(s.transf.has("log")) chips.push("log");
+    if(s.transf.has("dif")) chips.push("Δ");
+    if(s.defl) chips.push("÷ "+exNombreDefl(s.defl));
+    if(EX.variacion!=="none") chips.push({yoy:"i.a.",qoq:"i.t.",mom:"i.m.",wow:"i.s."}[EX.variacion]);
+    if(chips.length){
+      const t=svgEl("text",{x:EXP.l+4,y:EXP.t+11,fill:cssv("--ink-dim"),"font-size":10,"font-family":"var(--mono)"});
+      t.textContent=chips.join(" · "); svg.appendChild(t);
+    }
+  }
+
+  svg.appendChild(svgEl("g",{id:"ex-hover"}));
+  exStats(capas[0].d);
+
+  const s0=enUso[0];
+  $("#ex-freqlbl").textContent={D:"diaria",W:"semanal",M:"mensual",Q:"trimestral",A:"anual"}[EX.freq];
+  $("#ex-uni").textContent = base100 ? "índice 100" : EX.variacion!=="none" ? "% var." : s0.transf.has("log") ? "log "+s0.uni : s0.uni;
+  $("#ex-rango").textContent=`${exFmtFecha(a,0)} → ${exFmtFecha(z,0)}`;
+  if(typeof pintarSidebar==="function") pintarSidebar();
+  if(typeof renderComparar==="function") renderComparar();
+}
+
+// estadísticos ARRIBA: último · máx · mín · media · obs. · faltantes
+function exStats(d){
+  const box=$("#ex-stats");
+  if(!d||!d.length){box.innerHTML="";return;}
+  const v=d.map(p=>p[4]);
+  const med=v.reduce((s,x)=>s+x,0)/v.length;
+  box.innerHTML=[
+    ["Último",fmt(v[v.length-1]),true],["Máx",fmt(Math.max(...v)),false],["Mín",fmt(Math.min(...v)),false],
+    ["Media",fmt(med),false],["Obs.",String(v.length),false],["Faltantes","0",false]
+  ].map(([k,val,hl])=>`<div class="stat${hl?" hl":""}"><div class="k">${k}</div><div class="v">${val}</div></div>`).join("");
+}
+
+/* ---- zoom / pan / tooltip ---- */
+function exSvgX(ev){const r=$("#expl-chart").getBoundingClientRect(); return (ev.clientX-r.left)/r.width*EXW;}
+
+$("#expl-chart").addEventListener("wheel",ev=>{
+  ev.preventDefault();
+  const foco=Math.min(EX.t1,Math.max(EX.t0,exT(exSvgX(ev))));
+  const [a,z]=EX.rango, f=ev.deltaY>0?1.2:1/1.2;
+  let A=Math.max(EX.t0,foco-(foco-a)*f), Z=Math.min(EX.t1,foco+(z-foco)*f);
+  if(Z-A<0.35){const c=(A+Z)/2; A=c-0.175; Z=c+0.175;}
+  EX.rango=[A,Z]; exDesmarcarQuick(); exRender();
+},{passive:false});
+$("#expl-chart").addEventListener("mousedown",ev=>{
+  EX.dragX={x:exSvgX(ev), r:[...EX.rango]}; $("#expl-chart").style.cursor="grabbing";
+});
+addEventListener("mousemove",ev=>{
+  if(!EX.dragX) return;
+  const [a,z]=EX.dragX.r, d=(EX.dragX.x-exSvgX(ev))/(EXW-EXP.l-EXP.r)*(z-a);
+  let A=a+d, Z=z+d;
+  if(A<EX.t0){Z+=EX.t0-A; A=EX.t0;}
+  if(Z>EX.t1){A-=Z-EX.t1; Z=EX.t1;}
+  EX.rango=[A,Z]; exRender();
+});
+addEventListener("mouseup",()=>{ if(EX.dragX){EX.dragX=null; $("#expl-chart").style.cursor="";} });
+$("#expl-chart").addEventListener("dblclick",()=>{
+  EX.rango=[EX.t0,EX.t1];
+  $$("#ex-quick button").forEach(x=>x.setAttribute("aria-pressed", x.dataset.q==="all"));
+  exRender();
+});
+function exDesmarcarQuick(){ $$("#ex-quick button").forEach(x=>x.setAttribute("aria-pressed","false")); }
+
+$("#expl-chart").addEventListener("mousemove",ev=>{
+  const tip=$("#ex-tip"), hv=$("#ex-hover");
+  if(EX.dragX||!EX.capas||!EX.capas.length||!hv){tip.classList.remove("on"); if(hv)hv.innerHTML=""; return;}
+  const t=exT(exSvgX(ev));
+  let ref=EX.capas[0].d[0], best=1e9;
+  EX.capas[0].d.forEach(q=>{const dd=Math.abs(q[0]-t); if(dd<best){best=dd;ref=q;}});
+  hv.innerHTML="";
+  hv.appendChild(svgEl("line",{x1:exX(ref[0]),x2:exX(ref[0]),y1:EXP.t,y2:EXH-EXP.b,
+    stroke:cssv("--ink-dim"),"stroke-width":1,"stroke-dasharray":"3 3","stroke-opacity":.7}));
+
+  const uni=$("#ex-uni").textContent;
+  let filas="";
+  EX.capas.forEach(({s,d})=>{
+    let p=null, b=1e9;
+    d.forEach(q=>{const dd=Math.abs(q[0]-ref[0]); if(dd<b){b=dd;p=q;}});
+    if(!p||b>0.06) return;
+    const col=cssv(s.color);
+    hv.appendChild(svgEl("circle",{cx:exX(p[0]),cy:EX.Y(p[4]),r:3.8,fill:col,stroke:cssv("--surface"),"stroke-width":1.6}));
+    filas+=`<div class="row"><span class="sw" style="background:${col}"></span><span class="nm">${esc(s.nom)}</span><span class="vl">${fmt(p[4])}</span><span class="un">${esc(EX.capas.length>1?"":uni)}</span></div>`;
+  });
+  const c0=EX.capas[0].d.find(q=>q[0]===ref[0]);
+  const ohlc=(EX.modo!=="cmp"&&EX.tipo==="candle"&&EX.freq!=="D"&&c0)
+    ? `<div class="row"><span class="nm">apert. / cierre</span><span class="vl">${fmt(c0[1])} / ${fmt(c0[4])}</span></div>
+       <div class="row"><span class="nm">máx / mín</span><span class="vl">${fmt(c0[2])} / ${fmt(c0[3])}</span></div>`:"";
+  if(!filas){tip.classList.remove("on");return;}
+  tip.innerHTML=`<span class="yr">${exFmtFecha(ref[0],0.5)}</span>${filas}${ohlc}`;
+  tip.classList.add("on");
+  const r=$("#expl-chart").getBoundingClientRect(), cc=$("#ex-wrap").getBoundingClientRect();
+  const px=r.left-cc.left+exX(ref[0])/EXW*r.width;
+  tip.style.left=(px>cc.width-210?px-12-tip.offsetWidth:px+14)+"px";
+  tip.style.top=Math.max(4,Math.min(ev.clientY-cc.top-20, cc.height-tip.offsetHeight-8))+"px";
+});
+$("#expl-chart").addEventListener("mouseleave",()=>{
+  $("#ex-tip").classList.remove("on"); const h=$("#ex-hover"); if(h)h.innerHTML="";
+});
+
+/* ---- controles ---- */
+function segBind(id,fn){
+  $(id).addEventListener("click",e=>{
+    const b=e.target.closest("button"); if(!b) return;
+    $$("button",$(id)).forEach(x=>x.setAttribute("aria-pressed", x===b));
+    fn(b.dataset.v); exRender();
+  });
+}
+segBind("#ex-modo", v=>EX.modo=v);
+segBind("#ex-tipo", v=>EX.tipo=v);
+segBind("#ex-freq", v=>EX.freq=v);
+segBind("#ex-var",  v=>EX.variacion=v);
+
+$("#ex-barras").addEventListener("click",function(){
+  EX.barras=!EX.barras; this.setAttribute("aria-pressed",EX.barras); exRender();
+});
+$("#ma-win").addEventListener("input",function(){EX.ma=parseInt(this.value)||0; exRender();});
+["#ax-ymin","#ax-ymax"].forEach(s=>$(s).addEventListener("input",exRender));
+$("#ax-reset").addEventListener("click",()=>{
+  $("#ax-ymin").value=""; $("#ax-ymax").value=""; EX.rango=[EX.t0,EX.t1]; exRender();
+});
+$("#btn-ajustes").addEventListener("click",function(){
+  this.setAttribute("aria-pressed", document.body.classList.toggle("ajustes-on"));
+});
+$("#ex-limpiar").addEventListener("click",()=>{
+  EX_SEL.forEach(s=>{s.transf.clear(); s.defl=null;});
+  EX.ma=0; EX.variacion="none"; EX.barras=false; EX.rango=[EX.t0,EX.t1];
+  $("#ma-win").value=0;
+  $$("#ex-var button").forEach((b,i)=>b.setAttribute("aria-pressed", i===0));
+  $("#ex-barras").setAttribute("aria-pressed","false");
+  sincronizarBarra(); exRender();
+});
+
+// desplegables
+$$(".vdrop > .btn").forEach(b=>b.addEventListener("click",e=>{
+  e.stopPropagation();
+  const d=b.parentElement, ya=d.classList.contains("open");
+  $$(".vdrop").forEach(x=>x.classList.remove("open"));
+  d.classList.toggle("open",!ya);
+}));
+addEventListener("click",()=>$$(".vdrop").forEach(d=>d.classList.remove("open")));
+
+$("#menu-transf").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  const s=EX_SEL[EX_ACTIVA], t=b.dataset.t;
+  s.transf.has(t)?s.transf.delete(t):s.transf.add(t);
+  sincronizarBarra(); exRender();
+});
+$("#menu-defl").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  const s=EX_SEL[EX_ACTIVA], d=b.dataset.d;
+  if(d==="libre"){
+    const cual=prompt("Deflactar por cualquier serie del catálogo.\nEscribí el id o el nombre (ej. ipc_nacional, pbi_nominal, tcn_oficial):","ipc_nacional");
+    if(!cual) return;
+    s.defl="libre"; EX_DEFL.libre=cual;
+  } else s.defl = s.defl===d ? null : d;
+  sincronizarBarra(); exRender();
+});
+
+
+/* ====================== MODO COMPARAR — paneles inferiores ====================== */
+// alinea las capas por fecha común (tras transformar cada una puede perder observaciones)
+function exAlinear(capas){
+  if(capas.length<2) return {ts:[],cols:[]};
+  const tol=(EX_PASO[EX.freq]||1)*0.45;
+  const ref=capas[0].d;
+  const ts=[], cols=capas.map(()=>[]);
+  ref.forEach(p=>{
+    const fila=[];
+    for(const c of capas){
+      let mejor=null,b=1e9;
+      for(const q of c.d){const dd=Math.abs(q[0]-p[0]); if(dd<b){b=dd;mejor=q;}}
+      if(!mejor||b>tol) return;
+      fila.push(mejor[4]);
+    }
+    ts.push(p[0]); fila.forEach((v,i)=>cols[i].push(v));
+  });
+  return {ts,cols};
+}
+function pearson(x,y){
+  const n=x.length; if(n<3) return NaN;
+  const mx=x.reduce((a,b)=>a+b,0)/n, my=y.reduce((a,b)=>a+b,0)/n;
+  let num=0,d1=0,d2=0;
+  for(let k=0;k<n;k++){const dx=x[k]-mx, dy=y[k]-my; num+=dx*dy; d1+=dx*dx; d2+=dy*dy;}
+  return num/Math.sqrt(d1*d2);
+}
+// escala divergente rojo–blanco–azul para el heatmap
+function colorCorr(c){
+  if(isNaN(c)) return "var(--sunken)";
+  const t=Math.abs(c), a=(0.12+0.68*t).toFixed(3);
+  return c>=0 ? `color-mix(in srgb, var(--info) ${Math.round(t*82+8)}%, var(--surface))`
+              : `color-mix(in srgb, var(--crit) ${Math.round(t*82+8)}%, var(--surface))`;
+}
+
+function renderComparar(){
+  const panel=$("#cmp-panel"), indp=$("#ind-panel");
+  const capas=(EX.capas||[]).filter(c=>c.d.length>1);
+  const cmp = EX.modo==="cmp" && capas.length>1;
+  panel.style.display = cmp?"":"none";
+  indp.style.display  = cmp?"none":"";
+  if(!cmp){ renderIndividual(); return; }
+
+  renderSpread(capas);
+  const {ts,cols}=exAlinear(capas);
+  const n=capas.length, labels=capas.map(c=>c.s.nom);
+  $("#cmp-obs").textContent = `${ts.length} obs. comunes`;
+
+  /* ---- 1. cuadro comparativo serie a serie ---- */
+  $("#cmp-tabla").innerHTML=`
+    <table>
+      <thead><tr>
+        <th>Serie</th><th>Transformación</th><th class="n">Obs.</th><th class="n">Último</th>
+        <th class="n">Máx</th><th class="n">Mín</th><th class="n">Media</th><th class="n">Desvío</th>
+        <th class="n">Var. en el rango</th>
+      </tr></thead>
+      <tbody>${capas.map(({s,d})=>{
+        const v=d.map(p=>p[4]);
+        const med=v.reduce((a,b)=>a+b,0)/v.length;
+        const sd=Math.sqrt(v.reduce((a,b)=>a+(b-med)**2,0)/(v.length-1||1));
+        const var0=v[0], varN=v[v.length-1];
+        const pct=Math.abs(var0)>1e-9 ? (varN/var0-1)*100 : NaN;
+        const tr=[...s.transf].map(t=>t==="log"?"log":"Δ").join(" · ")||"—";
+        const df=s.defl?" ÷ "+esc(exNombreDefl(s.defl)):"";
+        return `<tr>
+          <td><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(${s.color});margin-right:6px"></span>${esc(s.nom)}</td>
+          <td class="num" style="font-size:11px">${tr}${df}</td>
+          <td class="n">${v.length}</td><td class="n">${fmt(varN)}</td>
+          <td class="n">${fmt(Math.max(...v))}</td><td class="n">${fmt(Math.min(...v))}</td>
+          <td class="n">${fmt(med)}</td><td class="n">${fmt(sd)}</td>
+          <td class="n" style="color:${isNaN(pct)?"var(--ink-faint)":pct>=0?"var(--ok)":"var(--crit)"}">${isNaN(pct)?"—":(pct>=0?"+":"")+fmt(pct)+"%"}</td>
+        </tr>`;}).join("")}
+      </tbody>
+    </table>`;
+
+  /* ---- 2. matriz de correlación (heatmap + valores) ---- */
+  const corr=cols.map((x,i)=>cols.map((y,j)=> i===j?1:pearson(x,y)));
+  $("#cmp-corr").innerHTML=`
+    <table class="corrgrid">
+      <thead><tr><th></th>${labels.map(l=>`<th class="n" title="${esc(l)}">${esc(l.length>16?l.slice(0,15)+"…":l)}</th>`).join("")}</tr></thead>
+      <tbody>${labels.map((l,i)=>`<tr>
+        <td style="white-space:nowrap"><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(${capas[i].s.color});margin-right:6px"></span>${esc(l)}</td>
+        ${corr[i].map((c,j)=>`<td class="n cc" style="background:${i===j?"var(--sunken)":colorCorr(c)}">${isNaN(c)?"—":c.toFixed(3)}</td>`).join("")}
+      </tr>`).join("")}</tbody>
+    </table>
+    <div class="corrleg">
+      <span>−1</span><span class="bar"></span><span>+1</span>
+      <span style="margin-left:auto; color:var(--ink-faint)">Pearson sobre ${ts.length} observaciones comunes · series ya transformadas</span>
+    </div>`;
+
+  /* ---- 3. matriz de dispersión serie a serie ---- */
+  const S=138, gap=4, W2=n*S+(n-1)*gap+54, H2=n*S+(n-1)*gap+34;
+  const svg=$("#cmp-scatter"); svg.innerHTML=""; svg.setAttribute("viewBox",`0 0 ${W2} ${H2}`);
+  const soft=cssv("--line-soft"), faint=cssv("--ink-faint");
+  const rangos=cols.map(c=>[Math.min(...c),Math.max(...c)]);
+
+  for(let i=0;i<n;i++){          // fila = eje Y
+    for(let j=0;j<n;j++){        // col  = eje X
+      const x0=54+j*(S+gap), y0=i*(S+gap);
+      svg.appendChild(svgEl("rect",{x:x0,y:y0,width:S,height:S,fill:cssv("--surface-2"),"fill-opacity":.55,stroke:soft,"stroke-width":1,rx:3}));
+      if(i===j){
+        // diagonal: histograma de la serie
+        const v=cols[i], [lo,hi]=rangos[i], B=14, bins=new Array(B).fill(0);
+        v.forEach(q=>bins[Math.min(B-1,Math.floor((q-lo)/((hi-lo)||1)*B))]++);
+        const mx=Math.max(...bins), bw=S/B;
+        bins.forEach((b,k)=>{
+          const h=(b/mx)*(S-30);
+          svg.appendChild(svgEl("rect",{x:x0+k*bw+0.6,y:y0+S-8-h,width:bw-1.2,height:Math.max(0.8,h),
+            fill:cssv(capas[i].s.color),"fill-opacity":.55}));
+        });
+        const t=svgEl("text",{x:x0+S/2,y:y0+16,"text-anchor":"middle",fill:cssv(capas[i].s.color),"font-size":10,"font-weight":600});
+        t.textContent=labels[i].length>18?labels[i].slice(0,17)+"…":labels[i]; svg.appendChild(t);
+      } else {
+        const [lx,hx]=rangos[j], [ly,hy]=rangos[i];
+        const X=v=>x0+8+((v-lx)/((hx-lx)||1))*(S-16);
+        const Y=v=>y0+S-8-((v-ly)/((hy-ly)||1))*(S-16);
+        const paso=Math.max(1,Math.floor(ts.length/240));
+        for(let k=0;k<ts.length;k+=paso)
+          svg.appendChild(svgEl("circle",{cx:X(cols[j][k]).toFixed(1),cy:Y(cols[i][k]).toFixed(1),r:1.7,
+            fill:cssv("--s5"),"fill-opacity":.5}));
+        const c=corr[i][j];
+        const t=svgEl("text",{x:x0+S-6,y:y0+13,"text-anchor":"end","font-size":10,"font-weight":600,
+          fill:isNaN(c)?faint:(c>=0?cssv("--info"):cssv("--crit")),"font-family":"var(--mono)"});
+        t.textContent=isNaN(c)?"—":"r "+c.toFixed(2); svg.appendChild(t);
+      }
+      if(j===0){                 // etiqueta del eje Y
+        const t=svgEl("text",{x:48,y:y0+S/2,"text-anchor":"end",fill:faint,"font-size":9.5,
+          transform:`rotate(-90 48 ${y0+S/2})`});
+        t.textContent=labels[i].length>17?labels[i].slice(0,16)+"…":labels[i]; svg.appendChild(t);
+      }
+      if(i===n-1){               // etiqueta del eje X
+        const t=svgEl("text",{x:x0+S/2,y:H2-8,"text-anchor":"middle",fill:faint,"font-size":9.5});
+        t.textContent=labels[j].length>17?labels[j].slice(0,16)+"…":labels[j]; svg.appendChild(t);
+      }
+    }
+  }
+}
+
+/* ---- panel del modo individual: distribución y estadísticos completos ---- */
+function renderIndividual(){
+  const c=(EX.capas||[])[0]; if(!c) return;
+  const v=c.d.map(p=>p[4]), n=v.length;
+  const med=v.reduce((a,b)=>a+b,0)/n;
+  const sd=Math.sqrt(v.reduce((a,b)=>a+(b-med)**2,0)/(n-1||1));
+  const asim=v.reduce((a,b)=>a+((b-med)/sd)**3,0)/n;
+  const curt=v.reduce((a,b)=>a+((b-med)/sd)**4,0)/n-3;
+  const ord=[...v].sort((a,b)=>a-b);
+  const q=p=>ord[Math.min(n-1,Math.floor(p*(n-1)))];
+  $("#ind-stats").innerHTML=[
+    ["Desvío",fmt(sd)],["Asimetría",fmt(asim)],["Curtosis exc.",fmt(curt)],
+    ["p25",fmt(q(.25))],["Mediana",fmt(q(.5))],["p75",fmt(q(.75))]
+  ].map(([k,val])=>`<div class="stat"><div class="k">${k}</div><div class="v">${val}</div></div>`).join("");
+
+  const svg=$("#ind-hist"); svg.innerHTML="";
+  const Wh=440,Hh=150,B=26, lo=Math.min(...v), hi=Math.max(...v), bins=new Array(B).fill(0);
+  v.forEach(x=>bins[Math.min(B-1,Math.floor((x-lo)/((hi-lo)||1)*B))]++);
+  const mx=Math.max(...bins), bw=(Wh-40)/B;
+  bins.forEach((b,k)=>{
+    const h=(b/mx)*(Hh-30);
+    svg.appendChild(svgEl("rect",{x:30+k*bw+0.7,y:Hh-20-h,width:bw-1.4,height:Math.max(0.8,h),
+      fill:cssv(c.s.color),"fill-opacity":.6}));
+  });
+  svg.appendChild(svgEl("line",{x1:30,x2:Wh-10,y1:Hh-20,y2:Hh-20,stroke:cssv("--line"),"stroke-width":1}));
+  [[lo,30],[hi,Wh-10]].forEach(([val,x],i)=>{
+    const t=svgEl("text",{x,y:Hh-6,"text-anchor":i?"end":"start",fill:cssv("--ink-faint"),"font-size":9.5,"font-family":"var(--mono)"});
+    t.textContent=fmt(val); svg.appendChild(t);
+  });
+  const mline=30+((med-lo)/((hi-lo)||1))*(Wh-40);
+  svg.appendChild(svgEl("line",{x1:mline,x2:mline,y1:14,y2:Hh-20,stroke:cssv("--accent"),"stroke-width":1.6,"stroke-dasharray":"4 3"}));
+  const tm=svgEl("text",{x:mline+5,y:22,fill:cssv("--accent"),"font-size":10,"font-weight":600});
+  tm.textContent="media"; svg.appendChild(tm);
+}
+
+/* ---- gráfico de spread A − B (sólo con exactamente 2 series) ---- */
+function renderSpread(capas){
+  const card=$("#spread-card");
+  if(capas.length!==2){ card.style.display="none"; return; }
+  card.style.display="";
+  const [A,B]=capas, tol=(EX_PASO[EX.freq]||1)*0.45;
+  const pts=[];
+  A.d.forEach(p=>{
+    let q=null,b=1e9;
+    for(const x of B.d){const dd=Math.abs(x[0]-p[0]); if(dd<b){b=dd;q=x;}}
+    if(q&&b<=tol) pts.push([p[0], p[4]-q[4]]);
+  });
+  $("#spread-tit").textContent=`Spread: ${A.s.nom} − ${B.s.nom}`;
+  const svg=$("#cmp-spread"); svg.innerHTML="";
+  const Ws=940, Hs=190, P={l:56,r:14,t:12,b:24};
+  if(pts.length<2){
+    const t=svgEl("text",{x:Ws/2,y:Hs/2,"text-anchor":"middle",fill:cssv("--ink-faint"),"font-size":12});
+    t.textContent="Sin fechas comunes entre las dos series"; svg.appendChild(t); return;
+  }
+  const vs=pts.map(p=>p[1]);
+  let lo=Math.min(...vs,0), hi=Math.max(...vs,0);
+  const pad=((hi-lo)||1)*0.08; lo-=pad; hi+=pad;
+  const X=t=>P.l+(t-EX.rango[0])/(EX.rango[1]-EX.rango[0])*(Ws-P.l-P.r);
+  const Y=v=>Hs-P.b-((v-lo)/(hi-lo))*(Hs-P.t-P.b);
+
+  ticksY(lo,hi,3).forEach(v=>{
+    const y=Y(v); if(y<P.t-1||y>Hs-P.b+1) return;
+    svg.appendChild(svgEl("line",{x1:P.l,x2:Ws-P.r,y1:y,y2:y,stroke:cssv("--line-soft"),"stroke-width":1}));
+    const t=svgEl("text",{x:P.l-7,y:y+3.5,"text-anchor":"end",fill:cssv("--ink-faint"),"font-size":10,"font-family":"var(--mono)"});
+    t.textContent=fmt(v); svg.appendChild(t);
+  });
+
+  // relleno bicolor hacia el cero: verde arriba, rojo abajo
+  const y0=Y(0);
+  [["pos",cssv("--ok")],["neg",cssv("--crit")]].forEach(([sig,col])=>{
+    let d="", abierto=false;
+    pts.forEach(p=>{
+      const v = sig==="pos" ? Math.max(0,p[1]) : Math.min(0,p[1]);
+      if(!abierto){ d+=`M${X(p[0]).toFixed(1)} ${y0.toFixed(1)}`; abierto=true; }
+      d+=` L${X(p[0]).toFixed(1)} ${Y(v).toFixed(1)}`;
+    });
+    if(abierto){
+      d+=` L${X(pts[pts.length-1][0]).toFixed(1)} ${y0.toFixed(1)} Z`;
+      svg.appendChild(svgEl("path",{d,fill:col,"fill-opacity":.28,stroke:"none"}));
+    }
+  });
+  let ln=""; pts.forEach((p,i)=>ln+=(i?" L":"M")+X(p[0]).toFixed(1)+" "+Y(p[1]).toFixed(1));
+  svg.appendChild(svgEl("path",{d:ln,fill:"none",stroke:cssv("--crit"),"stroke-width":1.5,"stroke-linejoin":"round"}));
+  svg.appendChild(svgEl("line",{x1:P.l,x2:Ws-P.r,y1:y0,y2:y0,stroke:cssv("--ok"),"stroke-width":1.5}));
+
+  const pasoX=(EX.rango[1]-EX.rango[0])>18?5:(EX.rango[1]-EX.rango[0])>9?2:1;
+  for(let t=Math.ceil(EX.rango[0]/pasoX)*pasoX; t<=EX.rango[1]; t+=pasoX){
+    const lb=svgEl("text",{x:X(t),y:Hs-P.b+15,"text-anchor":"middle",fill:cssv("--ink-faint"),"font-size":10,"font-family":"var(--mono)"});
+    lb.textContent=exFmtFecha(t,EX.rango[1]-EX.rango[0]); svg.appendChild(lb);
+  }
+  const ult=pts[pts.length-1][1];
+  $("#spread-val").textContent=`último: ${fmt(ult)}`;
+  $("#spread-val").className="chip "+(ult>=0?"ok":"crit");
+  $("#spread-nota").style.display = A.s.uni===B.s.uni ? "none" : "";
+}
+
+/* ---- botonera de rango rápido (1M · 3M · 6M · YTD · 1A · 5A · Todo) ---- */
+$("#ex-quick").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  $$("#ex-quick button").forEach(x=>x.setAttribute("aria-pressed", x===b));
+  const q=b.dataset.q, fin=EX.t1;
+  const meses={"1M":1/12,"3M":0.25,"6M":0.5,"1A":1,"5A":5};
+  if(q==="all") EX.rango=[EX.t0,EX.t1];
+  else if(q==="ytd") EX.rango=[Math.max(EX.t0,Math.floor(fin)),fin];
+  else EX.rango=[Math.max(EX.t0,fin-meses[q]),fin];
+  exRender();
+});
+
+/* ====================== INIT ====================== */
+$$("[data-evt],[data-layer]").forEach(c=>c.addEventListener("change",drawTimeline));
+pintarSelectorSeries();
+drawTimeline();
+drawCharts();
+sincronizarBarra();
+exRender();
+
+/* ====================== COPILOTO FLOTANTE (FAB "IA") ====================== */
+/* El plantel real vive en knowledge-base/skills/*.md — acá va la maqueta. */
+const AGENTES = [
+  {g:"Mesas", id:"clasica", ini:"Me", col:"--accent", nm:"Mesa clásica", ds:"Metodólogo → Bibliógrafo → Crítico → Intérprete.", mini:"4 profesores · pipeline clasica"},
+  {g:"Mesas", id:"completo", ini:"Eq", col:"--accent", nm:"Equipo completo", ds:"El Líder coordina a los especialistas, con handoffs entre turnos.", mini:"10 agentes · pipeline equipo_completo"},
+
+  {g:"Dirección", id:"lider", ini:"Li", col:"--accent", nm:"Líder / PI", ds:"Revisa el proyecto entero y decide a quién le toca el próximo paso.", mini:"sin herramientas"},
+
+  {g:"Profesores", id:"metodologo", ini:"Mt", col:"--accent", nm:"Metodólogo", ds:"Elige la especificación y la justifica contra el corpus.", mini:"estacionariedad · ols · var · vecm · garch · diagnosticos"},
+  {g:"Profesores", id:"bibliografo", ini:"Bi", col:"--s1", nm:"Bibliógrafo", ds:"Busca en el corpus y marca las citas que no puede verificar.", mini:"prioriza tu biblioteca"},
+  {g:"Profesores", id:"critico", ini:"Cr", col:"--crit", nm:"Crítico / referee", ds:"Corre la batería de diagnósticos y frena conclusiones sin sustento.", mini:"diagnosticos · estacionariedad · arch_lm"},
+  {g:"Profesores", id:"interprete", ini:"In", col:"--ok", nm:"Intérprete", ds:"Traduce coeficientes a economía, en palabras citables.", mini:"sin herramientas"},
+
+  {g:"Especialistas", id:"curador", ini:"Cu", col:"--info", nm:"Curador de datos", ds:"Cobertura, huecos, empalmes y unidades. Avisa cuándo NO interpolar.", mini:"describir · estacionariedad"},
+  {g:"Especialistas", id:"transformaciones", ini:"Tr", col:"--s5", nm:"Transformaciones", ds:"Log, diferencias, deflactores y cambios de frecuencia: cuál y en qué orden.", mini:"describir · estacionariedad"},
+  {g:"Especialistas", id:"multivar", ini:"Mv", col:"--s5", nm:"Multivariados", ds:"VAR, VECM, rango de cointegración e impulso-respuesta.", mini:"estacionariedad · vecm · var · granger"},
+  {g:"Especialistas", id:"volatilidad", ini:"Vo", col:"--s5", nm:"Volatilidad", ds:"ARCH/GARCH y agrupamiento de varianza.", mini:"arch_lm · garch · describir"},
+  {g:"Especialistas", id:"causal", ini:"Ca", col:"--s5", nm:"Controles / causal", ds:"Granger, exogeneidad y qué NO se puede afirmar.", mini:"granger · ols"},
+  {g:"Especialistas", id:"robustez", ini:"Ro", col:"--s5", nm:"Robustez", ds:"Submuestras, quiebres y sensibilidad a la especificación.", mini:"ols · diagnosticos · estacionariedad"},
+  {g:"Especialistas", id:"pronostico", ini:"Pr", col:"--s5", nm:"Pronóstico / ML", ds:"ARIMA/ETS, intervalos y comparación fuera de muestra.", mini:"describir · estacionariedad"},
+];
+
+const IA_CHATS = {
+  clasica:[
+    {a:"bibliografo", f:"antecedentes", t:'Para el marco teórico tengo tres obras verificadas en el corpus. Ojo con <b>Edwards (1984)</b>: está citado en el informe pero no lo encuentro ni en el corpus ni en tu biblioteca — sin fuente localizable no debería quedar.'},
+    {a:"metodologo", f:"control", t:'Con tres series I(1) y evidencia de cointegración de rango 1, el camino correcto es <b>VECM</b>, no VAR en diferencias: diferenciar todo descartaría justamente la relación de largo plazo que la pregunta busca.<span class="src"><b>Enders, cap. 6.3</b> — "diferenciar variables cointegradas equivale a omitir el término de corrección de error, lo que produce una especificación mal formulada."</span>'},
+    {a:"critico", f:"modelización", t:'El ARCH-LM del paso 6 rechaza con <span class="num">p = 0,006</span>. Antes de escribir Resultados hay que resolverlo: si vas a interpretar los <b>errores estándar</b> del vector de cointegración, están mal calculados.'},
+    {a:"interprete", f:"interpretación", t:'Traducción del α = −0,31: ante un desvío del equilibrio, el spread corrige un <b>31% por trimestre</b> — vida media de unos <span class="num">1,9</span> trimestres. Es rápido para un emergente, y es un resultado citable en Conclusiones.'},
+  ],
+  curador:[{a:"curador", f:"1:1", t:'Tenés 4 series en el gráfico. La única con faltantes es <b>Reservas/PBI</b> (2 huecos, 2002Q1–Q2). ¿Querés que arme la ficha comparada de cobertura de las cuatro?'}],
+  metodologo:[{a:"metodologo", f:"1:1", t:'Contame la pregunta de investigación y te propongo la especificación. Si ya corriste ADF/KPSS en el estudio, los leo de ahí en vez de volver a correrlos.'}],
+  critico:[{a:"critico", f:"1:1", t:'Vengo del paso 6: el ARCH-LM rechaza. Puedo correr la batería completa de diagnósticos sobre esos residuos y devolverte el semáforo.'}],
+  interprete:[{a:"interprete", f:"1:1", t:'Pasame un coeficiente y te lo traduzco a una frase que puedas pegar en Resultados, con su magnitud económica y su salvedad.'}],
+  bibliografo:[{a:"bibliografo", f:"1:1", t:'Ojo con <b>Edwards (1984)</b>: está citado en el informe pero no lo encuentro en el corpus ni en tu biblioteca. Sin fuente localizable no debería quedar.'}],
+};
+const IA_SUGG = {
+  clasica:["¿Por qué VECM y no ARDL?","Buscar antecedentes de H2","Revisar el paso 6"],
+  curador:["Comparar cobertura de las 4 series","¿Cómo trato los huecos de 2002?"],
+  metodologo:["¿Qué especificación conviene?","¿Cuántos rezagos?"],
+  critico:["Correr diagnósticos del paso 6","¿HAC o GARCH?"],
+  interprete:["Traducir el α del VECM","Redactar la vida media"],
+  bibliografo:["Buscar Edwards (1984)","Listar citas sin verificar"],
+};
+const IA_VACIO = "Todavía no hablaste con este agente. Escribile abajo: ve tus series, tus pasos del estudio y tu informe.";
+
+const iaFab=$("#ia-fab"), iaPanel=$("#ia-panel");
+let IA_AG=null;
+
+function iaPintarLista(){
+  let h='<div class="ia-lista-scroll">', g=null;
+  AGENTES.forEach(a=>{
+    if(a.g!==g){ g=a.g; h+='<div class="ia-grupo">'+esc(g)+'</div>'; }
+    h+='<button class="ia-item" data-ag="'+a.id+'">'
+      +'<span class="ia-av" style="background:color-mix(in srgb,var('+a.col+') 16%,transparent); color:var('+a.col+'); border-color:color-mix(in srgb,var('+a.col+') 40%,transparent)">'+esc(a.ini)+'</span>'
+      +'<span class="tx"><span class="nm">'+esc(a.nm)+'</span><span class="ds">'+esc(a.ds)+'</span><span class="mini">'+esc(a.mini)+'</span></span>'
+      +'</button>';
+  });
+  $("#ia-lista").innerHTML = h+'</div>';
+  $$("#ia-lista .ia-item").forEach(b=>b.addEventListener("click",()=>iaAbrirChat(b.dataset.ag)));
+}
+
+function iaAbrirChat(id){
+  const a=AGENTES.find(x=>x.id===id); if(!a) return;
+  IA_AG=id;
+  $("#ia-lista").hidden=true; $("#ia-chat").hidden=false; $("#ia-back").hidden=false;
+  const av=$("#ia-hd-av");
+  av.textContent=a.ini;
+  av.style.background="color-mix(in srgb,var("+a.col+") 16%,transparent)";
+  av.style.color="var("+a.col+")";
+  av.style.borderColor="color-mix(in srgb,var("+a.col+") 40%,transparent)";
+  $("#ia-hd-nm").textContent=a.nm;
+  $("#ia-hd-sub").textContent=a.mini;
+  const msgs=IA_CHATS[id];
+  $("#ia-msgs").innerHTML = msgs ? msgs.map(m=>{
+    const q=AGENTES.find(x=>x.id===m.a)||a;
+    return '<div class="msg"><div class="msg-hd">'
+      +'<span class="avatar" style="background:color-mix(in srgb,var('+q.col+') 16%,transparent); color:var('+q.col+'); border-color:color-mix(in srgb,var('+q.col+') 40%,transparent)">'+esc(q.ini)+'</span>'
+      +'<span class="msg-who">'+esc(q.nm)+'</span><span class="msg-fase">'+esc(m.f)+'</span></div>'
+      +'<div class="msg-body">'+m.t+'</div></div>';
+  }).join("") : '<div class="pad" style="padding:14px 13px"><div class="note"><span>ℹ</span><div>'+IA_VACIO+'</div></div></div>';
+  const sg=IA_SUGG[id]||["¿Qué ves en mis series?","¿Qué paso me falta?"];
+  $("#ia-sugg").innerHTML = sg.map(s=>'<button class="sugg">'+esc(s)+'</button>').join("");
+  $("#ia-fab-dot").hidden=true;
+}
+
+function iaVolverLista(){
+  IA_AG=null;
+  $("#ia-chat").hidden=true; $("#ia-lista").hidden=false; $("#ia-back").hidden=true;
+  const av=$("#ia-hd-av");
+  av.textContent="IA"; av.style.background=""; av.style.color=""; av.style.borderColor="";
+  $("#ia-hd-nm").textContent="Copiloto";
+  $("#ia-hd-sub").textContent="elegí con quién hablar";
+}
+
+function iaColocar(el,x,y){
+  const w=el.offsetWidth, h=el.offsetHeight;
+  x=Math.max(8,Math.min(x, innerWidth-w-8));
+  y=Math.max(8,Math.min(y, innerHeight-h-8));
+  el.style.left=x+"px"; el.style.top=y+"px"; el.style.right="auto"; el.style.bottom="auto";
+}
+
+function iaAbrir(){
+  iaPanel.hidden=false;
+  $("#ia-fab-dot").hidden=true;
+  const r=iaFab.getBoundingClientRect(), p=iaPanel.getBoundingClientRect();
+  let y=r.top-p.height-12;
+  if(y<12) y=Math.min(r.bottom+12, innerHeight-p.height-12);
+  iaColocar(iaPanel, r.left+r.width/2-p.width/2, y);
+}
+
+/* arrastre; si el puntero casi no se movió, cuenta como clic */
+function iaArrastrable(el,manija,alSoltar){
+  let dx=0, dy=0, movido=0, activo=false;
+  manija.addEventListener("pointerdown",e=>{
+    if(e.button!==0) return;
+    if(manija!==el && e.target.closest("button")) return;
+    const r=el.getBoundingClientRect();
+    dx=e.clientX-r.left; dy=e.clientY-r.top; movido=0; activo=true;
+    manija.setPointerCapture(e.pointerId);
+    el.classList.add("arrastrando"); manija.classList.add("arrastrando");
+  });
+  manija.addEventListener("pointermove",e=>{
+    if(!activo) return;
+    movido+=Math.abs(e.movementX)+Math.abs(e.movementY);
+    iaColocar(el, e.clientX-dx, e.clientY-dy);
+  });
+  const fin=()=>{
+    if(!activo) return;
+    activo=false;
+    el.classList.remove("arrastrando"); manija.classList.remove("arrastrando");
+    if(movido<5 && alSoltar) alSoltar();
+  };
+  manija.addEventListener("pointerup",fin);
+  manija.addEventListener("pointercancel",fin);
+}
+iaArrastrable(iaFab, iaFab, ()=>{ if(iaPanel.hidden) iaAbrir(); else iaPanel.hidden=true; });
+iaArrastrable(iaPanel, $("#ia-hd"), null);
+
+/* redimensionar desde la esquina superior izquierda */
+(function(){
+  const h=$("#ia-resize"); let ax=0, ay=0, aw=0, ah=0, al=0, at=0, on=false;
+  h.addEventListener("pointerdown",e=>{
+    const r=iaPanel.getBoundingClientRect();
+    ax=e.clientX; ay=e.clientY; aw=r.width; ah=r.height; al=r.left; at=r.top; on=true;
+    h.setPointerCapture(e.pointerId); e.preventDefault();
+  });
+  h.addEventListener("pointermove",e=>{
+    if(!on) return;
+    const w=Math.max(300,Math.min(aw-(e.clientX-ax), innerWidth-16));
+    const ht=Math.max(280,Math.min(ah-(e.clientY-ay), innerHeight-16));
+    iaPanel.style.width=w+"px"; iaPanel.style.height=ht+"px";
+    iaColocar(iaPanel, al+(aw-w), at+(ah-ht));
+  });
+  h.addEventListener("pointerup",()=>{on=false});
+})();
+
+$("#ia-back").addEventListener("click",iaVolverLista);
+$("#ia-min").addEventListener("click",()=>{iaPanel.hidden=true});
+document.addEventListener("keydown",e=>{ if(e.key==="Escape" && !iaPanel.hidden) iaPanel.hidden=true; });
+iaPintarLista();
+
+</script>

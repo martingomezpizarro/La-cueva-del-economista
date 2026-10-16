@@ -1,0 +1,541 @@
+{
+ "balance_pagos_estimaci_n_del_balance_de_pagos_mbp6_valores_anuales.csv": {
+  "familia": "Sector Externo",
+  "fuente": "indec",
+  "dateCol": "indice_tiempo",
+  "columnas": [
+   "total_cuenta_corriente",
+   "cuenta_corriente_total_bienes_servicios",
+   "cuenta_corriente_bienes_servicios_total_bienes",
+   "cuenta_corrientes_bienes_servicios_bienes_exportaciones_fob",
+   "cuenta_corrientes_bienes_servicios_bienes_importaciones_fob",
+   "cuenta_corriente_bienes_servicios_total_servicios",
+   "cuenta_corriente_total_ingresos_primarios",
+   "cuenta_corriente_ingresos_primarios_rem_empleados",
+   "cuenta_corriente_ingresos_primarios_total_rentas_inversion",
+   "cta_cte_ingresos_primarios_rentas_inversion_directa",
+   "ingresos_primarios_rentas_inversion_inversion_cartera",
+   "cuenta_corriente_ingresos_secundarios",
+   "total_cuenta_capital",
+   "total_cuenta_financiera",
+   "cuenta_financiera_total_inversion_directa",
+   "cuenta_financiera_total_inversion_cartera",
+   "cuenta_financiera_total_otra_inversion",
+   "activos_reserva",
+   "errores_omisiones_netos"
+  ],
+  "series_catalogo": 0,
+  "candidatos": [
+   {
+    "dataset": "balance-de-pagos-mbp6",
+    "dataset_titulo": "Balance de Pagos (MBP6)",
+    "recurso_id": "cd0a2a21-5edf-52b7-8991-c336a6ad5692",
+    "recurso": "Estimación del Balance de Pagos (MBP6). Valores anuales.",
+    "url": "https://infra.datos.gob.ar/catalog/sspm/dataset/160/distribution/160.1/download/estimacion-palance-pagos-mbp6-anual.csv",
+    "puntaje": 1.143
+   },
+   {
+    "dataset": "balance-de-pagos-mbp5",
+    "dataset_titulo": "Balance de Pagos (MBP5)",
+    "recurso_id": "4cc9d7f0-8946-5679-b1d5-81930c6c6b18",
+    "recurso": "Estimación del Balance de Pagos (MBP5). Valores anuales.",
+    "url": "https://infra.datos.gob.ar/catalog/sspm/dataset/84/distribution/84.1/download/estimacion-balance-pagos-anual-mbp5.csv",
+    "puntaje": 1.0
+   },
+   {
+    "dataset": "balance-de-pagos-mbp6",
+    "dataset_titulo": "Balance de Pagos (MBP6)",
+    "recurso_id": "456bdb06-6cbc-5623-9d81-101eb703b663",
+    "recurso": "Estimación del Balance de Pagos (MBP6). Valores trimestrales.",
+    "url": "https://infra.datos.gob.ar/catalog/sspm/dataset/160/distribution/160.2/download/estimacion-palance-pagos-mbp6-trimestral.csv",
+    "puntaje": 0.857
+   },
+   {
+    "dataset": "balance-de-pagos-mbp5",
+    "dataset_titulo": "Balance de Pagos (MBP5)",
+    "recurso_id": "d23858f3-da66-5494-a7ba-4e39526a7c06",
+    "recurso": "Estimación del Balance de Pagos (MBP5). Valores trimestrales.",
+    "url": "https://infra.datos.gob.ar/catalog/sspm/dataset/84/distribution/84.2/download/estimacion-balance-pagos-trimestral-mbp5.csv",
+    "puntaje": 0.714
+   },
+   {
+    "dataset": "balance-de-pagos-en-millones-de-dolares",
+    "dataset_titulo": "Balance de pagos en millones de dólares",
+    "recurso_id": "0f9aab96-80e6-56f4-96fa-71a10506ddfc",
+    "recurso": "Balance de pagos en millones de dólares. Datos anuales",
+    "url": "https://infra.datos.gob.ar/catalog/sspm/dataset/335/distribution/335.1/download/balance-pagos-datos-historicos.csv",
+    "puntaje": 0.571
+   }
+  ],
+  "elegido": "https://infra.datos.gob.ar/catalog/sspm/dataset/160/distribution/160.1/download/estimacion-palance-pagos-mbp6-anual.csv",
+  "confirmado": true,
+  "confirmado_por": "Martín + Claude, 2026-10-15"
+ },
+ "balance_pagos_estimaci_n_del_balance_de_pagos_mbp6_valores_trimestrales.csv": {
+  "familia": "Sector Externo",
+  "fuente": "indec",
+  "dateCol": "indice_tiempo",
+  "columnas": [
+   "total_cuenta_corriente",
+   "cuenta_corriente_total_bienes_servicios",
+   "cuenta_corriente_bienes_servicios_total_bienes",
+   "cuenta_corrientes_bienes_servicios_bienes_exportaciones_fob",
+   "cuenta_corrientes_bienes_servicios_bienes_importaciones_fob",
+   "cuenta_corriente_bienes_servicios_total_servicios",
+   "cuenta_corriente_bienes_servicios_ingresos_servicios",
+   "cuenta_corriente_bienes_servicios_egresos_servicios",
+   "cuenta_corriente_total_ingresos_primarios",
+   "cuenta_corriente_ingresos_primarios_rem_empleados",
+   "cuenta_corriente_ingresos_primarios_total_rentas_inversion",
+   "cta_cte_ingresos_primarios_rentas_inversion_directa",
+   "ingresos_primarios_rentas_inversion_inversion_cartera",
+   "cuenta_corriente_ingresos_primarios_rentas_otra_inversion",
+   "cuenta_corriente_ingresos_secundarios",
+   "total_cuenta_capital",
+   "total_cuenta_financiera",
+   "cuenta_financiera_total_inversion_directa",
+   "cta_fin_inversion_directa_activos_participaciones_capital",
+   "cta_fin_inversion_directa_pasivos_participaciones_capital",
+   "cta_fin_inversion_directa_pasivos_instrumentos_deuda",
+   "cuenta_financiera_total_inversion_cartera",
+   "cta_fin_inversion_cartera_activos_participaciones_capital",
+   "cuenta_financiera_inversion_cartera_activos_instrumentosuda",
+   "cta_fin_inversion_cartera_pasivos_participaciones_capital",
+   "cuenta_financiera_inversion_cartera_pasivos_instrumentosuda",
+   "cuenta_financierarivados_financieros",
+   "cuenta_financiera_total_otra_inversion",
+   "cta_fin_otra_inversion_adquisicion_neta_activos_financieros",
+   "cuenta_financieratra_inversion_emision_neta_pasivos",
+   "activos_reserva",
+   "errores_omisiones_netos"
+  ],
+  "series_catalogo": 0,
+  "candidatos": [
+   {
+    "dataset": "balance-de-pagos-mbp6",
+    "dataset_titulo": "Balance de Pagos (MBP6)",
+    "recurso_id": "456bdb06-6cbc-5623-9d81-101eb703b663",
+    "recurso": "Estimación del Balance de Pagos (MBP6). Valores trimestrales.",
+    "url": "https://infra.datos.gob.ar/catalog/sspm/dataset/160/distribution/160.2/download/estimacion-palance-pagos-mbp6-trimestral.csv",
+    "puntaje": 1.143
+   },
+   {
+    "dataset": "balance-de-pagos-mbp5",
+    "dataset_titulo": "Balance de Pagos (MBP5)",
+    "recurso_id": "d23858f3-da66-5494-a7ba-4e39526a7c06",
+    "recurso": "Estimación del Balance de Pagos (MBP5). Valores trimestrales.",
+    "url": "https://infra.datos.gob.ar/catalog/sspm/dataset/84/distribution/84.2/download/estimacion-balance-pagos-trimestral-mbp5.csv",
+    "puntaje": 1.0
+   },
+   {
+    "dataset": "balance-de-pagos-mbp6",
+    "dataset_titulo": "Balance de Pagos (MBP6)",
+    "recurso_id": "cd0a2a21-5edf-52b7-8991-c336a6ad5692",
+    "recurso": "Estimación del Balance de Pagos (MBP6). Valores anuales.",
+    "url": "https://infra.datos.gob.ar/catalog/sspm/dataset/160/distribution/160.1/download/estimacion-palance-pagos-mbp6-anual.csv",
+    "puntaje": 0.857
+   },
+   {
+    "dataset": "balance-de-pagos-mbp5",
+    "dataset_titulo": "Balance de Pagos (MBP5)",
+    "recurso_id": "4cc9d7f0-8946-5679-b1d5-81930c6c6b18",
+    "recurso": "Estimación del Balance de Pagos (MBP5). Valores anuales.",
+    "url": "https://infra.datos.gob.ar/catalog/sspm/dataset/84/distribution/84.1/download/estimacion-balance-pagos-anual-mbp5.csv",
+    "puntaje": 0.714
+   }
+  ],
+  "elegido": "https://infra.datos.gob.ar/catalog/sspm/dataset/160/distribution/160.2/download/estimacion-palance-pagos-mbp6-trimestral.csv",
+  "confirmado": true,
+  "confirmado_por": "Martín + Claude, 2026-10-15"
+ },
+ "saldo_comercial_paises_saldo_comercial_por_pa_ses_y_regiones_fob_cif_valores_anuale.csv": {
+  "familia": "Sector Externo",
+  "fuente": "indec",
+  "dateCol": "indice_tiempo",
+  "columnas": [
+   "ica_saldo_comercial_totales",
+   "ica_saldo_comercial_total_america_latina",
+   "ica_saldo_comercial_total_mercosur",
+   "ica_saldo_comercial_total_alianza_pacifico",
+   "ica_saldo_comercial_total_ue",
+   "ica_saldo_comercial_total_asia_pacifico",
+   "ica_saldo_comercial_total_nafta",
+   "ica_saldo_comercial_aladi",
+   "ica_saldo_comercial_brasil",
+   "ica_saldo_comercial_estados_unidos",
+   "ica_saldo_comercial_uruguay",
+   "ica_saldo_comercial_paraguay",
+   "ica_saldo_comercial_chile",
+   "ica_saldo_comercial_alemania",
+   "ica_saldo_comercial_espana",
+   "ica_saldo_comercial_china",
+   "ica_saldo_comercial_japon",
+   "ica_saldo_comercial_india"
+  ],
+  "series_catalogo": 0,
+  "candidatos": [
+   {
+    "dataset": "saldo-comercial-por-paises-y-regiones-fob-cif",
+    "dataset_titulo": "Saldo Comercial por Países y Regiones (FOB-CIF)",
+    "recurso_id": "c94f7589-d8b4-5c66-8889-7be703955fe7",
+    "recurso": "Saldo comercial por países y regiones FOB-CIF. Valores anuales",
+    "url": "https://infra.datos.gob.ar/catalog/sspm/dataset/79/distribution/79.1/download/saldo-comercial-por-paises-regiones-fob-cif-anual.csv",
+    "puntaje": 1.0
+   },
+   {
+    "dataset": "saldo-comercial-por-paises-y-regiones-fob-cif",
+    "dataset_titulo": "Saldo Comercial por Países y Regiones (FOB-CIF)",
+    "recurso_id": "d3277cf9-0ae9-5282-b634-24fa83621d8b",
+    "recurso": "Saldo comercial por países y regiones FOB-CIF.  Valores trimestral",
+    "url": "https://infra.datos.gob.ar/catalog/sspm/dataset/79/distribution/79.2/download/saldo-comercial-por-paises-regiones-fob-cif-trimestral.csv",
+    "puntaje": 0.8
+   },
+   {
+    "dataset": "saldo-comercial-por-paises-y-regiones-fob-cif",
+    "dataset_titulo": "Saldo Comercial por Países y Regiones (FOB-CIF)",
+    "recurso_id": "68eacb24-acb2-5ba8-85c9-c08378c4ab2d",
+    "recurso": "Saldo comercial por países y regiones FOB-CIF.  Valores mensual",
+    "url": "https://infra.datos.gob.ar/catalog/sspm/dataset/79/distribution/79.3/download/saldo-comercial-por-paises-regiones-fob-cif-mensual.csv",
+    "puntaje": 0.8
+   }
+  ],
+  "elegido": "https://infra.datos.gob.ar/catalog/sspm/dataset/79/distribution/79.1/download/saldo-comercial-por-paises-regiones-fob-cif-anual.csv",
+  "confirmado": true,
+  "confirmado_por": "Martín + Claude, 2026-10-15"
+ },
+ "saldo_comercial_paises_saldo_comercial_por_pa_ses_y_regiones_fob_cif_valores_mensua.csv": {
+  "familia": "Sector Externo",
+  "fuente": "indec",
+  "dateCol": "indice_tiempo",
+  "columnas": [
+   "ica_saldo_comercial_totales",
+   "ica_saldo_comercial_total_america_latina",
+   "ica_saldo_comercial_total_mercosur",
+   "ica_saldo_comercial_total_alianza_pacifico",
+   "ica_saldo_comercial_total_ue",
+   "ica_saldo_comercial_asia_pacifico",
+   "ica_saldo_comercial_total_africa",
+   "ica_saldo_comercial_total_nafta",
+   "ica_saldo_comercial_aladi",
+   "ica_saldo_comercial_asean",
+   "ica_saldo_comercial_brasil",
+   "ica_saldo_comercial_estados_unidos",
+   "ica_saldo_comercial_uruguay",
+   "ica_saldo_comercial_paraguay",
+   "ica_saldo_comercial_chile",
+   "ica_saldo_comercial_venezuela",
+   "ica_saldo_comercial_bolivia",
+   "ica_saldo_comercial_colombia",
+   "ica_saldo_comercial_mexico",
+   "ica_saldo_comercial_peru",
+   "ica_saldo_comercial_ecuador",
+   "ica_saldo_comercial_canada",
+   "ica_saldo_comercial_resto_america_latina",
+   "ica_saldo_comercial_alemania",
+   "ica_saldo_comercial_espana",
+   "ica_saldo_comercial_francia",
+   "ica_saldo_comercial_italia",
+   "ica_saldo_comercial_paises_bajos",
+   "ica_saldo_comercial_reino_unido",
+   "ica_saldo_comercial_polonia",
+   "ica_saldo_comercial_portugal",
+   "ica_saldo_comercial_austria",
+   "ica_saldo_comercial_belgica",
+   "ica_saldo_comercial_suiza",
+   "ica_saldo_comercial_resto_ue",
+   "ica_saldo_comercial_china",
+   "ica_saldo_comercial_japon",
+   "ica_saldo_comercial_india",
+   "ica_saldo_comercial_rusia",
+   "ica_saldo_comercial_corea",
+   "ica_saldo_comercial_tailandia",
+   "ica_saldo_comercial_taiwan",
+   "ica_saldo_comercial_vietnam",
+   "ica_saldo_comercial_indonesia",
+   "ica_saldo_comercial_israel",
+   "ica_saldo_comercial_australia",
+   "ica_saldo_comercial_nueva_zelanda",
+   "ica_saldo_comercial_resto_asia_pacifico",
+   "ica_saldo_comercial_angola",
+   "ica_saldo_comercial_argelia",
+   "ica_saldo_comercial_egipto",
+   "ica_saldo_comercial_marruecos",
+   "ica_saldo_comercial_sudafrica",
+   "ica_saldo_comercial_resto_africa"
+  ],
+  "series_catalogo": 0,
+  "candidatos": [
+   {
+    "dataset": "saldo-comercial-por-paises-y-regiones-fob-cif",
+    "dataset_titulo": "Saldo Comercial por Países y Regiones (FOB-CIF)",
+    "recurso_id": "68eacb24-acb2-5ba8-85c9-c08378c4ab2d",
+    "recurso": "Saldo comercial por países y regiones FOB-CIF.  Valores mensual",
+    "url": "https://infra.datos.gob.ar/catalog/sspm/dataset/79/distribution/79.3/download/saldo-comercial-por-paises-regiones-fob-cif-mensual.csv",
+    "puntaje": 1.0
+   },
+   {
+    "dataset": "saldo-comercial-por-paises-y-regiones-fob-cif",
+    "dataset_titulo": "Saldo Comercial por Países y Regiones (FOB-CIF)",
+    "recurso_id": "c94f7589-d8b4-5c66-8889-7be703955fe7",
+    "recurso": "Saldo comercial por países y regiones FOB-CIF. Valores anuales",
+    "url": "https://infra.datos.gob.ar/catalog/sspm/dataset/79/distribution/79.1/download/saldo-comercial-por-paises-regiones-fob-cif-anual.csv",
+    "puntaje": 0.8
+   },
+   {
+    "dataset": "saldo-comercial-por-paises-y-regiones-fob-cif",
+    "dataset_titulo": "Saldo Comercial por Países y Regiones (FOB-CIF)",
+    "recurso_id": "d3277cf9-0ae9-5282-b634-24fa83621d8b",
+    "recurso": "Saldo comercial por países y regiones FOB-CIF.  Valores trimestral",
+    "url": "https://infra.datos.gob.ar/catalog/sspm/dataset/79/distribution/79.2/download/saldo-comercial-por-paises-regiones-fob-cif-trimestral.csv",
+    "puntaje": 0.8
+   }
+  ],
+  "elegido": "https://infra.datos.gob.ar/catalog/sspm/dataset/79/distribution/79.3/download/saldo-comercial-por-paises-regiones-fob-cif-mensual.csv",
+  "confirmado": true,
+  "confirmado_por": "Martín + Claude, 2026-10-15",
+  "bajado": "2026-10-15"
+ },
+ "saldo_comercial_paises_saldo_comercial_por_pa_ses_y_regiones_fob_cif_valores_trimes.csv": {
+  "familia": "Sector Externo",
+  "fuente": "indec",
+  "dateCol": "indice_tiempo",
+  "columnas": [
+   "ica_saldo_comercial_totales",
+   "ica_saldo_comercial_total_america_latina",
+   "ica_saldo_comercial_total_mercosur",
+   "ica_saldo_comercial_total_ue",
+   "ica_saldo_comercial_asia_pacifico",
+   "ica_saldo_comercial_brasil",
+   "ica_saldo_comercial_estados_unidos",
+   "ica_saldo_comercial_uruguay",
+   "ica_saldo_comercial_paraguay",
+   "ica_saldo_comercial_chile",
+   "ica_saldo_comercial_china",
+   "ica_saldo_comercial_japon",
+   "ica_saldo_comercial_india",
+   "ica_saldo_comercial_rusia"
+  ],
+  "series_catalogo": 0,
+  "candidatos": [
+   {
+    "dataset": "saldo-comercial-por-paises-y-regiones-fob-cif",
+    "dataset_titulo": "Saldo Comercial por Países y Regiones (FOB-CIF)",
+    "recurso_id": "d3277cf9-0ae9-5282-b634-24fa83621d8b",
+    "recurso": "Saldo comercial por países y regiones FOB-CIF.  Valores trimestral",
+    "url": "https://infra.datos.gob.ar/catalog/sspm/dataset/79/distribution/79.2/download/saldo-comercial-por-paises-regiones-fob-cif-trimestral.csv",
+    "puntaje": 1.0
+   },
+   {
+    "dataset": "saldo-comercial-por-paises-y-regiones-fob-cif",
+    "dataset_titulo": "Saldo Comercial por Países y Regiones (FOB-CIF)",
+    "recurso_id": "c94f7589-d8b4-5c66-8889-7be703955fe7",
+    "recurso": "Saldo comercial por países y regiones FOB-CIF. Valores anuales",
+    "url": "https://infra.datos.gob.ar/catalog/sspm/dataset/79/distribution/79.1/download/saldo-comercial-por-paises-regiones-fob-cif-anual.csv",
+    "puntaje": 0.8
+   },
+   {
+    "dataset": "saldo-comercial-por-paises-y-regiones-fob-cif",
+    "dataset_titulo": "Saldo Comercial por Países y Regiones (FOB-CIF)",
+    "recurso_id": "68eacb24-acb2-5ba8-85c9-c08378c4ab2d",
+    "recurso": "Saldo comercial por países y regiones FOB-CIF.  Valores mensual",
+    "url": "https://infra.datos.gob.ar/catalog/sspm/dataset/79/distribution/79.3/download/saldo-comercial-por-paises-regiones-fob-cif-mensual.csv",
+    "puntaje": 0.8
+   }
+  ],
+  "elegido": "https://infra.datos.gob.ar/catalog/sspm/dataset/79/distribution/79.2/download/saldo-comercial-por-paises-regiones-fob-cif-trimestral.csv",
+  "confirmado": true,
+  "confirmado_por": "Martín + Claude, 2026-10-15"
+ },
+ "ti_mensual.csv": {
+  "familia": "Sector Externo",
+  "fuente": "indec",
+  "dateCol": "fecha",
+  "columnas": [
+   "ti_nominal",
+   "ti_base100",
+   "expo_precios",
+   "expo_cantidades",
+   "impo_precios",
+   "impo_cantidades"
+  ],
+  "series_catalogo": 6,
+  "candidatos": [
+   {
+    "dataset": "indicadores-mensuales-sector-bovino",
+    "dataset_titulo": "Ganadería - Indicadores bovinos mensuales",
+    "recurso_id": "d127a5c4-0759-5773-a972-054a2300f378",
+    "recurso": "Indicadores mensuales del sector bovino",
+    "url": "https://datos.magyp.gob.ar/dataset/672fe228-086e-4c00-bbe0-3500f8cfd62e/resource/46c21636-2a4d-44a4-a0c6-052836d51a3f/download/indicadores-ganaderos-mensuales.csv",
+    "puntaje": 2.0
+   },
+   {
+    "dataset": "indicadores-mensuales-sector-bovino",
+    "dataset_titulo": "Ganadería - Indicadores bovinos mensuales",
+    "recurso_id": "d8214408-69bc-584b-82f1-a2aa6b812d47",
+    "recurso": "Serie de tiempo",
+    "url": "https://datos.magyp.gob.ar/dataset/672fe228-086e-4c00-bbe0-3500f8cfd62e/resource/7afe10d1-e9bc-4383-9e3c-c8066bc21f65/download/serie-tiempo-indicadores-mensuales-bovinos.csv",
+    "puntaje": 2.0
+   },
+   {
+    "dataset": "archivo-2004-2018-indicador-mensual-de-inversion",
+    "dataset_titulo": "Archivo 2004-2018: Indicador Mensual de Inversión",
+    "recurso_id": "9ac74fee-479b-5d94-a859-55b749d1742f",
+    "recurso": "Indicador Mensual Adelantado de Inversión (series)",
+    "url": "https://datos.produccion.gob.ar/dataset/37176751-e86b-44e1-adfc-808c3f9173db/resource/e9c85707-5dd8-46c7-ab57-05b7e27ddcdd/download/imai-series.csv",
+    "puntaje": 2.0
+   },
+   {
+    "dataset": "archivo-2004-2018-indicador-mensual-de-inversion",
+    "dataset_titulo": "Archivo 2004-2018: Indicador Mensual de Inversión",
+    "recurso_id": "c27bc58b-959d-54a3-98c8-0558483584ba",
+    "recurso": "Indicador Mensual Adelantado de Inversión (panel)",
+    "url": "https://datos.produccion.gob.ar/dataset/37176751-e86b-44e1-adfc-808c3f9173db/resource/162898dc-c9af-46a4-9729-08b485c1e660/download/imai-panel.csv",
+    "puntaje": 2.0
+   },
+   {
+    "dataset": "estimador-mensual-industrial-emi-indice-base-2012",
+    "dataset_titulo": "Estimador Mensual Industrial (EMI). Índice. Base 2012",
+    "recurso_id": "860519b1-aa74-59b8-84c4-a2a5a97790d9",
+    "recurso": "EMI. Índice Base 2012. Valores anuales.",
+    "url": "https://infra.datos.gob.ar/catalog/sspm/dataset/13/distribution/13.1/download/emi-valores-anuales-indice-base-2012.csv",
+    "puntaje": 2.0
+   }
+  ],
+  "elegido": null,
+  "confirmado": false,
+  "nota": "Archivo armado en el Trabajo Final con columnas propias (dateCol «fecha»), no un cuadro del portal. Resolver con su script de origen. El ITI del INDEC en el portal es trimestral (82.2_ITI_2004_T_27)."
+ },
+ "deuda_externa_plazo.csv": {
+  "familia": "Deuda y Riesgo Soberano",
+  "fuente": "indec",
+  "dateCol": "fecha",
+  "columnas": [
+   "dext_corto_plazo",
+   "dext_largo_plazo",
+   "dext_inversion_directa"
+  ],
+  "series_catalogo": 0,
+  "candidatos": [],
+  "elegido": null,
+  "confirmado": false,
+  "nota": "Archivo armado en el Trabajo Final con columnas propias (dateCol «fecha»), no un cuadro del portal. Resolver con su script de origen. La deuda externa del INDEC está en datos.gob.ar como serie (dataset 161.1, desde 2006): se puede rearmar con --ids."
+ },
+ "deuda_externa_sectores.csv": {
+  "familia": "Deuda y Riesgo Soberano",
+  "fuente": "indec",
+  "dateCol": "fecha",
+  "columnas": [
+   "dext_total",
+   "dext_gobierno",
+   "dext_bcra",
+   "dext_bancos",
+   "dext_otros_sectores",
+   "dext_otras_financieras",
+   "dext_no_financieras",
+   "dext_inversion_directa"
+  ],
+  "series_catalogo": 3,
+  "candidatos": [
+   {
+    "dataset": "deuda-externa-privada-bcra",
+    "dataset_titulo": "Deuda externa privada - BCRA",
+    "recurso_id": "c271904e-c32f-5bcf-9be7-d8b1c6735c69",
+    "recurso": "Stock deuda externa privada. Valores trimestrales",
+    "url": "https://infra.datos.gob.ar/catalog/sspm/dataset/313/distribution/313.1/download/deuda-externa-privada-bcra.csv",
+    "puntaje": 0.667
+   },
+   {
+    "dataset": "esquema-ahorro-inversion-financiamiento-sector-publico-nacional-base-caja",
+    "dataset_titulo": "Esquema Ahorro - Inversión - Financiamiento. Sector Público Nacional. Base Caja.",
+    "recurso_id": "b4c0a33e-510e-5008-9161-3e2d37e02b04",
+    "recurso": "Sector Público Nacional. Valores anuales 1993-2006",
+    "url": "https://infra.datos.gob.ar/catalog/sspm/dataset/379/distribution/379.1/download/sector-publico-nacional-valores-anuales-93-06.csv",
+    "puntaje": 0.333
+   },
+   {
+    "dataset": "esquema-ahorro-inversion-financiamiento-sector-publico-nacional-base-caja",
+    "dataset_titulo": "Esquema Ahorro - Inversión - Financiamiento. Sector Público Nacional. Base Caja.",
+    "recurso_id": "e2db3534-01b1-50f6-bac4-1efbcfe4f7f5",
+    "recurso": "Sector Público Nacional. Valores anuales 2007-2014",
+    "url": "https://infra.datos.gob.ar/catalog/sspm/dataset/379/distribution/379.2/download/sector-publico-nacional-valores-anuales-07-14.csv",
+    "puntaje": 0.333
+   },
+   {
+    "dataset": "esquema-ahorro-inversion-financiamiento-sector-publico-nacional-base-caja",
+    "dataset_titulo": "Esquema Ahorro - Inversión - Financiamiento. Sector Público Nacional. Base Caja.",
+    "recurso_id": "d15d560c-488e-5a02-ae7a-442233a24702",
+    "recurso": "Sector Público Nacional. Valores anuales 2017",
+    "url": "https://infra.datos.gob.ar/catalog/sspm/dataset/379/distribution/379.3/download/sector-publico-nacional-valores-anuales-17.csv",
+    "puntaje": 0.333
+   },
+   {
+    "dataset": "esquema-ahorro-inversion-financiamiento-sector-publico-nacional-base-caja",
+    "dataset_titulo": "Esquema Ahorro - Inversión - Financiamiento. Sector Público Nacional. Base Caja.",
+    "recurso_id": "153e0b3b-71e9-50d2-b843-e05a67c800b0",
+    "recurso": "Sector Público Nacional. Valores trimestrales 1993-2006",
+    "url": "https://infra.datos.gob.ar/catalog/sspm/dataset/379/distribution/379.4/download/sector-publico-nacional-valores-trimestrales-93-06.csv",
+    "puntaje": 0.333
+   }
+  ],
+  "elegido": null,
+  "confirmado": false,
+  "nota": "Archivo armado en el Trabajo Final con columnas propias (dateCol «fecha»), no un cuadro del portal. Resolver con su script de origen. La deuda externa del INDEC está en datos.gob.ar como serie (dataset 161.1, desde 2006): se puede rearmar con --ids."
+ },
+ "ipc_nacional.csv": {
+  "familia": "Precios e Inflación",
+  "fuente": "indec",
+  "dateCol": "indice_tiempo",
+  "columnas": [
+   "ipc_ng_nacional",
+   "ipc_ng_nacional_tasa_variacion_mensual"
+  ],
+  "series_catalogo": 2,
+  "candidatos": [
+   {
+    "dataset": "indice-de-precios-al-consumidor-nacional-ipc-base-diciembre-2016",
+    "dataset_titulo": "Índice de Precios al Consumidor Nacional (IPC). Base diciembre 2016.",
+    "recurso_id": "3b90ad84-4054-5b2c-aa12-91b4251d162b",
+    "recurso": "Índice de Precios al Consumidor. Nivel General. Base diciembre 2016. Valores trimestrales",
+    "url": "https://infra.datos.gob.ar/catalog/sspm/dataset/145/distribution/145.1/download/indice-precios-al-consumidor-nivel-general-base-diciembre-2016-trimestral.csv",
+    "puntaje": 1.0
+   },
+   {
+    "dataset": "indice-de-precios-al-consumidor-nacional-ipc-base-diciembre-2016",
+    "dataset_titulo": "Índice de Precios al Consumidor Nacional (IPC). Base diciembre 2016.",
+    "recurso_id": "aa08d18e-f55e-5c1c-965e-1b7be444eda1",
+    "recurso": "Índice de Precios al Consumidor. Nivel General. Base diciembre 2016. Valores mensuales",
+    "url": "https://infra.datos.gob.ar/catalog/sspm/dataset/145/distribution/145.3/download/indice-precios-al-consumidor-nivel-general-base-diciembre-2016-mensual.csv",
+    "puntaje": 1.0
+   },
+   {
+    "dataset": "indice-de-precios-al-consumidor-nacional-ipc-base-diciembre-2016",
+    "dataset_titulo": "Índice de Precios al Consumidor Nacional (IPC). Base diciembre 2016.",
+    "recurso_id": "8e302427-0aea-5f49-9ec0-c9ece523f2bd",
+    "recurso": "Índice de Precios al Consumidor, por capítulos. Base diciembre 2016. Valores trimestrales",
+    "url": "https://infra.datos.gob.ar/catalog/sspm/dataset/145/distribution/145.4/download/indice-precios-al-consumidor-apertura-por-capitulos-base-diciembre-2016-trimestrales.csv",
+    "puntaje": 1.0
+   },
+   {
+    "dataset": "indice-de-precios-al-consumidor-nacional-ipc-base-diciembre-2016",
+    "dataset_titulo": "Índice de Precios al Consumidor Nacional (IPC). Base diciembre 2016.",
+    "recurso_id": "8d21eb48-3c32-5956-8856-05641834bbbd",
+    "recurso": "Índice de Precios al Consumidor, por capítulos. Base diciembre 2016. Valores mensuales",
+    "url": "https://infra.datos.gob.ar/catalog/sspm/dataset/145/distribution/145.5/download/indice-precios-al-consumidor-apertura-por-capitulos-base-diciembre-2016-mensual.csv",
+    "puntaje": 1.0
+   },
+   {
+    "dataset": "indice-de-precios-al-consumidor-nacional-ipc-base-diciembre-2016",
+    "dataset_titulo": "Índice de Precios al Consumidor Nacional (IPC). Base diciembre 2016.",
+    "recurso_id": "14dc4d69-ab0d-50ac-a2a5-ffa198b6b568",
+    "recurso": "Índice de Precios al Consumidor. Bienes y Servicios. Base diciembre 2016. Valores trimestrales",
+    "url": "https://infra.datos.gob.ar/catalog/sspm/dataset/145/distribution/145.6/download/indice-precios-al-consumidor-bienes-servicios-base-diciembre-2016-trimestral.csv",
+    "puntaje": 1.0
+   }
+  ],
+  "elegido": "https://infra.datos.gob.ar/catalog/sspm/dataset/145/distribution/145.3/download/indice-precios-al-consumidor-nivel-general-base-diciembre-2016-mensual.csv",
+  "confirmado": true,
+  "confirmado_por": "Martín + Claude, 2026-10-15",
+  "nota": "Se elige el mensual (145.3), no el trimestral que propuso el puntaje.",
+  "bajado": "2026-10-15"
+ }
+}

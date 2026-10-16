@@ -1,0 +1,218 @@
+{
+  "version": 1,
+  "descripcion": "Vocabulario cerrado de unidades. El catálogo trae `unit` como texto libre ('Miles de ARS'); acá se traduce a magnitud + escala + moneda, que es lo único con lo que se puede comparar, deflactar o empalmar dos series. Para agregar una unidad nueva: sumarla a `mapa`. El test falla si el catálogo usa un texto que no está acá.",
+  "magnitudes": {
+    "moneda": "Un monto de dinero. Necesita escala y moneda.",
+    "indice": "Número índice respecto de una base. Sin unidad física; solo comparable contra su propia base.",
+    "tasa": "Tasa de interés o de variación, expresada como fracción (0,05 = 5 %).",
+    "porcentaje": "Lo mismo pero expresado en puntos porcentuales (5 = 5 %).",
+    "puntos_basicos": "Spread en puntos básicos (100 p.b. = 1 %).",
+    "ratio": "Cociente entre dos magnitudes de la misma naturaleza.",
+    "proporcion": "Parte de un total, entre 0 y 1.",
+    "tipo_de_cambio": "Precio de una moneda en términos de otra.",
+    "personas": "Cantidad de personas.",
+    "conteo": "Cantidad de unidades discretas.",
+    "tiempo": "Duración, en la unidad que indique la escala.",
+    "binaria": "Vale 0 o 1: marca un régimen o un evento.",
+    "categorica": "Etiqueta discreta, no operable aritméticamente.",
+    "score": "Puntaje construido, con un rango definido y sin unidad física."
+  },
+  "escalas": {
+    "unidad": 1,
+    "miles": 1000,
+    "millones": 1000000,
+    "miles_de_millones": 1000000000
+  },
+  "monedas": {
+    "ARS": "Peso argentino",
+    "USD": "Dólar estadounidense"
+  },
+  "mapa": {
+    "Mill. USD": {
+      "magnitud": "moneda",
+      "escala": "millones",
+      "moneda": "USD"
+    },
+    "Mill. ARS": {
+      "magnitud": "moneda",
+      "escala": "millones",
+      "moneda": "ARS"
+    },
+    "Miles de ARS": {
+      "magnitud": "moneda",
+      "escala": "miles",
+      "moneda": "ARS"
+    },
+    "Mill. ARS 2004": {
+      "magnitud": "moneda",
+      "escala": "millones",
+      "moneda": "ARS",
+      "precios": "constantes",
+      "base": "2004"
+    },
+    "Mill. ARS (base 2004)": {
+      "magnitud": "moneda",
+      "escala": "millones",
+      "moneda": "ARS",
+      "precios": "constantes",
+      "base": "2004"
+    },
+    "Mill. ARS const.": {
+      "magnitud": "moneda",
+      "escala": "millones",
+      "moneda": "ARS",
+      "precios": "constantes"
+    },
+    "USD por habitante": {
+      "magnitud": "moneda",
+      "escala": "unidad",
+      "moneda": "USD",
+      "por": "habitante"
+    },
+    "Índice": {
+      "magnitud": "indice",
+      "escala": "unidad"
+    },
+    "Índice base 2004=100": {
+      "magnitud": "indice",
+      "escala": "unidad",
+      "base": "2004=100"
+    },
+    "Índice 2004=100": {
+      "magnitud": "indice",
+      "escala": "unidad",
+      "base": "2004=100"
+    },
+    "Índice base 2001=100": {
+      "magnitud": "indice",
+      "escala": "unidad",
+      "base": "2001=100"
+    },
+    "Índice base dic-2016=100": {
+      "magnitud": "indice",
+      "escala": "unidad",
+      "base": "dic-2016=100"
+    },
+    "Índice ajustado": {
+      "magnitud": "indice",
+      "escala": "unidad",
+      "nota": "Índice de elaboración propia, ajustado; ver proc.transformacion."
+    },
+    "Índice (desvíos σ)": {
+      "magnitud": "indice",
+      "escala": "unidad",
+      "nota": "Estandarizado: unidades de desvío estándar."
+    },
+    "Var. m/m": {
+      "magnitud": "tasa",
+      "escala": "unidad",
+      "nota": "Variación mes contra mes."
+    },
+    "%": {
+      "magnitud": "porcentaje",
+      "escala": "unidad"
+    },
+    "% del PBI": {
+      "magnitud": "porcentaje",
+      "escala": "unidad",
+      "por": "PBI"
+    },
+    "% i.a. esperado": {
+      "magnitud": "porcentaje",
+      "escala": "unidad",
+      "nota": "Variación interanual esperada."
+    },
+    "tasa (0.03 = 3%)": {
+      "magnitud": "tasa",
+      "escala": "unidad"
+    },
+    "tasa i.a. (0.05 = 5%)": {
+      "magnitud": "tasa",
+      "escala": "unidad",
+      "nota": "Interanual."
+    },
+    "p.b.": {
+      "magnitud": "puntos_basicos",
+      "escala": "unidad"
+    },
+    "ratio": {
+      "magnitud": "ratio",
+      "escala": "unidad"
+    },
+    "proporción (0–1)": {
+      "magnitud": "proporcion",
+      "escala": "unidad"
+    },
+    "ARS/USD": {
+      "magnitud": "tipo_de_cambio",
+      "escala": "unidad",
+      "moneda": "ARS",
+      "contra": "USD"
+    },
+    "Personas": {
+      "magnitud": "personas",
+      "escala": "unidad"
+    },
+    "count": {
+      "magnitud": "conteo",
+      "escala": "unidad"
+    },
+    "años": {
+      "magnitud": "tiempo",
+      "escala": "unidad",
+      "nota": "Medido en años."
+    },
+    "0/1": {
+      "magnitud": "binaria",
+      "escala": "unidad"
+    },
+    "Categoria": {
+      "magnitud": "categorica",
+      "escala": "unidad"
+    },
+    "Índice 0-100": {
+      "magnitud": "score",
+      "escala": "unidad",
+      "rango": "0-100"
+    },
+    "Índice (0–5)": {
+      "magnitud": "score",
+      "escala": "unidad",
+      "rango": "0-5"
+    },
+    "Índice 0-100 (mayor = más integridad)": {
+      "magnitud": "score",
+      "escala": "unidad",
+      "rango": "0-100",
+      "nota": "Mayor = más integridad."
+    },
+    "Percentil 0-100 (mayor = más estable)": {
+      "magnitud": "score",
+      "escala": "unidad",
+      "rango": "0-100",
+      "nota": "Percentil; mayor = más estable."
+    },
+    "+1 promercado / −1 antimercado": {
+      "magnitud": "score",
+      "escala": "unidad",
+      "rango": "-1 a 1",
+      "nota": "Signo: +1 promercado, −1 antimercado."
+    },
+    "ARS": {
+      "magnitud": "moneda",
+      "escala": "unidad",
+      "moneda": "ARS",
+      "nota": "Valor de una unidad de cuenta indexada (UVA, UVI) expresado en pesos."
+    },
+    "Índice base 2.2.02=1": {
+      "magnitud": "indice",
+      "escala": "unidad",
+      "base": "2.2.02=1"
+    },
+    "Índice base 30.6.20=1": {
+      "magnitud": "indice",
+      "escala": "unidad",
+      "base": "30.6.20=1"
+    }
+  }
+}

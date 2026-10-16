@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Línea de Tiempo · La Cueva del Economista</title>
+<meta name="description" content="Historia económica argentina, 1880 → hoy: eventos, gobiernos y fichas con fuente.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/web/estilo/tokens.css">
+<link rel="stylesheet" href="/web/tiempo/tiempo.css">
+<script src="/web/estilo/tema.js"></script>
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <svg class="glyph" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M3 21V13.5C3 7.7 7 3.5 12 3.5S21 7.7 21 13.5V21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".38"/>
+        <path d="M4.5 21l3.2-5.1 3 3.4 3.4-7.3 2.6 4.6 2.8-3.2" stroke="var(--accent)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <div class="brand-name">La Cueva del <em>Economista</em></div>
+    </div>
+
+    <nav class="modswitch" aria-label="Módulos">
+      <a href="/tiempo" aria-current="true">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1.5 13h13M3 13V9.5M6.2 13V6M9.4 13V3.5M12.6 13V7.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Línea de Tiempo
+      </a>
+      <a href="/">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.6" y="2.4" width="12.8" height="11.2" rx="1.8" stroke="currentColor" stroke-width="1.5"/><path d="M1.6 6.2h12.8M6.4 6.2v7.4" stroke="currentColor" stroke-width="1.5"/></svg>
+        Mesa de Trabajo
+      </a>
+    </nav>
+
+    <div class="topright">
+      <span class="chip neutral" id="chip-eventos">— eventos</span>
+      <span class="chip warn" id="chip-verif" title="Toda fila nace sin verificar: verificado=si lo pone una persona">sin verificar</span>
+      <button class="iconbtn" id="tema" title="Cambiar tema" aria-label="Cambiar tema">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="3.4" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v1.6M8 13.4V15M15 8h-1.6M2.6 8H1M12.9 3.1l-1.1 1.1M4.2 11.8l-1.1 1.1M12.9 12.9l-1.1-1.1M4.2 4.2L3.1 3.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="main">
+  <section class="module" id="mod-tiempo">
+
+    <!-- ══ RAIL IZQUIERDO — CAPAS ══════════════════════════════════════ -->
+    <aside class="rail">
+      <div class="panel-hd"><span class="lbl">Capas</span></div>
+      <div class="scroll">
+        <div class="group-hd">Instituciones</div>
+        <div id="capas-inst"></div>
+
+        <div class="group-hd">Eventos <span class="num" id="cnt-eventos" style="font-size:10px;color:var(--ink-faint)"></span></div>
+        <div id="capas-evt"></div>
+
+        <div class="group-hd">Niveles</div>
+        <div id="capas-nivel"></div>
+        <div class="pad" style="padding:4px 13px 10px">
+          <label class="layer" style="padding-left:0"><input type="checkbox" id="auto-zoom" checked style="color:var(--accent)"><span class="name">Detalle por zoom</span></label>
+          <div class="micro">A 145 años se ven regímenes; al acercarte aparecen episodios y después hitos.</div>
+        </div>
+
+        <div class="group-hd">Series troncales <span class="num" id="cnt-series" style="font-size:10px;color:var(--ink-faint)">0/4</span></div>
+        <div id="capas-series"></div>
+
+        <div class="pad" style="padding:10px 13px 22px">
+          <div class="note" style="margin-bottom:9px"><span>⚠</span><div id="nota-cobertura"></div></div>
+          <div class="note info"><span>ℹ</span><div id="nota-alcance"></div></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ══ ESCENARIO ═══════════════════════════════════════════════════ -->
+    <div class="stage">
+      <div class="tl-bar">
+        <div>
+          <div class="tl-title">Historia económica argentina</div>
+          <div class="tl-sub" id="tl-sub">cargando…</div>
+        </div>
+        <div class="spacer"></div>
+
+        <div class="ctrl">
+          <span class="lbl">Período</span>
+          <div class="seg" id="rangos" role="group" aria-label="Rango temporal">
+            <button data-rango="1880,1935" aria-pressed="true">Cargado</button>
+            <button data-rango="1880,1890">Banca libre</button>
+            <button data-rango="1890,1902">Baring</button>
+            <button data-rango="1899,1929">Caja de Conv.</button>
+            <button data-rango="1929,1935">Depresión</button>
+            <button data-rango="1880,2026">Todo</button>
+          </div>
+        </div>
+
+        <div class="ctrl">
+          <span class="lbl">Ventana</span>
+          <span class="chip neutral num" id="zoom-lbl">1880–1935</span>
+          <button class="btn sm" id="zoom-reset" title="Volver al tramo cargado (o doble clic en el gráfico)">Reset</button>
+        </div>
+      </div>
+
+      <div class="tl-canvas" id="tl-canvas">
+        <svg class="tl-svg" id="tlsvg" role="img" aria-label="Línea de tiempo económica argentina"></svg>
+        <div class="tl-tip" id="tl-tip"></div>
+        <div class="tl-hint">Rueda para acercar · arrastrar para desplazar · doble clic para reiniciar · clic en un evento para verlo · doble clic para abrir la ficha</div>
+      </div>
+
+      <section class="ficha" id="ficha" aria-label="Ficha del evento"></section>
+    </div>
+
+    <!-- ══ RAIL DERECHO — EVENTOS ══════════════════════════════════════ -->
+    <aside class="rail rail-r">
+      <div class="panel-hd"><span class="lbl">Evento seleccionado</span></div>
+      <div class="scroll">
+        <div id="evt-detalle"></div>
+        <div class="panel-hd" style="border-top:1px solid var(--line)">
+          <span class="lbl">Todos los eventos</span>
+          <span class="chip neutral num" id="evt-cnt">0</span>
+        </div>
+        <div class="searchbox"><span style="opacity:.6">🔍</span><input id="evt-buscar" placeholder="Buscar evento…" aria-label="Buscar evento"></div>
+        <div id="evt-lista" role="listbox" aria-label="Eventos"></div>
+      </div>
+    </aside>
+
+  </section>
+  </div>
+</div>
+
+<!-- Abierta con doble clic (file://) esta página no puede funcionar: ni el CSS ni los
+     módulos ni los datos se resuelven. Este aviso va EN LÍNEA y sin depender de nada,
+     porque en ese caso app.js ni siquiera llega a cargarse. -->
+<script>
+if (location.protocol === 'file:') {
+  document.documentElement.innerHTML = '<head><meta charset="utf-8"><title>Hay que levantar el servidor</title></head>'
+    + '<body style="margin:0;background:#EEF1EC;color:#14201C;font:15px/1.6 system-ui,sans-serif">'
+    + '<div style="max-width:60ch;margin:12vh auto;padding:26px 28px;background:#FAFBF8;'
+    + 'border:1px solid #D5DDD4;border-left:4px solid #9E5518;border-radius:10px">'
+    + '<h1 style="margin:0 0 12px;font:700 20px/1.25 Georgia,serif">Esta pantalla no se abre con doble clic</h1>'
+    + '<p style="margin:0 0 12px">La Línea de Tiempo la sirve la app: los estilos y los módulos se piden '
+    + 'desde la raíz del servidor (<code>/web/…</code>) y los eventos por <code>/api/v1/historia</code>. '
+    + 'Como archivo suelto no hay ni CSS ni datos.</p>'
+    + '<p style="margin:0 0 6px"><b>Levantá la app</b> desde la raíz del repo:</p>'
+    + '<pre style="margin:0 0 14px;padding:10px 12px;background:#E4E9E2;border-radius:6px;overflow:auto;'
+    + 'font:13px/1.5 ui-monospace,Menlo,monospace">scripts\\levantar_cueva.bat</pre>'
+    + '<p style="margin:0">…y entrá por <a href="http://localhost:8800/tiempo">http://localhost:8800/tiempo</a>.</p>'
+    + '</div></body>';
+}
+</script>
+<script type="module" src="/web/tiempo/app.js"></script>
+</body>
+</html>

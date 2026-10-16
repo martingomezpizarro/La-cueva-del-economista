@@ -100,6 +100,13 @@ def _rango_catalog_actual(html: str) -> tuple[int, int]:
     raise ValueError("no se pudo delimitar el CATALOG en el template")
 
 
+def _inyectar(destino: Path, familias: list) -> None:
+    html = destino.read_text(encoding="utf-8")
+    ini, fin = _rango_catalog_actual(html)
+    destino.write_text(html[:ini] + _bloque_catalog(familias) + html[fin:], encoding="utf-8")
+    print(f"[OK] Árbol inyectado en {destino}: {len(familias)} familias.")
+
+
 def main() -> int:
     doc = json.loads(RUTA_CATALOGO.read_text(encoding="utf-8"))
     familias = doc.get("familias", doc if isinstance(doc, list) else [])
@@ -107,25 +114,27 @@ def main() -> int:
         print("[!] catalogo.json vacío o sin 'familias'")
         return 1
 
+    algo = False
+
+    # 1) El explorador nativo de la plataforma (web/explorador.html) — el destino principal
+    explorador = config.ROOT / "web" / "explorador.html"
+    if explorador.exists():
+        _inyectar(explorador, familias)
+        algo = True
+    else:
+        print(f"[!] No existe {explorador} (¿se borró el explorador nativo?)")
+
+    # 2) El template del Trabajo Final (para regenerar el visualizador standalone de TF)
     tf = config.carpeta_trabajo_final()
-    if not tf:
-        print("[!] No encuentro la carpeta del Trabajo Final (config.carpeta_trabajo_final()).")
-        print("    Configurá CUEVA_TRABAJO_FINAL o cueva.local.toml.")
-        return 1
-    template = tf / "notebooks" / "visualizador_template.html"
-    if not template.exists():
-        print(f"[!] No existe {template}")
-        return 1
+    template = tf / "notebooks" / "visualizador_template.html" if tf else None
+    if template and template.exists():
+        _inyectar(template, familias)
+        print("    Para el standalone de TF:  python notebooks/generar_visualizador.py")
+        algo = True
+    else:
+        print("[·] Template del Trabajo Final no encontrado (se omite; el explorador nativo no lo necesita).")
 
-    html = template.read_text(encoding="utf-8")
-    ini, fin = _rango_catalog_actual(html)
-    nuevo = html[:ini] + _bloque_catalog(familias) + html[fin:]
-    template.write_text(nuevo, encoding="utf-8")
-
-    n_fam = len(familias)
-    print(f"[OK] Árbol inyectado en {template.name}: {n_fam} familias.")
-    print("    Ahora, en la carpeta del Trabajo Final:  python notebooks/generar_visualizador.py")
-    return 0
+    return 0 if algo else 1
 
 
 if __name__ == "__main__":

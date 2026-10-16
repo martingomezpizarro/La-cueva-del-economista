@@ -1,0 +1,364 @@
+{
+  "version": 1,
+  "descripcion": "Registro de organismos y proveedores de datos. Cada serie del catálogo apunta acá con proc.fuente. Editar este archivo, no Python. Los criterios de redistribución vienen del repositorio de replicación del Trabajo Final (DATOS_LICENCIAS.md) y son un criterio de trabajo, no una opinión legal.",
+  "actualizado": "2026-08-27",
+  "fuentes": {
+    "bcra": {
+      "nombre": "Banco Central de la República Argentina",
+      "sigla": "BCRA",
+      "pais": "AR",
+      "tipo": "banco central",
+      "sitio": "https://www.bcra.gob.ar/",
+      "acceso": "api",
+      "api": {
+        "base": "https://api.bcra.gob.ar",
+        "servicio": "Estadísticas Monetarias",
+        "version": "4.0",
+        "clave": false,
+        "endpoints": {
+          "listado": "/estadisticas/v4.0/monetarias",
+          "serie": "/estadisticas/v4.0/monetarias/{idVariable}",
+          "metodologia": "/estadisticas/v4.0/metodologia",
+          "metodologia_variable": "/estadisticas/v4.0/metodologia/{idVariable}"
+        },
+        "parametros_serie": [
+          "desde",
+          "hasta",
+          "limit",
+          "offset"
+        ],
+        "limite_por_pagina": 3000,
+        "idiomas": [
+          "es-AR",
+          "en-US"
+        ],
+        "notas": "Sin autenticación. El BCRA controla el tráfico por IP: conviene espaciar los pedidos y filtrar siempre por fechas. La cadena TLS suele venir incompleta; el cliente permite verify=False.",
+        "documentacion": "https://www.bcra.gob.ar/documentacion-apis/?fileName=principales-variables-v4",
+        "contacto": "api@bcra.gob.ar"
+      },
+      "alternativas": [
+        {
+          "nombre": "Publicaciones estadísticas (planillas Excel)",
+          "url": "https://www.bcra.gob.ar/PublicacionesEstadisticas/",
+          "cuando": "ITCRM, CER histórico, depósitos y préstamos en dólares y todo lo que la API no expone"
+        },
+        {
+          "nombre": "Series históricas SSPM en datos.gob.ar",
+          "url": "https://datos.gob.ar/dataset/sspm-series-historicas-estadisticas-monetarias",
+          "cuando": "series monetarias empalmadas hacia atrás, anteriores a la cobertura de la API"
+        }
+      ],
+      "licencia": "Datos públicos de libre acceso; se pide citar al BCRA como fuente.",
+      "redistribuible": true,
+      "script": "scripts/actualizar_bcra.py"
+    },
+    "indec": {
+      "nombre": "Instituto Nacional de Estadística y Censos",
+      "sigla": "INDEC",
+      "pais": "AR",
+      "tipo": "instituto de estadística",
+      "sitio": "https://www.indec.gob.ar/",
+      "acceso": "api+planillas",
+      "api": {
+        "base": "https://apis.datos.gob.ar/series/api",
+        "servicio": "Series de Tiempo de la Administración Pública Nacional",
+        "clave": false,
+        "endpoints": {
+          "serie": "/series?ids={id_serie}",
+          "busqueda": "/search?q={texto}"
+        },
+        "notas": "El catálogo CKAN de datos.gob.ar también sirve los paquetes completos: https://datos.gob.ar/api/3/action/package_show?id={paquete}"
+      },
+      "alternativas": [
+        {
+          "nombre": "Cuentas Nacionales (planillas .xls)",
+          "url": "https://www.indec.gob.ar/",
+          "cuando": "PBI corriente y constante, FBKF, términos de intercambio"
+        },
+        {
+          "nombre": "Cuentas Internacionales",
+          "url": "https://www.indec.gob.ar/ftp/cuadros/economia/cin_{ROMANO}_{ANIO}.xls",
+          "cuando": "deuda externa bruta por sector, cuadro 23 (MBP6)"
+        }
+      ],
+      "licencia": "Datos públicos; citar al INDEC.",
+      "redistribuible": true,
+      "script": "scripts/download/download_datos_gob.py (repo del Trabajo Final)"
+    },
+    "mecon": {
+      "nombre": "Ministerio de Economía — Secretaría de Hacienda",
+      "sigla": "MECON",
+      "pais": "AR",
+      "tipo": "ministerio",
+      "sitio": "https://www.argentina.gob.ar/economia",
+      "acceso": "api+planillas",
+      "api": {
+        "base": "https://apis.datos.gob.ar/series/api",
+        "clave": false
+      },
+      "cobertura": "Esquema Ahorro-Inversión-Financiamiento, IMIG, recursos tributarios",
+      "licencia": "Datos públicos; citar al MECON.",
+      "redistribuible": true
+    },
+    "finanzas": {
+      "nombre": "Secretaría de Finanzas de la Nación",
+      "sigla": "Finanzas",
+      "pais": "AR",
+      "tipo": "secretaría",
+      "sitio": "https://www.argentina.gob.ar/economia/finanzas/graficos-deuda",
+      "acceso": "planillas",
+      "cobertura": "Saldo de deuda (SIGADE y Boletín Mensual), vencimientos por moneda",
+      "licencia": "Datos públicos; citar a la Secretaría de Finanzas.",
+      "redistribuible": true
+    },
+    "banco_mundial": {
+      "nombre": "Banco Mundial — World Development Indicators",
+      "sigla": "BM/WDI",
+      "pais": "internacional",
+      "tipo": "organismo multilateral",
+      "sitio": "https://data.worldbank.org/",
+      "acceso": "api",
+      "api": {
+        "base": "https://api.worldbank.org/v2",
+        "clave": false,
+        "cliente_python": "wbgapi"
+      },
+      "licencia": "CC BY 4.0",
+      "redistribuible": true
+    },
+    "argentinadatos": {
+      "nombre": "ArgentinaDatos",
+      "sigla": "ArgentinaDatos",
+      "pais": "AR",
+      "tipo": "agregador comunitario",
+      "sitio": "https://argentinadatos.com/",
+      "acceso": "api",
+      "api": {
+        "base": "https://api.argentinadatos.com/v1",
+        "clave": false
+      },
+      "cobertura": "Riesgo país (EMBI+ Argentina), dólar MEP y otras cotizaciones",
+      "licencia": "API abierta; el índice subyacente (EMBI) es de J.P. Morgan.",
+      "redistribuible": false,
+      "notas": "No republicar la serie de EMBI: dejar el script y el hash."
+    },
+    "bcrp": {
+      "nombre": "Banco Central de Reserva del Perú",
+      "sigla": "BCRP",
+      "pais": "PE",
+      "tipo": "banco central",
+      "sitio": "https://estadisticas.bcrp.gob.pe/estadisticas/series/",
+      "acceso": "api",
+      "cobertura": "EMBI Global América Latina y por país (serie PD04708XD y familia)",
+      "licencia": "Difusión abierta del BCRP; el índice es propietario de J.P. Morgan.",
+      "redistribuible": false
+    },
+    "utdt": {
+      "nombre": "Universidad Torcuato Di Tella — Centro de Investigación en Finanzas",
+      "sigla": "UTDT/CIF",
+      "pais": "AR",
+      "tipo": "universidad",
+      "sitio": "https://www.utdt.edu/ver_contenido.php?id_contenido=1351",
+      "acceso": "manual",
+      "cobertura": "Índice de Confianza del Consumidor, Índice de Confianza en el Gobierno, Expectativas de Inflación, Índice Líder",
+      "licencia": "Series elaboradas por la Universidad. Se citan y enlazan; la republicación conviene consultarla con el CIF.",
+      "redistribuible": false
+    },
+    "yahoo": {
+      "nombre": "Yahoo Finance",
+      "sigla": "Yahoo",
+      "pais": "internacional",
+      "tipo": "proveedor de mercado",
+      "sitio": "https://finance.yahoo.com/",
+      "acceso": "api",
+      "api": {
+        "cliente_python": "yfinance",
+        "clave": false
+      },
+      "cobertura": "VIX, DXY, tasas del Tesoro de EE.UU., commodities, S&P 500, MSCI EM, tipos de cambio regionales",
+      "licencia": "Sus términos restringen la redistribución; los índices subyacentes (CBOE, ICE) son propietarios.",
+      "redistribuible": false
+    },
+    "ofr": {
+      "nombre": "Office of Financial Research (EE.UU.)",
+      "sigla": "OFR",
+      "pais": "US",
+      "tipo": "organismo público",
+      "sitio": "https://www.financialresearch.gov/financial-stress-index/",
+      "acceso": "api",
+      "cobertura": "OFR Financial Stress Index",
+      "licencia": "Dominio público (obra del gobierno de EE.UU.).",
+      "redistribuible": true
+    },
+    "propia": {
+      "nombre": "Elaboración propia — La Cueva del Economista",
+      "sigla": "propia",
+      "pais": "AR",
+      "tipo": "derivada",
+      "acceso": "script",
+      "cobertura": "Series construidas a partir de otras: ratios sobre PBI, deflactadas, mensualizadas por filtro de Kalman, brecha cambiaria, dummies estructurales, índices sintéticos.",
+      "licencia": "Elaboración propia; se publica sin restricción citando los insumos.",
+      "redistribuible": true,
+      "notas": "Toda serie con fuente 'propia' DEBE declarar proc.insumos y proc.transformacion: sin eso no es replicable.",
+      "sitio": "https://github.com/  (repositorio de La Cueva del Economista)"
+    },
+    "heritage": {
+      "nombre": "The Heritage Foundation — Index of Economic Freedom",
+      "sigla": "Heritage",
+      "pais": "US",
+      "tipo": "think tank",
+      "sitio": "https://www.heritage.org/index/",
+      "acceso": "descarga",
+      "cobertura": "Índice de Libertad Económica (puntaje general y componentes), anual, interpolado a mensual en el panel",
+      "licencia": "Uso académico con cita; la redistribución del dataset completo requiere permiso.",
+      "redistribuible": false,
+      "script": "scripts/download/download_heritage.py (repo del Trabajo Final)"
+    },
+    "casa_rosada": {
+      "nombre": "Presidencia de la Nación — Casa Rosada",
+      "sigla": "Casa Rosada",
+      "pais": "AR",
+      "tipo": "organismo público",
+      "sitio": "https://www.casarosada.gob.ar/la-casa-rosada/historia/18-nuestro-pais/galeria-de-presidentes",
+      "acceso": "manual",
+      "cobertura": "Listado oficial de presidentes de la Nación. Fuente de autoridad para la tabla de presidencias; no publica datos estructurados, se transcribe y se verifica a mano.",
+      "licencia": "Información pública oficial; citar a la Presidencia de la Nación.",
+      "redistribuible": true,
+      "script": "scripts/construir_presidencias.py"
+    },
+    "reinhart_rogoff": {
+      "nombre": "Reinhart & Rogoff — Global Crises Data by Country",
+      "sigla": "R&R / HBS",
+      "pais": "internacional",
+      "tipo": "base académica",
+      "sitio": "https://www.hbs.edu/behavioral-finance-and-financial-stability/data/Pages/global.aspx",
+      "acceso": "descarga",
+      "cobertura": "Crisis bancarias, cambiarias, inflacionarias, de deuda externa y doméstica, colapsos bursátiles, patrón oro y clasificación cambiaria. 1800 en adelante, 70 países. Resolución anual.",
+      "licencia": "Uso académico con cita a Reinhart & Rogoff y al Behavioral Finance & Financial Stability de Harvard Business School.",
+      "redistribuible": false,
+      "notas": "Se guarda el crudo en data/historia/_crudo/ (gitignorado) y se versiona solo lo derivado. Desde el sandbox de Cowork hbs.edu está bloqueado por la allowlist de egress.",
+      "script": "scripts/bajar_crisis_rr.py"
+    },
+    "ilzetzki_reinhart_rogoff": {
+      "nombre": "Ilzetzki, Reinhart & Rogoff — Exchange Rate Arrangements",
+      "sigla": "IRR",
+      "pais": "internacional",
+      "tipo": "base académica",
+      "sitio": "https://www.ilzetzki.com/irr-data",
+      "acceso": "descarga",
+      "cobertura": "Clasificación MENSUAL del régimen cambiario de facto, 1946 en adelante. Es la referencia para fechar cuándo Argentina estuvo en tipo de cambio fijo, banda, flotación administrada o caída libre.",
+      "licencia": "Uso académico con cita.",
+      "redistribuible": false
+    },
+    "fred": {
+      "nombre": "Federal Reserve Bank of St. Louis — FRED",
+      "sigla": "FRED",
+      "pais": "US",
+      "tipo": "banco central",
+      "sitio": "https://fred.stlouisfed.org/",
+      "acceso": "api",
+      "api": {
+        "base": "https://api.stlouisfed.org/fred",
+        "clave": true,
+        "obtener_clave": "https://fred.stlouisfed.org/docs/api/api_key.html",
+        "notas": "Clave gratuita. Republica series del BIS, del FMI y del Banco Mundial con una sola interfaz, lo que evita tres integraciones distintas."
+      },
+      "cobertura": "TCR efectivo del BIS para Argentina (RBARBIS, mensual desde 1994-01) y su versión nominal (NBARBIS), más tasas de EE.UU. y series internacionales.",
+      "licencia": "FRED es de acceso libre, pero cada serie mantiene la licencia de su emisor: las del BIS piden cita obligatoria y no se redistribuyen.",
+      "redistribuible": false
+    },
+    "bis": {
+      "nombre": "Bank for International Settlements — Effective Exchange Rates",
+      "sigla": "BIS",
+      "pais": "internacional",
+      "tipo": "organismo multilateral",
+      "sitio": "https://data.bis.org/topics/EER/data",
+      "acceso": "descarga+api",
+      "cobertura": "Tipo de cambio efectivo real y nominal, canasta amplia y estrecha, mensual. Argentina desde 1994-01. Misma metodología para todos los países: es la alternativa comparable al ITCRM del BCRA.",
+      "licencia": "Uso permitido con cita obligatoria al BIS; no se redistribuye el dataset.",
+      "redistribuible": false,
+      "notas": "Se accede más cómodo por FRED (RBARBIS / NBARBIS) que por el portal del BIS."
+    },
+    "fmi_ifs": {
+      "nombre": "Fondo Monetario Internacional — International Financial Statistics",
+      "sigla": "FMI/IFS",
+      "pais": "internacional",
+      "tipo": "organismo multilateral",
+      "sitio": "https://data.imf.org/ifs",
+      "acceso": "api+descarga",
+      "cobertura": "Reservas internacionales, tipo de cambio oficial, agregados monetarios y tasas, mensual y comparable entre países. Argentina desde 1948.",
+      "licencia": "Uso permitido con cita al FMI; revisar términos antes de republicar.",
+      "redistribuible": false
+    },
+    "ferreres": {
+      "nombre": "Ferreres, Orlando — Dos siglos de economía argentina (Fundación Norte y Sur)",
+      "sigla": "Ferreres",
+      "pais": "AR",
+      "tipo": "compilación académica",
+      "sitio": "https://dossiglos.fundacionnorteysur.org.ar/",
+      "acceso": "manual",
+      "cobertura": "La compilación canónica de series argentinas largas: PBI, precios, tipo de cambio, población, comercio y salarios, 1810-2010, ya empalmadas a través de los cinco cambios de moneda.",
+      "licencia": "Obra publicada. Se cita y se transcribe lo que se usa; no se republica el dataset.",
+      "redistribuible": false
+    },
+    "della_paolera_taylor": {
+      "nombre": "Della Paolera & Taylor — Straining at the Anchor / A New Economic History of Argentina",
+      "sigla": "DP&T",
+      "pais": "AR",
+      "tipo": "compilación académica",
+      "sitio": "https://www.nber.org/books-and-chapters/straining-anchor-argentine-currency-board-and-search-macroeconomic-stability-1880-1935",
+      "acceso": "manual",
+      "cobertura": "Historia monetaria y cambiaria argentina 1880-1935: Caja de Conversión, respaldo metálico, peso oro y peso papel, premio del oro. Es la fuente para el período anterior a la creación del BCRA (1935).",
+      "licencia": "Obra publicada. Se cita y se transcribe; no se republica.",
+      "redistribuible": false
+    },
+    "bruegel": {
+      "nombre": "Bruegel — Real Effective Exchange Rates for 178 countries (Darvas)",
+      "sigla": "Bruegel",
+      "pais": "internacional",
+      "tipo": "think tank",
+      "sitio": "https://www.bruegel.org/publications/datasets/real-effective-exchange-rates-for-178-countries-a-new-database",
+      "acceso": "descarga",
+      "cobertura": "Tipo de cambio efectivo real, deflactado por IPC. Índice ESTRECHO (51 socios) MENSUAL desde 1960; índice amplio (120 socios) mensual desde 1993. Última actualización 2026-08-13. Es la serie de TCR multilateral más larga y descargable que encontramos: 34 años más que el BIS.",
+      "licencia": "Uso libre, incluso transformado, con atribución obligatoria a Darvas (Bruegel).",
+      "redistribuible": true,
+      "notas": "Reemplaza al BIS como fuente principal de TCR multilateral largo. Verificar la cobertura efectiva de Argentina al bajar: la base declara 178 países pero no todos arrancan en 1960."
+    },
+    "gmd": {
+      "nombre": "Global Macro Database (Müller, Xu, Lehbib & Chen)",
+      "sigla": "GMD",
+      "pais": "internacional",
+      "tipo": "base académica",
+      "sitio": "https://www.globalmacrodata.com/",
+      "acceso": "descarga+paquete",
+      "cobertura": "46 variables macro para 243 países, con series que arrancan en 1086. Agrega y empalma 32 fuentes históricas y contemporáneas. Paquetes para R, Stata y Python.",
+      "licencia": "Uso académico con cita al working paper (NBER w33714).",
+      "redistribuible": false,
+      "notas": "Candidata fuerte para las series largas de tipo de cambio, precios y deuda. Al usarla hay que mirar QUÉ fuente primaria empalmó para Argentina en cada tramo: es un agregador, no un relevamiento propio."
+    },
+    "forex_centuries": {
+      "nombre": "forex-centuries (colección abierta de datos históricos)",
+      "sigla": "forex-centuries",
+      "pais": "internacional",
+      "tipo": "agregador comunitario",
+      "sitio": "https://github.com/unbalancedparentheses/forex-centuries",
+      "acceso": "repositorio",
+      "cobertura": "27 fuentes agregadas en CSV normalizados: tipos de cambio (~243 países, 1106-2026), oro y plata, precios de commodities, tasas de interés desde 1311, PBI per cápita, inflación desde 1500, deuda soberana desde 1800 y regímenes cambiarios 1800-2021. Pipeline semanal.",
+      "licencia": "Ver LICENSE del repositorio; cada serie mantiene la licencia de su fuente primaria.",
+      "redistribuible": false,
+      "notas": "Atajo útil para localizar series largas, NO fuente de autoridad: agrega MeasuringWorth, Clio Infra y GMD. Toda serie que salga de acá se cita por su fuente primaria, no por el repositorio."
+    },
+    "instituto_economia_bancaria": {
+      "nombre": "Instituto de Economía Bancaria (UBA) — La Economía Argentina a través de sus índices más representativos, 1901-1935",
+      "sigla": "IEB",
+      "pais": "AR",
+      "tipo": "compilación de época",
+      "sitio": "https://depeco.econo.unlp.edu.ar/wp-content/uploads/2017/05/doc28.pdf",
+      "acceso": "manual",
+      "cobertura": "Circulación monetaria, existencias de oro de la Caja de Conversión y balance de pagos, 1901-1935. Fuente contemporánea a los hechos.",
+      "licencia": "Obra histórica; se cita la compilación y la memoria original.",
+      "redistribuible": false,
+      "notas": "Fuentes primarias que la respaldan: Memoria de la Caja de Conversión de 1933 y Memorias del Banco de la Nación (1929, 1932, 1934). Salama (UNLP, doc. 28) reconstruye las series y advierte que NO constituyen un balance completo."
+    }
+  }
+}

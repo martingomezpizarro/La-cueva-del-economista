@@ -1,0 +1,14 @@
+# Manifiesto de fuentes de ACCESO ABIERTO para el corpus econometrico.
+# Formato: carpeta <TAB> nombre_archivo <TAB> url
+# Solo entran aca textos publicados abiertamente por el autor, el editor o un
+# repositorio institucional. Los manuales con derechos (Hamilton, Lutkepohl 2005,
+# Box-Jenkins, etc.) NO van aca: van por biblioteca UNC / compra. Ver POR_CONSEGUIR.md.
+# Para agregar: sumar una linea y correr scripts/bajar_abiertos.py
+#
+01_fundamentos	Granger_2003_Nobel_cointegracion.pdf	https://www.nobelprize.org/uploads/2018/06/granger-lecture.pdf
+05_volatilidad	Engle_2003_Nobel_ARCH.pdf	https://www.nobelprize.org/uploads/2018/06/engle-lecture.pdf
+09_robustez	Mullainathan_Spiess_2017_ML_enfoque_econometrico.pdf	https://pubs.aeaweb.org/doi/pdf/10.1257/jep.31.2.87
+09_robustez	Leamer_2010_Tantalus_asymptopia.pdf	https://pubs.aeaweb.org/doi/pdf/10.1257/jep.24.2.31
+09_robustez	Wilkinson_2016_FAIR_principles.pdf	https://www.nature.com/articles/sdata201618.pdf
+02_univariados	Oreshkin_2020_NBEATS.pdf	https://arxiv.org/pdf/1905.10437
+12_frontera_dl	Survey_2024_arquitecturas_series_temporales.pdf	https://arxiv.org/pdf/2401.13912

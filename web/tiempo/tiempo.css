@@ -1,0 +1,147 @@
+/* ============================================================
+   tiempo.css — módulo 1, Línea de Tiempo.
+   Lo compartido vive en /web/estilo/tokens.css; acá sólo lo propio
+   de esta pantalla: barra, lienzo SVG, tarjetita y ficha inferior.
+   ============================================================ */
+
+/* ---------------- barra superior del módulo ---------------- */
+.tl-bar{
+  display:flex; align-items:center; gap:12px; padding:9px 16px;
+  border-bottom:1px solid var(--line); background:var(--surface); flex:0 0 auto; flex-wrap:wrap;
+}
+.tl-title{font-family:var(--display); font-size:17px; font-weight:700; letter-spacing:-.01em}
+.tl-sub{font-size:11.5px; color:var(--ink-dim)}
+.ctrl{display:flex; align-items:center; gap:7px}
+.ctrl .lbl{font-size:9.5px; white-space:nowrap}
+.micro{font-size:10.5px; color:var(--ink-faint); line-height:1.4; padding:2px 0 0 22px}
+
+/* ---------------- lienzo ---------------- */
+.tl-canvas{flex:1; min-height:0; padding:14px 16px 10px; overflow:auto; position:relative}
+/* con la ficha abierta el lienzo se comprime: la ayuda estorba más de lo que ayuda */
+.stage:has(.ficha.on) .tl-hint{display:none}
+.tl-hint{margin-top:6px; font-size:10.5px; color:var(--ink-faint); text-align:center; letter-spacing:.01em}
+.tl-svg{cursor:grab; touch-action:none; -webkit-user-select:none; user-select:none; display:block; width:100%; height:auto; min-width:760px}
+.tl-svg:active{cursor:grabbing}
+
+.evt-pin{cursor:pointer}
+.evt-pin:hover .pin-head{r:5.5}
+.evt-pin .lab{pointer-events:none}
+.evt-barra{cursor:pointer}
+.evt-barra:hover rect{fill-opacity:.55}
+.pres-block{cursor:pointer}
+.pres-block:hover rect{fill-opacity:.42}
+.reg-band{cursor:pointer}
+.reg-band:hover rect{fill-opacity:.34}
+.gapband{fill:var(--line-soft); opacity:.45}
+
+/* ---------------- tarjetita ---------------- */
+.tl-tip{
+  position:absolute; pointer-events:none; z-index:5; min-width:160px; max-width:290px;
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--r);
+  box-shadow:var(--shadow); padding:7px 9px; font-size:12px; opacity:0; transition:opacity .1s;
+}
+.tl-tip.on{opacity:1}
+.tl-tip .yr{font-family:var(--mono); font-size:12.5px; font-weight:600; color:var(--ink); margin-bottom:4px; display:block}
+.tl-tip .tt{font-size:12.5px; font-weight:600; color:var(--ink); line-height:1.3}
+.tl-tip .sb{font-size:11px; color:var(--ink-dim); margin-top:3px; line-height:1.4}
+.tl-tip .ev{margin-top:6px; padding-top:6px; border-top:1px solid var(--line-soft); font-size:11px; color:var(--accent)}
+
+/* ---------------- rail derecho ---------------- */
+.evt-card{padding:13px 14px; border-bottom:1px solid var(--line-soft)}
+.evt-date{font-family:var(--mono); font-size:11px; color:var(--ink-dim); letter-spacing:.02em}
+.evt-title{font-family:var(--display); font-size:16.5px; font-weight:700; margin:3px 0 6px; line-height:1.25; text-wrap:balance}
+.evt-desc{font-size:13px; color:var(--ink-2); line-height:1.5}
+.kv{display:grid; grid-template-columns:auto 1fr; gap:5px 12px; font-size:12px; margin-top:11px}
+.kv dt{color:var(--ink-dim); font-size:10px; letter-spacing:.04em; text-transform:uppercase; font-weight:600; padding-top:2px}
+.kv dd{margin:0; color:var(--ink-2)}
+.evtlist-item{display:flex; gap:9px; padding:7px 13px; cursor:pointer; align-items:baseline; border-left:2px solid transparent}
+.evtlist-item:hover{background:var(--surface-2)}
+.evtlist-item[aria-selected="true"]{background:var(--accent-soft); border-left-color:var(--accent)}
+.evtlist-item .y{font-family:var(--mono); font-size:11.5px; color:var(--ink-dim); flex:0 0 34px}
+.evtlist-item .t{font-size:12.5px; color:var(--ink-2); line-height:1.35; flex:1}
+.evtlist-item .sw{width:5px; height:5px; border-radius:50%; flex:0 0 auto; align-self:center}
+.evtlist-item .fi{font-size:9.5px; color:var(--accent); flex:0 0 auto}
+.vacio{padding:16px 14px; font-size:12px; color:var(--ink-faint); line-height:1.5}
+
+/* ---------------- ficha del evento (panel inferior) ---------------- */
+.ficha{
+  flex:0 0 46%; min-height:0; display:none; flex-direction:column;
+  background:var(--surface); border-top:2px solid var(--accent-line);
+}
+.ficha.on{display:flex}
+.ficha-hd{
+  display:flex; align-items:flex-start; gap:12px; padding:11px 16px 9px;
+  border-bottom:1px solid var(--line-soft); flex:0 0 auto; flex-wrap:wrap;
+}
+.ficha-hd .tt{font-family:var(--display); font-size:19px; font-weight:700; line-height:1.2; margin:0}
+.ficha-hd .meta{font-family:var(--mono); font-size:11px; color:var(--ink-dim); margin-top:2px}
+.ficha-bd{display:grid; grid-template-columns:1.55fr 1fr; gap:0; overflow:hidden; flex:1; min-height:0}
+.ficha-col{overflow-y:auto; padding:13px 16px; min-height:0; scrollbar-width:thin}
+.ficha-col+.ficha-col{border-left:1px solid var(--line-soft); background:var(--surface-2)}
+.ficha-col::-webkit-scrollbar{width:8px}
+.ficha-col::-webkit-scrollbar-thumb{background:var(--line); border-radius:8px; border:2px solid var(--surface)}
+.ficha-sec{margin:0 0 8px}
+.ficha-sec+.ficha-sec, .ficha-col > .lbl+*{margin-top:0}
+.ficha-col h4{margin:16px 0 7px; font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-dim); font-weight:600}
+.ficha-col h4:first-child{margin-top:0}
+.ficha-col p{margin:0 0 10px; font-size:13.3px; line-height:1.62; color:var(--ink-2); max-width:70ch}
+.ficha-col strong{color:var(--ink)}
+.ficha-col code{font-family:var(--mono); font-size:12px; background:var(--sunken); padding:1px 4px; border-radius:3px}
+.lista{margin:0 0 10px; padding-left:18px}
+.lista li{font-size:13px; line-height:1.55; color:var(--ink-2); margin-bottom:4px}
+
+/* cronología */
+.crono{list-style:none; margin:0 0 6px; padding:0; position:relative}
+.crono::before{content:""; position:absolute; left:57px; top:6px; bottom:6px; width:1px; background:var(--line)}
+.crono li{display:grid; grid-template-columns:52px 1fr; gap:16px; padding:0 0 12px; position:relative}
+.crono .cf{font-family:var(--mono); font-size:10.5px; color:var(--ink-dim); text-align:right; padding-top:1px; white-space:nowrap}
+.crono .cf .yy{opacity:.6}
+.crono .ct{font-size:13px; line-height:1.55; color:var(--ink-2)}
+.crono li::after{
+  content:""; position:absolute; left:54.5px; top:5px; width:6px; height:6px; border-radius:50%;
+  background:var(--accent); border:1.5px solid var(--surface);
+}
+
+/* cifras enlazadas */
+.cifra{
+  display:inline; font-family:var(--mono); font-weight:600; font-size:12.5px; color:var(--accent);
+  border-bottom:1.5px dotted var(--accent-line); padding:0 1px; cursor:pointer; background:none;
+}
+.cifra:hover{background:var(--accent-soft); border-bottom-style:solid}
+.cifra::after{content:"↗"; font-size:9px; vertical-align:super; opacity:.6; margin-left:1px}
+.cifra-rota{color:var(--crit); font-family:var(--mono); font-size:12px}
+.cifra-card{
+  display:flex; align-items:baseline; gap:9px; padding:6px 9px; border-radius:var(--r);
+  border:1px solid var(--line-soft); background:var(--surface); width:100%; text-align:left; margin-bottom:5px;
+}
+.cifra-card:hover{border-color:var(--accent-line)}
+.cifra-card .v{font-family:var(--mono); font-weight:600; font-size:13.5px; color:var(--ink); white-space:nowrap}
+.cifra-card .e{font-size:11.5px; color:var(--ink-dim); flex:1; line-height:1.35}
+.cifra-card .fu{font-size:10px; opacity:.8; display:block; margin-top:2px}
+.cifra-card .link{font-size:10px; color:var(--accent); white-space:nowrap; align-self:flex-start}
+.cifra-card .link.off{color:var(--ink-faint)}
+
+/* citas y bibliografía */
+.cita{color:var(--accent); font-size:11.5px; font-family:var(--mono); cursor:help; border-bottom:1px dotted var(--accent-line)}
+.cita-no-verificable{color:var(--ink-dim); border-bottom-style:dashed}
+.cita-no-verificable::after{content:"?"; font-size:9px; vertical-align:super; opacity:.8}
+.quote{border-left:2px solid var(--accent); padding:2px 0 2px 11px; margin:0 0 11px}
+.quote p{margin:0 0 4px; font-size:12.5px; line-height:1.55; color:var(--ink-2); font-style:italic}
+.quote cite{font-size:11px; color:var(--ink-dim); font-style:normal; font-family:var(--mono)}
+.biblio{list-style:none; margin:0; padding:0}
+.biblio li{font-size:11.5px; line-height:1.45; color:var(--ink-2); padding:5px 0 5px 13px; text-indent:-13px}
+.biblio .marca{font-size:9.5px; color:var(--ink-faint); font-family:var(--mono)}
+.fuentes-prim{list-style:none; margin:0; padding:0}
+.fuentes-prim li{font-size:11.5px; line-height:1.45; color:var(--ink-2); padding:4px 0; display:flex; gap:7px}
+.fuentes-prim .tp{font-size:9.5px; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-faint); font-weight:600; flex:0 0 66px; padding-top:1px}
+
+/* medios */
+.foto{border:1px solid var(--line); border-radius:var(--r); overflow:hidden; background:var(--sunken); margin-bottom:11px}
+.foto .ph{height:110px; display:grid; place-items:center; background:
+  repeating-linear-gradient(45deg,var(--sunken),var(--sunken) 9px,var(--surface-2) 9px,var(--surface-2) 18px)}
+.foto img{width:100%; display:block}
+.foto .cap{padding:7px 9px; font-size:11px; line-height:1.4; color:var(--ink-2); border-top:1px solid var(--line-soft)}
+.foto .cred{font-size:10px; color:var(--ink-faint); margin-top:3px}
+
+@media (max-width:1000px){.ficha-bd{grid-template-columns:1fr}}
+@media (max-width:1180px){.rail{flex-basis:200px} .rail-r{flex-basis:250px}}

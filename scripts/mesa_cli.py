@@ -17,6 +17,11 @@ import json
 import sys
 from pathlib import Path
 
+# La consola de Windows usa cp1252 y la mesa imprime emojis/flechas: sin esto,
+# el primer mensaje del orquestador tira UnicodeEncodeError.
+if sys.stdout.encoding and sys.stdout.encoding.lower() not in ("utf-8", "utf8"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from cueva import config  # noqa: E402
@@ -34,6 +39,11 @@ def main():
     ap.add_argument("--series-ids", "--ids", dest="ids", nargs="*", default=[], help="IDs de series a usar")
     ap.add_argument("--dep", default=None, help="ID de la serie dependiente (Y)")
     ap.add_argument("--freq", default="mensual")
+    ap.add_argument(
+        "--pipeline",
+        default="clasica",
+        help="guion de la mesa: clasica (4 profesores) o equipo_completo (10 especialistas)",
+    )
     ap.add_argument(
         "--revisar",
         nargs="?",
@@ -66,7 +76,7 @@ def main():
         serie_dependiente=args.dep,
         frecuencia=args.freq,
     )
-    orq = Orquestador(proyecto)
+    orq = Orquestador(proyecto, pipeline=args.pipeline)
     iterador = orq.revisar(args.revisar) if args.revisar is not None else orq.correr()
     for m in iterador:
         destino = f" → @{m.dirigido_a}" if m.dirigido_a else ""

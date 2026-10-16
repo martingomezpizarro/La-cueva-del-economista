@@ -14,6 +14,7 @@ dependencies = [
     "statsmodels>=0.14",
     "arch>=6.0",
     "openpyxl>=3.1",
+    "pyyaml>=6.0",  # frontmatter de las fichas de la Línea de Tiempo
     "xlrd>=2.0",
     # Motor de conocimiento (La Cueva-LM)
     "scikit-learn>=1.4",
@@ -46,7 +47,7 @@ include = ["cueva*"]
 [tool.ruff]
 line-length = 110
 target-version = "py312"
-extend-exclude = ["_studio_demo", ".venv", "knowledge-base"]  # el corpus es contenido, no código
+extend-exclude = ["_studio_demo", ".venv", "knowledge-base", "RAG/corpus"]  # el corpus es contenido, no código
 
 [tool.ruff.lint]
 select = [

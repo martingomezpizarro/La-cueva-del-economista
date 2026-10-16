@@ -2,21 +2,32 @@
 
 Endpoints (todos bajo /api/v1):
     GET    /                                      → UI (web/index.html)
+    GET    /explorador                            → explorador nativo (web/explorador.html)
+    GET    /tiempo  ·  /tiempo/{evento_id}        → Línea de Tiempo (web/tiempo/index.html)
+    GET    /api/v1/historia                       → todo lo del módulo en una respuesta
+    GET    /api/v1/historia/eventos/{id}          → la ficha completa de un evento
     GET    /api/v1/diag                           → estado de config (datos, RAG, API key, explorador)
     GET    /api/v1/series                         → catálogo de series (filtro, origen, limite, refrescar)
+    GET    /api/v1/explorador/datos               → datos columnares para el explorador (ex EMBEDDED)
+    POST   /api/v1/explorador/kalman              → ajuste SARIMAX/Kalman (nativo)
+    POST   /api/v1/explorador/analisis-basico     → corre el script legacy del TF (puente subprocess)
     GET    /api/v1/herramientas                   → herramientas econométricas disponibles
     POST   /api/v1/herramienta                    → ejecuta una herramienta {nombre, args, proyecto_id?}
 
     GET    /api/v1/proyectos                      → lista las investigaciones guardadas
-    POST   /api/v1/proyectos                      → crea una investigación nueva
+    POST   /api/v1/proyectos                      → crea una investigación (acepta semilla de Vista Rápida)
     GET    /api/v1/proyectos/{id}                 → carga una investigación
     PATCH  /api/v1/proyectos/{id}                 → actualiza campos del proyecto
     DELETE /api/v1/proyectos/{id}                 → elimina (borrado suave → _papelera/)
     POST   /api/v1/proyectos/{id}/notas           → agrega una nota libre
+    DELETE /api/v1/proyectos/{id}/estudios/{eid}  → quita un estudio del cuaderno
     PUT    /api/v1/proyectos/{id}/informe/{sec}   → actualiza una sección del informe
     POST   /api/v1/proyectos/{id}/informe/{sec}/toggle → oculta/muestra una sección
     POST   /api/v1/proyectos/{id}/agente/{aid}    → pregunta puntual a un agente (sin correr la mesa)
     POST   /api/v1/proyectos/{id}/investigar      → corre la mesa completa y STREAMEA los mensajes (SSE)
+
+Estáticos: /web (CSS y módulos ES de la plataforma), /vendor (librerías JS del explorador),
+/data (datos del Trabajo Final, solo lectura), /explorador-reporte (reporte del análisis legacy).
 
 Errores: envelope uniforme {"error": {"codigo", "mensaje"}} con el status HTTP correcto.
 
@@ -27,23 +38,26 @@ Correr:
 
 from __future__ import annotations
 
-import atexit
 import json
 import logging
 import subprocess
 import sys
+import threading
 import uuid
-from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, HTTPException, Path, Query, Request, UploadFile
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 
 from cueva import config
 from cueva.agentes.agentes import AGENTES
 from cueva.agentes.orquestador import Orquestador
 from cueva.agentes.pizarra import SECCIONES_INFORME
+from cueva.datos import explorador_datos
+from cueva.datos import historia as HIST
 from cueva.datos import series as S
 from cueva.econometria import herramientas as H
+from cueva.econometria.kalman import ajustar_kalman
 from cueva.sesiones import PidInvalido, ProyectoNoEncontrado, RepositorioProyectos
 
 from .esquemas import (
@@ -60,33 +74,28 @@ log = logging.getLogger("cueva.api")
 
 WEB = config.ROOT / "web"
 
-# ── Explorador (visualizador.html del Trabajo Final, proyecto hermano) ─────
-VIZ_PORT = 8765
-VIZ_URL = f"http://localhost:{VIZ_PORT}/"
-_viz_proc: subprocess.Popen | None = None
+# El análisis básico legacy (script 02a del Trabajo Final) corre de a uno por vez
+_analisis_basico_lock = threading.Lock()
 
-
-def _lanzar_visualizador() -> None:
-    """Arranca en segundo plano el server.py del visualizador del Trabajo Final,
-    para poder embeberlo como pestaña de navegación libre. Best-effort: si falla, la
-    plataforma sigue sin explorador."""
-    global _viz_proc
-    try:
-        tf = config.carpeta_trabajo_final()
-        if not tf:
-            return
-        server_py = tf / "notebooks" / "server.py"
-        if not server_py.exists():
-            return
-        _viz_proc = subprocess.Popen(
-            [sys.executable, str(server_py), "--port", str(VIZ_PORT), "--no-open"],
-            cwd=str(server_py.parent),
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-        )
-        atexit.register(_viz_proc.terminate)
-    except Exception as e:  # pragma: no cover
-        log.warning("no pude lanzar el visualizador: %s", e)
+# Mapeo query-string → flags CLI del script 02a (mismo contrato que el server viejo del TF)
+_QS_A_CLI = {
+    "freq": "--freq",
+    "lag_ardl_dep": "--max-lag-ardl-dep",
+    "lag_ardl_ind": "--max-lag-ardl-ind",
+    "lag_var": "--max-lag-var",
+    "lag_vecm": "--max-lag-vecm",
+    "max_vars": "--max-vars",
+    "modelos": "--modelos",
+    "fecha_inicio": "--fecha-inicio",
+    "fecha_fin": "--fecha-fin",
+    "tiempo_max_min": "--tiempo-max-min",
+    "max_corridas": "--max-corridas",
+    "corridas_ardl": "--corridas-ardl",
+    "corridas_var": "--corridas-var",
+    "corridas_vecm": "--corridas-vecm",
+    "granger_grafo_pmax": "--granger-grafo-pmax",
+    "dummy_cap": "--dummy-cap",
+}
 
 
 # ── Repositorio de sesiones (inyectable; los tests lo reemplazan) ───────────
@@ -101,14 +110,28 @@ def get_repo() -> RepositorioProyectos:
 
 
 def crear_app() -> FastAPI:
-    @asynccontextmanager
-    async def lifespan(app: FastAPI):
-        _lanzar_visualizador()
-        yield
-        if _viz_proc is not None and _viz_proc.poll() is None:
-            _viz_proc.terminate()
+    app = FastAPI(title="La Cueva del Economista — Mesa de Trabajo")
 
-    app = FastAPI(title="La Cueva del Economista — Mesa de Trabajo", lifespan=lifespan)
+    # ── estáticos de la plataforma ─────────────────────────────────────────
+    # /web sirve el sistema de diseño (web/estilo/) y los módulos ES de cada pantalla.
+    # Los módulos nativos se cargan como archivos, no embebidos: sin build.
+    app.mount("/web", StaticFiles(directory=str(WEB)), name="web")
+    medios = config.ROOT / "data" / "historia" / "medios"
+    if medios.exists():
+        # imágenes de las fichas; cada una lleva crédito y licencia en su ficha (§6.7)
+        app.mount("/historia-medios", StaticFiles(directory=str(medios)), name="historia-medios")
+    if (WEB / "vendor").exists():
+        app.mount("/vendor", StaticFiles(directory=str(WEB / "vendor")), name="vendor")
+    tf = config.carpeta_trabajo_final()
+    if tf and (tf / "data").exists():
+        # solo lectura: los CSVs del Trabajo Final que el explorador carga on-demand
+        app.mount("/data", StaticFiles(directory=str(tf / "data")), name="datos-tf")
+    if tf and (tf / "outputs" / "analisis_basico").exists():
+        app.mount(
+            "/explorador-reporte",
+            StaticFiles(directory=str(tf / "outputs" / "analisis_basico")),
+            name="reporte-basico",
+        )
 
     # ── errores uniformes ──────────────────────────────────────────────────
     @app.exception_handler(HTTPException)
@@ -126,6 +149,18 @@ def crear_app() -> FastAPI:
                 "error": {
                     "codigo": "proyecto_no_encontrado",
                     "mensaje": f"Investigación desconocida: {exc.args[0]}",
+                }
+            },
+        )
+
+    @app.exception_handler(HIST.EventoNoEncontrado)
+    async def _evento_no_encontrado(request: Request, exc: HIST.EventoNoEncontrado):
+        return JSONResponse(
+            status_code=404,
+            content={
+                "error": {
+                    "codigo": "evento_no_encontrado",
+                    "mensaje": f"No hay un evento con id {exc.args[0]!r} en data/historia/eventos.csv.",
                 }
             },
         )
@@ -154,6 +189,33 @@ def crear_app() -> FastAPI:
             return HTMLResponse("<h1>Falta web/index.html</h1>", status_code=500)
         return HTMLResponse(idx.read_text(encoding="utf-8"))
 
+    @app.get("/explorador", response_class=HTMLResponse)
+    def explorador():
+        pagina = WEB / "explorador.html"
+        if not pagina.exists():
+            return HTMLResponse("<h1>Falta web/explorador.html</h1>", status_code=500)
+        return HTMLResponse(pagina.read_text(encoding="utf-8"))
+
+    # ── módulo 1: Línea de Tiempo ──────────────────────────────────────────
+    @app.get("/tiempo", response_class=HTMLResponse)
+    @app.get("/tiempo/{evento_id}", response_class=HTMLResponse)
+    def tiempo(evento_id: str = ""):
+        """La pantalla. Con evento_id es el permalink: la SPA abre con la ficha puesta."""
+        pagina = WEB / "tiempo" / "index.html"
+        if not pagina.exists():
+            return HTMLResponse("<h1>Falta web/tiempo/index.html</h1>", status_code=500)
+        return HTMLResponse(pagina.read_text(encoding="utf-8"))
+
+    @app.get("/api/v1/historia")
+    def api_historia():
+        """Todo lo necesario al abrir /tiempo, en una sola respuesta (módulo §10.1)."""
+        return JSONResponse(HIST.payload())
+
+    @app.get("/api/v1/historia/eventos/{evento_id}")
+    def api_historia_evento(evento_id: str = Path(pattern=r"^[a-z0-9-]{3,80}$")):
+        """La ficha completa. El markdown viene renderizado a HTML saneado desde el servidor."""
+        return JSONResponse(HIST.payload_evento(evento_id))
+
     # ── diagnóstico / series / herramientas ────────────────────────────────
     @app.get("/api/v1/diag")
     def diag():
@@ -163,9 +225,68 @@ def crear_app() -> FastAPI:
         except Exception as e:
             d["n_series"] = 0
             d["series_error"] = str(e)
-        d["visualizador_url"] = VIZ_URL
-        d["visualizador_disponible"] = _viz_proc is not None and _viz_proc.poll() is None
+        d["visualizador_url"] = "/explorador"
+        d["visualizador_disponible"] = (WEB / "explorador.html").exists()
         return JSONResponse(d)
+
+    # ── explorador nativo: datos, kalman y análisis básico legacy ──────────
+    @app.get("/api/v1/explorador/datos")
+    def api_datos_explorador(refrescar: bool = False):
+        """Payload columnar {archivo: {col: [...]}} para la SPA (el viejo EMBEDDED, en vivo)."""
+        if refrescar:
+            explorador_datos.refrescar()
+        return JSONResponse(explorador_datos.payload())
+
+    @app.post("/api/v1/explorador/kalman")
+    async def api_kalman(request: Request):
+        try:
+            payload = await request.json()
+        except Exception as e:
+            raise HTTPException(400, f"JSON inválido: {e}") from e
+        return JSONResponse(ajustar_kalman(payload))
+
+    @app.post("/api/v1/explorador/analisis-basico")
+    async def api_analisis_basico(request: Request):
+        """Puente al script legacy 02a_analisis_basico.py del Trabajo Final: recibe el CSV
+        de variables (body) + configuración (query), lo corre por subprocess y el reporte
+        queda servido en /explorador-reporte/. Se reemplazará por el banco de trabajo."""
+        tf = config.carpeta_trabajo_final()
+        script = tf / "notebooks" / "02a_analisis_basico.py" if tf else None
+        if not script or not script.exists():
+            raise HTTPException(503, "No encuentro el script del análisis básico (carpeta Trabajo Final).")
+        cuerpo = (await request.body()).decode("utf-8", errors="replace")
+        if not cuerpo.strip():
+            raise HTTPException(422, "El body debe traer el CSV de variables.")
+        if not _analisis_basico_lock.acquire(blocking=False):
+            raise HTTPException(409, "Ya hay un análisis básico corriendo.")
+        try:
+            carpeta_csv = tf / "notebooks" / "Variables Regresivas"
+            carpeta_csv.mkdir(parents=True, exist_ok=True)
+            csv_path = carpeta_csv / "analisis_series_visualizador.csv"
+            csv_path.write_text(cuerpo, encoding="utf-8")
+            extra: list[str] = []
+            for clave, flag in _QS_A_CLI.items():
+                valor = request.query_params.get(clave, "").strip()
+                if valor:
+                    extra += [flag, valor]
+            cmd = [
+                sys.executable,
+                str(script),
+                "--invalidate",
+                "panel,ctx,est,ardl,var,vecm,consolidado",
+                "--csv",
+                csv_path.name,
+            ] + extra
+            proc = subprocess.run(
+                cmd, capture_output=True, text=True, encoding="utf-8", errors="replace",
+                cwd=str(tf), timeout=900,
+            )
+            log_tail = (proc.stdout + "\n" + proc.stderr).splitlines()[-30:]
+            return JSONResponse({"ok": proc.returncode == 0, "log_tail": log_tail})
+        except subprocess.TimeoutExpired:
+            return JSONResponse({"ok": False, "log_tail": ["Timeout (15 min) excedido"]})
+        finally:
+            _analisis_basico_lock.release()
 
     @app.get("/api/v1/series")
     def listar_series(
@@ -210,7 +331,10 @@ def crear_app() -> FastAPI:
         if body.proyecto_id:
             try:
                 with repo.abrir(body.proyecto_id) as piz:
-                    piz.registrar_estudio(body.nombre, body.args, resultado.get("resumen", ""))
+                    estudio = piz.registrar_estudio(
+                        body.nombre, body.args, resultado.get("resumen", ""), resultado=resultado
+                    )
+                    resultado["estudio_id"] = estudio["id"]
             except ProyectoNoEncontrado:
                 pass
         return JSONResponse(resultado)
@@ -225,7 +349,18 @@ def crear_app() -> FastAPI:
     @app.post("/api/v1/proyectos")
     def api_crear_proyecto(body: ProyectoCrear, repo: RepositorioProyectos = Depends(get_repo)):
         piz = repo.crear(titulo=body.titulo)
-        return JSONResponse(piz.to_dict())
+        # semilla de la Vista Rápida (promover): series y estudios acumulados en el espacio efímero
+        if body.series or body.estudios or body.serie_dependiente or body.frecuencia:
+            with repo.abrir(piz.id) as p:
+                if body.series:
+                    p.proyecto.series = body.series
+                if body.serie_dependiente:
+                    p.proyecto.serie_dependiente = body.serie_dependiente
+                if body.frecuencia:
+                    p.proyecto.frecuencia = body.frecuencia
+                for e in body.estudios:
+                    p.registrar_estudio(e.herramienta, e.args, e.resumen, resultado=e.resultado)
+        return JSONResponse(repo.obtener(piz.id).to_dict())
 
     @app.get("/api/v1/proyectos/{pid}")
     def api_obtener_proyecto(pid: str = PID, repo: RepositorioProyectos = Depends(get_repo)):
@@ -250,6 +385,18 @@ def crear_app() -> FastAPI:
         with repo.abrir(pid) as piz:
             nota = piz.agregar_nota(body.texto.strip())
         return JSONResponse(nota)
+
+    @app.delete("/api/v1/proyectos/{pid}/estudios/{estudio_id}")
+    def api_quitar_estudio(
+        pid: str = PID,
+        estudio_id: str = Path(max_length=16, pattern=r"^[0-9a-f]{8}$"),
+        repo: RepositorioProyectos = Depends(get_repo),
+    ):
+        with repo.abrir(pid) as piz:
+            hubo = piz.quitar_estudio(estudio_id)
+        if not hubo:
+            raise HTTPException(404, f"Estudio desconocido: {estudio_id}")
+        return JSONResponse({"ok": True})
 
     @app.put("/api/v1/proyectos/{pid}/informe/{seccion}")
     def api_actualizar_informe(

@@ -1,0 +1,19 @@
+{
+ "descripcion": "Qué archivos de data/series/datos_gob/ se bajan del portal datos.gob.ar y de qué dataset CKAN. El nombre de archivo es el que espera catalogo.json; las columnas esperadas salen del propio catálogo. 'recurso' es un texto que tiene que aparecer en el nombre del recurso CKAN; si hay varios candidatos se elige el que trae más columnas del catálogo.",
+ "portal": "https://datos.gob.ar/api/3/action",
+ "destino": "data/series/datos_gob",
+ "archivos": [
+  {"archivo": "saldo_comercial_paises_saldo_comercial_por_pa_ses_y_regiones_fob_cif_valores_mensua.csv",
+   "dataset": "saldo-comercial-por-paises-y-regiones-fob-cif", "recurso": "mensual"},
+  {"archivo": "saldo_comercial_paises_saldo_comercial_por_pa_ses_y_regiones_fob_cif_valores_trimes.csv",
+   "dataset": "saldo-comercial-por-paises-y-regiones-fob-cif", "recurso": "trimestral"},
+  {"archivo": "saldo_comercial_paises_saldo_comercial_por_pa_ses_y_regiones_fob_cif_valores_anuale.csv",
+   "dataset": "saldo-comercial-por-paises-y-regiones-fob-cif", "recurso": "anual"},
+  {"archivo": "balance_pagos_estimaci_n_del_balance_de_pagos_mbp6_valores_trimestrales.csv",
+   "dataset": "balance-de-pagos-mbp6", "recurso": "trimestral"},
+  {"archivo": "balance_pagos_estimaci_n_del_balance_de_pagos_mbp6_valores_anuales.csv",
+   "dataset": "balance-de-pagos-mbp6", "recurso": "anual"},
+  {"archivo": "ipc_nacional.csv",
+   "dataset": "indice-de-precios-al-consumidor-nacional-ipc-base-diciembre-2016", "recurso": ""}
+ ]
+}

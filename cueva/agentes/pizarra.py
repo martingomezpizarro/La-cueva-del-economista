@@ -16,6 +16,7 @@ from __future__ import annotations
 import json
 import threading
 import time
+import uuid
 from pathlib import Path
 
 from .modelos import AGENTES_IDS, FASE_LABEL, Hallazgo, Mensaje, Proyecto
@@ -96,12 +97,31 @@ class Pizarra:
             self.actualizado = _ahora()
         return oculta
 
-    def registrar_estudio(self, herramienta: str, args: dict, resumen: str) -> dict:
-        estudio = {"herramienta": herramienta, "args": args, "resumen": resumen, "ts": _ahora()}
+    def registrar_estudio(self, herramienta: str, args: dict, resumen: str, resultado: dict | None = None) -> dict:
+        """Registra una corrida de herramienta en el cuaderno. `resultado` guarda la evidencia
+        completa (tablas, gráfico) para poder re-renderizarla en el banco de trabajo."""
+        estudio = {
+            "id": uuid.uuid4().hex[:8],
+            "herramienta": herramienta,
+            "args": args,
+            "resumen": resumen,
+            "resultado": resultado,
+            "ts": _ahora(),
+        }
         with self._lock:
             self.estudios.append(estudio)
             self.actualizado = _ahora()
         return estudio
+
+    def quitar_estudio(self, estudio_id: str) -> bool:
+        """Elimina un estudio del cuaderno por id. Devuelve True si existía."""
+        with self._lock:
+            antes = len(self.estudios)
+            self.estudios = [e for e in self.estudios if e.get("id") != estudio_id]
+            hubo = len(self.estudios) < antes
+            if hubo:
+                self.actualizado = _ahora()
+        return hubo
 
     def agregar_chat(self, agente_id: str, quien: str, texto: str) -> dict:
         # la validación de que el agente exista es de la capa API (contra AGENTES);

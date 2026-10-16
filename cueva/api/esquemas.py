@@ -16,8 +16,24 @@ Frecuencia = Literal["diaria", "mensual", "trimestral", "anual"]
 PID_PATTERN = r"^[0-9a-f]{8,32}$"
 
 
+class EstudioSemilla(BaseModel):
+    """Un estudio corrido en la Vista Rápida que se lleva al proyecto al promoverla."""
+
+    herramienta: str = Field(pattern=r"^[a-z_]{2,30}$")
+    args: dict = Field(default_factory=dict)
+    resumen: str = Field(default="", max_length=4_000)
+    resultado: dict | None = None
+
+
 class ProyectoCrear(BaseModel):
+    """Creación de proyecto. Los campos opcionales permiten 'promover' una Vista Rápida:
+    el espacio efímero se convierte en proyecto llevándose series y estudios acumulados."""
+
     titulo: str = Field(default="Investigación sin título", max_length=200)
+    series: list[str] = Field(default_factory=list, max_length=20)
+    serie_dependiente: str | None = Field(default=None, max_length=80)
+    frecuencia: Frecuencia | None = None
+    estudios: list[EstudioSemilla] = Field(default_factory=list, max_length=100)
 
 
 class ProyectoPatch(BaseModel):

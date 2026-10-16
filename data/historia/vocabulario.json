@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "descripcion": "Valores permitidos de data/historia/. Agregar un valor = editar este archivo y decirlo en el registro de decisiones de docs/MODULO_LINEA_DE_TIEMPO.md §14. Los tests leen de acá.",
+  "actualizado": "2026-09-13",
+  "categorias": {
+    "monetario": {
+      "etiqueta": "Monetarios y cambiarios",
+      "color": "--s2"
+    },
+    "fiscal": {
+      "etiqueta": "Fiscales",
+      "color": "--s4"
+    },
+    "externo": {
+      "etiqueta": "Sector externo",
+      "color": "--s1"
+    },
+    "crisis": {
+      "etiqueta": "Crisis",
+      "color": "--s3"
+    },
+    "politico": {
+      "etiqueta": "Políticos",
+      "color": "--s5"
+    },
+    "social": {
+      "etiqueta": "Sociales",
+      "color": "--ink-dim"
+    },
+    "internacional": {
+      "etiqueta": "Contexto internacional",
+      "color": "--info"
+    }
+  },
+  "subtipos": [
+    "default",
+    "reestructuracion_deuda",
+    "crisis_bancaria",
+    "crisis_cambiaria",
+    "hiperinflacion",
+    "plan_estabilizacion",
+    "regimen_cambiario",
+    "control_cambios",
+    "cambio_moneda",
+    "creacion_institucion",
+    "reforma_fiscal",
+    "acuerdo_fmi",
+    "acuerdo_comercial",
+    "shock_externo",
+    "guerra",
+    "golpe",
+    "crisis_politica",
+    "eleccion",
+    "reforma_electoral",
+    "reforma_constitucional",
+    "conflicto_social",
+    "pandemia",
+    "norma",
+    "otro"
+  ],
+  "niveles": [
+    "hito",
+    "episodio",
+    "regimen"
+  ],
+  "precision": [
+    "dia",
+    "mes",
+    "anio"
+  ],
+  "tipos_gobierno": [
+    "constitucional",
+    "de_facto",
+    "provisional",
+    "interino",
+    "junta_militar"
+  ],
+  "instituciones_monetarias": [
+    "bancos_garantidos",
+    "caja_conversion",
+    "bcra"
+  ],
+  "notas": {
+    "subtipos_agregados_2026-09-13": [
+      "crisis_politica — para renuncias y crisis de gobierno que no son golpe ni elección (ej. Juárez Celman, 1890).",
+      "acuerdo_comercial — para tratados bilaterales de comercio (ej. Roca-Runciman, 1933).",
+      "reforma_electoral — cambios en las reglas del sufragio (Ley Sáenz Peña, 1912)."
+    ],
+    "categoria_internacional": "Se usa para shocks de origen externo con fecha propia (crack de 1929, salida británica del patrón oro en 1931). La capa 'externo' queda para hechos argentinos del sector externo: arreglos de deuda, acuerdos comerciales, canjes.",
+    "regimenes_superpuestos": "Dos filas de nivel 'regimen' pueden superponerse cuando describen dimensiones distintas del régimen monetario: convertibilidad (patron-mixto-1883, inconvertibilidad-1885…), organización de la emisión (bancos-garantidos-1887) y control de cambios (regimen-control-cambios-1931). La UI las debe separar en carriles por subtipo, no apilarlas."
+  }
+}

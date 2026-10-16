@@ -3,31 +3,45 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>🕳️📊 La Cueva del Economista</title>
+<title>Mesa de Trabajo · La Cueva del Economista</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/web/estilo/tokens.css">
+<script src="/web/estilo/tema.js"></script>
 <style>
+  /* ── PUENTE hacia el sistema de diseño compartido ─────────────────────
+     Los nombres viejos de esta pantalla (--bg, --panel, --txt…) ya no definen
+     colores: apuntan a los tokens de /web/estilo/tokens.css. Así el CSS que ya
+     estaba sigue funcionando tal cual, pero la Mesa cambia de claro a oscuro
+     con el resto de la plataforma.
+     Regla para lo NUEVO: usar los tokens directamente (--surface, --ink,
+     --accent…), no estos alias, que se van a ir borrando.
+     ------------------------------------------------------------------- */
   :root{
-    --bg:#0d1117; --panel:#161b22; --panel2:#1c232d; --line:#2b333d;
-    --txt:#e6edf3; --muted:#8b949e; --acc:#4fa8da; --acc-dk:#1c6ea4; --acc2:#e8b93f;
-    --ok:#3fb950; --blue:#5aa9e0; --purple:#bc8cff;
-    --hdr:46px; --side:48px;
+    --bg:var(--ground); --panel:var(--surface); --panel2:var(--surface-2);
+    --txt:var(--ink); --muted:var(--ink-dim);
+    --acc:var(--accent); --acc-dk:var(--accent); --acc2:var(--warn);
+    --blue:var(--s1); --purple:var(--s5);
+    --side:48px;
   }
   *{box-sizing:border-box}
-  body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
-    background:var(--bg);color:var(--txt);font-size:14px;line-height:1.5;overflow:hidden;
-    display:flex;flex-direction:column;height:100vh}
-  header{display:flex;align-items:center;gap:8px;padding:0 12px;background:var(--panel);
-    border-bottom:1px solid var(--line);height:var(--hdr);flex:none}
-  header .logo{font-size:14px;font-weight:600;white-space:nowrap;margin-right:2px}
-  header select#proj-select{width:auto;max-width:220px;padding:6px 8px;font-size:12px}
-  header .estado{margin-left:auto;font-size:12px;color:var(--muted);display:flex;gap:12px;align-items:center}
-  .pill{padding:1px 8px;border-radius:999px;border:1px solid var(--line);font-size:11px;white-space:nowrap}
-  .pill.on{color:var(--ok);border-color:#214d2c}.pill.off{color:var(--acc2);border-color:#5a4410}
+  body{margin:0;font-family:var(--sans);background:var(--ground);color:var(--ink);
+    font-size:14px;line-height:1.45;overflow:hidden;display:flex;flex-direction:column;height:100vh}
+  /* la topbar viene de tokens.css (.topbar/.brand/.modswitch/.topright); acá sólo lo propio */
+  .topbar{flex-wrap:wrap; gap:12px}
+  .topbar .topright{gap:7px}
+  header select#proj-select{width:auto;max-width:220px;padding:5px 8px;font-size:12px;
+    background:var(--sunken);border:1px solid var(--line);border-radius:var(--r);color:var(--ink)}
+  .pill{padding:1px 8px;border-radius:999px;border:1px solid var(--line);font-size:11px;white-space:nowrap;color:var(--ink-dim)}
+  .pill.on{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 32%,transparent)}
+  .pill.off{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 32%,transparent)}
 
-  .rbtn{background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:7px;
-    padding:6px 11px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex:none}
-  .rbtn:hover{border-color:var(--acc)}
-  .rbtn.activa{background:var(--acc);border-color:var(--acc);color:#fff}
-  .rbtn.mini{font-weight:500;padding:6px 9px}
+  .rbtn{background:var(--surface);color:var(--ink-2);border:1px solid var(--line);border-radius:var(--r);
+    padding:5px 11px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex:none}
+  .rbtn:hover{border-color:var(--ink-faint);color:var(--ink)}
+  .rbtn.activa{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+  .rbtn.mini{font-weight:500;padding:4px 9px;font-size:11.5px}
 
   /* ── cuerpo: visualizador + rail de herramientas a la derecha ──────── */
   #body-row{display:flex;flex:1;min-height:0}
@@ -36,22 +50,22 @@
   .sbtn{width:36px;height:36px;background:none;color:var(--muted);border:1px solid transparent;
     border-radius:8px;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center}
   .sbtn:hover{background:var(--panel2);color:var(--txt)}
-  .sbtn.activa{background:var(--panel2);color:var(--acc);border-color:var(--line)}
+  .sbtn.activa{background:var(--surface-2);color:var(--accent);border-color:var(--line)}
   .side-sep{width:24px;height:1px;background:var(--line);margin:4px 0;flex:none}
 
   /* ── vista principal: el visualizador ──────────────────────────────── */
   #viz-wrap{position:relative;flex:1;min-width:0}
-  #viz-frame{width:100%;height:100%;border:0;display:block}
+  #viz-frame{width:100%;height:100%;border:0;display:block;background:var(--ground)}
   .viz-fallback{max-width:640px;margin:60px auto;text-align:center;color:var(--muted);padding:0 20px}
-  .viz-fallback h2{color:var(--txt);font-size:16px}
+  .viz-fallback h2{color:var(--ink);font-family:var(--display);font-size:17px}
   .viz-fallback code{background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:1px 6px}
 
   /* ── drawers (paneles laterales sobre el iframe) ───────────────────── */
-  #overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:30;display:none}
+  #overlay{position:fixed;inset:0;background:rgba(0,0,0,.34);z-index:30;display:none}
   #overlay.on{display:block}
   .drawer{position:fixed;top:0;right:0;bottom:0;width:420px;max-width:96vw;background:var(--panel);
     border-left:1px solid var(--line);z-index:40;display:none;flex-direction:column;
-    box-shadow:-12px 0 32px rgba(0,0,0,.5)}
+    box-shadow:var(--shadow)}
   .drawer.on{display:flex}
   .drawer.ancho{width:740px}
   .drawer.informe{width:min(880px,94vw)}
@@ -66,31 +80,34 @@
   .cat-tab{background:none;border:1px solid var(--line);color:var(--muted);border-radius:999px;
     padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex:none}
   .cat-tab:hover{color:var(--txt)}
-  .cat-tab.activa{background:var(--acc);border-color:var(--acc);color:#fff}
+  .cat-tab.activa{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 
   label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
   input,textarea,select{width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);
     border-radius:7px;padding:8px 10px;font-size:13px;font-family:inherit}
   textarea{resize:vertical;min-height:54px}
-  .btn{background:linear-gradient(135deg,var(--acc),var(--acc-dk));color:#fff;border:0;border-radius:8px;
-    padding:11px 14px;font-size:13px;font-weight:600;cursor:pointer;width:100%;margin-top:14px}
+  .btn{display:block;background:var(--accent);color:var(--accent-ink);border:1px solid var(--accent);border-radius:var(--r);
+    padding:10px 14px;font-size:13px;font-weight:600;cursor:pointer;width:100%;margin-top:14px;text-align:center}
+  .btn:hover{filter:brightness(1.06)}
   .btn:disabled{opacity:.5;cursor:not-allowed}
-  .btn.sec{background:var(--panel2);border:1px solid var(--line);font-weight:500;margin-top:8px;width:auto}
+  .btn.sec{background:var(--surface);color:var(--ink-2);border:1px solid var(--line);font-weight:500;margin-top:8px;width:auto}
+  .btn.sec:hover{border-color:var(--ink-faint);color:var(--ink);filter:none}
   .btn.sm{padding:6px 10px;font-size:12px;margin-top:0;width:auto}
   .serie-box{border:1px solid var(--line);border-radius:8px;background:var(--panel2);max-height:300px;overflow:auto;margin-top:8px}
-  .serie{display:flex;align-items:center;gap:7px;padding:5px 9px;border-bottom:1px solid #232b35;cursor:pointer;font-size:12px}
-  .serie:hover{background:#222a35}.serie small{color:var(--muted);margin-left:auto;white-space:nowrap}
+  .serie{display:flex;align-items:center;gap:7px;padding:5px 9px;border-bottom:1px solid var(--line-soft);cursor:pointer;font-size:12px}
+  .serie:hover{background:var(--surface-2)}.serie small{color:var(--muted);margin-left:auto;white-space:nowrap}
   .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-  .chip{display:flex;align-items:center;gap:6px;background:#23303f;border:1px solid #2f4456;color:var(--blue);
+  .chip{display:flex;align-items:center;gap:6px;background:var(--info-soft);
+    border:1px solid color-mix(in srgb,var(--info) 30%,transparent);color:var(--info);
     padding:3px 8px;border-radius:999px;font-size:11px}
   .chip b{cursor:pointer;color:var(--muted)}
-  .chip.dep{background:#3a2b12;border-color:#5a4410;color:var(--acc2)}
+  .chip.dep{background:var(--accent-soft);border-color:var(--accent-line);color:var(--accent)}
   .row2{display:flex;gap:8px}.row2>*{flex:1}
 
   /* pizarra (feed de la mesa) */
   .feed{max-width:100%;margin:0}
   .vacio{color:var(--muted);text-align:center;margin-top:60px}
-  .fase{display:flex;align-items:center;gap:10px;margin:26px 0 8px;color:var(--acc2);font-weight:600;font-size:13px}
+  .fase{display:flex;align-items:center;gap:10px;margin:26px 0 8px;color:var(--accent);font-weight:600;font-size:13px}
   .fase:before,.fase:after{content:"";flex:1;height:1px;background:var(--line)}
   .msg{display:flex;gap:11px;margin:12px 0;animation:ap .25s ease}
   @keyframes ap{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
@@ -101,22 +118,23 @@
   .bub .quien .a{color:var(--purple);font-weight:500}
   .bub .cuerpo{white-space:pre-wrap;font-size:13px}
   .bub .citas{margin-top:6px;font-size:11px;color:var(--muted)}
-  .bub .citas span{background:#1f2733;border:1px solid var(--line);border-radius:5px;padding:1px 6px;margin-right:5px}
-  .m-orq .bub{background:#13171d;border-style:dashed}
-  .m-orq .av{background:#13171d}
-  .m-tool .bub{background:#10221a;border-color:#1f5135}
-  .m-tool .cuerpo{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:#9ff0c0}
-  .hall{background:#1a1407;border:1px solid #5a4410;border-radius:8px;padding:8px 12px;margin:8px 0;font-size:12.5px}
-  .hall b{color:var(--acc2)}
+  .bub .citas span{background:var(--sunken);border:1px solid var(--line);border-radius:5px;padding:1px 6px;margin-right:5px}
+  .m-orq .bub{background:var(--sunken);border-style:dashed}
+  .m-orq .av{background:var(--sunken)}
+  .m-tool .bub{background:var(--ok-soft);border-color:color-mix(in srgb,var(--ok) 32%,transparent)}
+  .m-tool .cuerpo{font-family:var(--mono);font-size:12px;color:var(--ok)}
+  .hall{background:var(--warn-soft);border:1px solid color-mix(in srgb,var(--warn) 30%,transparent);
+    border-radius:8px;padding:8px 12px;margin:8px 0;font-size:12.5px}
+  .hall b{color:var(--warn)}
   .typing{color:var(--muted);font-size:12px;margin:10px 0}
 
   /* notas */
-  .nota{background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:7px 9px;margin-bottom:6px;font-size:12.5px;white-space:pre-wrap}
+  .nota{background:var(--surface-2);border:1px solid var(--line-soft);border-radius:var(--r);padding:7px 9px;margin-bottom:6px;font-size:12.5px;white-space:pre-wrap}
   .nota .ts{color:var(--muted);font-size:10.5px;display:block;margin-top:3px}
 
   /* informe */
   .inf-sec{border:1px solid var(--line);border-radius:9px;background:var(--panel2);margin-bottom:14px;overflow:hidden}
-  .inf-sec .inf-head{display:flex;align-items:center;gap:8px;padding:10px 14px;background:#20293480}
+  .inf-sec .inf-head{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--surface-2)}
   .inf-sec .inf-head b{font-size:13px}
   .inf-sec .inf-head .sp{margin-left:auto;display:flex;gap:6px}
   .inf-sec .inf-body{padding:12px 14px}
@@ -131,13 +149,13 @@
   .agentpick{display:flex;gap:6px;margin-top:8px}
 
   /* ── FAB: círculo flotante de agentes ──────────────────────────────── */
-  #fab{position:fixed;width:54px;height:54px;border-radius:50%;z-index:70;cursor:grab;
-    background:linear-gradient(135deg,var(--acc),var(--acc-dk));border:2px solid #00000055;
-    display:flex;align-items:center;justify-content:center;font-size:24px;user-select:none;
-    box-shadow:0 6px 18px rgba(0,0,0,.55);touch-action:none}
+  #fab{position:fixed;width:52px;height:52px;border-radius:50%;z-index:70;cursor:grab;
+    background:var(--accent);color:var(--accent-ink);border:1px solid var(--accent-line);
+    display:flex;align-items:center;justify-content:center;font-size:23px;user-select:none;
+    box-shadow:var(--shadow);touch-action:none}
   #fab:active{cursor:grabbing}
   #fab-menu{position:fixed;z-index:71;background:var(--panel);border:1px solid var(--line);border-radius:12px;
-    box-shadow:0 10px 30px rgba(0,0,0,.55);padding:6px;display:none;flex-direction:column;gap:4px;min-width:170px}
+    box-shadow:var(--shadow);padding:6px;display:none;flex-direction:column;gap:4px;min-width:170px}
   #fab-menu.on{display:flex}
   .fmi{display:flex;align-items:center;gap:9px;background:none;border:0;color:var(--txt);cursor:pointer;
     padding:8px 10px;font-size:12.5px;border-radius:8px;text-align:left}
@@ -146,7 +164,7 @@
 
   /* panel de chat flotante */
   #chatpanel{position:fixed;right:18px;bottom:18px;width:380px;height:min(540px,72vh);background:var(--panel);
-    border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.5);display:none;
+    border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);display:none;
     flex-direction:column;z-index:72;overflow:hidden}
   #chatpanel.on{display:flex}
   #chatpanel .chead{display:flex;align-items:center;padding:10px 12px;background:var(--panel2);border-bottom:1px solid var(--line)}
@@ -154,23 +172,76 @@
   #chatpanel .chead button{background:none;border:0;color:var(--muted);cursor:pointer;font-size:16px;margin-left:auto}
   #chat-msgs{flex:1;overflow:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
   .cmsg{border-radius:8px;padding:7px 10px;font-size:12.5px;white-space:pre-wrap;max-width:88%}
-  .cmsg.usuario{align-self:flex-end;background:#23303f;color:var(--blue)}
+  .cmsg.usuario{align-self:flex-end;background:var(--accent-soft);color:var(--ink)}
   .cmsg.agente{align-self:flex-start;background:var(--panel2);border:1px solid var(--line)}
   #chat-input-row{display:flex;gap:6px;padding:10px;border-top:1px solid var(--line)}
   #chat-input-row textarea{min-height:40px}
-  a{color:var(--blue)}
+  a{color:var(--accent)}
+
+  /* ── modo Vista Rápida / Proyecto ─────────────────────────────────── */
+  #modo-switch{display:flex;background:var(--sunken);border:1px solid var(--line-soft);border-radius:var(--r);padding:2px;flex:none}
+  .modo-btn{background:none;border:0;border-radius:4px;color:var(--ink-dim);font-size:11.5px;font-weight:500;padding:3.5px 10px;cursor:pointer;white-space:nowrap}
+  .modo-btn:hover{color:var(--txt)}
+  .modo-btn.activa{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+  .ctl{display:flex;align-items:center;gap:6px;min-width:0}
+  .pill.efimera{color:var(--warn);background:var(--warn-soft);border-color:color-mix(in srgb,var(--warn) 30%,transparent)}
+  .sbtn.gated{opacity:.28;cursor:not-allowed}
+
+  /* ── modal para nombrar proyectos (crear / renombrar / promover) ───── */
+  #modal-nombre-bg{position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:90;display:none;align-items:center;justify-content:center}
+  #modal-nombre-bg.on{display:flex}
+  #modal-nombre{width:min(440px,92vw);background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px 20px;box-shadow:var(--shadow)}
+  #modal-nombre b{font-size:14px}
+  #modal-nombre .hint{color:var(--muted);font-size:11.5px;margin-top:6px;line-height:1.5}
+  #modal-nombre input{margin-top:12px}
+  #modal-nombre .mn-row{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+  #modal-nombre .mn-row .btn{width:auto;margin-top:0;padding:8px 16px}
 </style>
 </head>
 <body>
-<header>
-  <div class="logo">🕳️ Cueva</div>
-  <select id="proj-select" onchange="seleccionarProyecto(this.value)" title="Investigación activa"></select>
-  <button class="rbtn mini" onclick="crearProyecto()" title="Crear una investigación nueva">＋</button>
-  <button class="rbtn mini" onclick="eliminarProyectoActual()" title="Eliminar la investigación activa">🗑</button>
-  <div class="estado">
-    <span id="diag-series">— series</span>
-    <span id="diag-rag" class="pill">RAG</span>
-    <span id="diag-ia" class="pill">IA</span>
+<header class="topbar">
+  <div class="brand">
+    <svg class="glyph" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M3 21V13.5C3 7.7 7 3.5 12 3.5S21 7.7 21 13.5V21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".38"/>
+      <path d="M4.5 21l3.2-5.1 3 3.4 3.4-7.3 2.6 4.6 2.8-3.2" stroke="var(--accent)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+    <div class="brand-name">La Cueva del <em>Economista</em></div>
+  </div>
+
+  <nav class="modswitch" aria-label="Módulos">
+    <a href="/tiempo" title="Módulo 1: historia económica argentina, 1880 → hoy">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1.5 13h13M3 13V9.5M6.2 13V6M9.4 13V3.5M12.6 13V7.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Línea de Tiempo
+    </a>
+    <a href="/" aria-current="true">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.6" y="2.4" width="12.8" height="11.2" rx="1.8" stroke="currentColor" stroke-width="1.5"/><path d="M1.6 6.2h12.8M6.4 6.2v7.4" stroke="currentColor" stroke-width="1.5"/></svg>
+      Mesa de Trabajo
+    </a>
+  </nav>
+
+  <div class="topright">
+    <div id="modo-switch" title="Vista Rápida: espacio efímero para explorar. Proyecto: investigación guardada.">
+      <button class="modo-btn activa" id="modo-rapida" onclick="setModo('rapida')">⚡ Vista Rápida</button>
+      <button class="modo-btn" id="modo-proyecto" onclick="setModo('proyecto')">📁 Proyecto</button>
+    </div>
+    <div id="ctl-rapida" class="ctl">
+      <span class="pill efimera" title="Nada de lo que hagas acá se guarda al cerrar">espacio efímero</span>
+      <button class="rbtn mini" onclick="promoverVR()" title="Convertir lo explorado (series y pasos del Estudio) en un proyecto con nombre">💾 Promover a proyecto…</button>
+    </div>
+    <div id="ctl-proyecto" class="ctl" style="display:none">
+      <select id="proj-select" onchange="seleccionarProyecto(this.value)" title="Proyecto activo"></select>
+      <button class="rbtn mini" onclick="renombrarProyecto()" title="Renombrar el proyecto activo">✎</button>
+      <button class="rbtn mini" onclick="crearProyecto()" title="Crear un proyecto nuevo (con nombre)">＋</button>
+      <button class="rbtn mini" onclick="eliminarProyectoActual()" title="Eliminar el proyecto activo">🗑</button>
+    </div>
+
+    <span class="chip neutral" id="diag-series">— series</span>
+    <span class="chip neutral" id="diag-rag">RAG</span>
+    <span class="chip neutral" id="diag-ia">IA</span>
+
+    <button class="iconbtn" id="tema" title="Cambiar tema" aria-label="Cambiar tema">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="3.4" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v1.6M8 13.4V15M15 8h-1.6M2.6 8H1M12.9 3.1l-1.1 1.1M4.2 11.8l-1.1 1.1M12.9 12.9l-1.1-1.1M4.2 4.2L3.1 3.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
   </div>
 </header>
 
@@ -228,11 +299,7 @@
 <div class="drawer" id="dw-series">
   <div class="dhead"><b>🗂️ Elegir series</b><button onclick="cerrarPanel()">✕</button></div>
   <div class="dbody">
-    <div class="cat-tabs" id="cat-tabs">
-      <button class="cat-tab activa" data-o="" onclick="filtrarCategoria('')">Todas</button>
-      <button class="cat-tab" data-o="Trabajo Final" onclick="filtrarCategoria('Trabajo Final')">Trabajo Final</button>
-      <button class="cat-tab" data-o="MATRIZ ARG" onclick="filtrarCategoria('MATRIZ ARG')">MATRIZ ARG</button>
-    </div>
+    <div class="cat-tabs" id="cat-tabs"></div>
     <input id="buscar" placeholder="Buscar serie…" oninput="buscarSeries()">
     <div class="serie-box" id="lista-series"></div>
     <div class="chips" id="chips"></div>
@@ -314,6 +381,19 @@
   </div>
 </div>
 
+<!-- ── modal: nombrar proyecto (crear / renombrar / promover) ── -->
+<div id="modal-nombre-bg" onclick="if(event.target===this)cerrarModalNombre(null)">
+  <div id="modal-nombre">
+    <b id="mn-titulo">Nuevo proyecto</b>
+    <div class="hint" id="mn-hint"></div>
+    <input id="mn-input" placeholder="Ej.: Determinantes del riesgo país" maxlength="200">
+    <div class="mn-row">
+      <button class="btn sec sm" onclick="cerrarModalNombre(null)">Cancelar</button>
+      <button class="btn sm" id="mn-ok">Crear</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const $ = s => document.querySelector(s);
 const AVATAR = {orquestador:"🎛️", herramientas:"🧪", metodologo:"🧭",
@@ -330,24 +410,60 @@ let PROYECTO_ID = null;
 let PIZ = null;          // último snapshot de la pizarra cargada
 let CHAT_AGENTE = null;
 let PANEL = null;        // drawer abierto
+let MODO = localStorage.getItem('cueva_modo') || 'rapida';   // 'rapida' | 'proyecto'
 
 // ── diagnóstico inicial ───────────────────────────────────────────────
 fetch('/api/v1/diag').then(r=>r.json()).then(d=>{
   $('#diag-series').textContent = (d.n_series||0) + ' series';
   const rag=$('#diag-rag'); rag.textContent = d.indice_rag?'RAG ✓':'RAG ✗';
-  rag.className='pill '+(d.indice_rag?'on':'off');
-  const ia=$('#diag-ia'); ia.textContent = d.api_key?('Claude: '+d.modelo):'IA: offline';
-  ia.className='pill '+(d.api_key?'on':'off');
+  rag.className='chip '+(d.indice_rag?'ok':'warn');
+  const ia=$('#diag-ia'); ia.textContent = d.api_key?('IA: '+d.modelo):'IA: offline';
+  ia.className='chip '+(d.api_key?'ok':'warn');
 
   if(d.visualizador_disponible){
-    const f=$('#viz-frame'); f.src=d.visualizador_url; f.style.display='block';
+    const f=$('#viz-frame');
+    f.addEventListener('load', enviarContexto);
+    f.src=d.visualizador_url; f.style.display='block';
   } else {
     $('#viz-fallback').style.display='block';
   }
 });
 
+// ── tema compartido con la Línea de Tiempo (persiste en el navegador) ──
+// OJO: el explorador del iframe todavía tiene su propio tema oscuro fijo; no lo
+// sigue. Se unifica cuando se porte a tokens (MODULO_MESA_DE_TRABAJO §8.2).
+$('#tema').addEventListener('click', () => window.CuevaTema.alternar());
+
+// ── contexto hacia el explorador (iframe propio, mismo origen) ─────────
+function enviarContexto(){
+  const f=$('#viz-frame');
+  if(!f || !f.contentWindow) return;
+  const activo = MODO==='proyecto' && PROYECTO_ID && PIZ;
+  f.contentWindow.postMessage({
+    tipo:'cueva:contexto',
+    modo: activo ? 'proyecto' : 'rapida',
+    proyecto: activo ? {
+      id: PIZ.id, titulo: PIZ.proyecto.titulo, frecuencia: PIZ.proyecto.frecuencia,
+      serie_dependiente: PIZ.proyecto.serie_dependiente, series: PIZ.proyecto.series,
+    } : null,
+    estudios: activo ? (PIZ.estudios||[]) : [],
+  }, '*');
+}
+
+// el explorador avisa cuando corre/borra pasos del Estudio → refrescar la pizarra local
+window.addEventListener('message', async ev=>{
+  const d = ev.data || {};
+  if(d.tipo==='cueva:estudios-cambiaron' && PROYECTO_ID){
+    try{
+      PIZ = await fetch('/api/v1/proyectos/'+PROYECTO_ID).then(r=>r.json());
+      renderInforme();
+    }catch(e){}
+  }
+});
+
 // ── drawers ───────────────────────────────────────────────────────────
 function abrirPanel(nombre){
+  if(MODO!=='proyecto' || !PROYECTO_ID) return;   // el cuaderno es del proyecto, no de la Vista Rápida
   if(PANEL===nombre){ cerrarPanel(); return; }
   cerrarPanel();
   PANEL = nombre;
@@ -366,20 +482,77 @@ function cerrarPanel(){
   PANEL = null;
 }
 document.addEventListener('keydown', e=>{
-  if(e.key==='Escape'){ if($('#fab-menu').classList.contains('on')) $('#fab-menu').classList.remove('on');
+  if(e.key==='Escape'){
+    if($('#modal-nombre-bg').classList.contains('on')) cerrarModalNombre(null);
+    else if($('#fab-menu').classList.contains('on')) $('#fab-menu').classList.remove('on');
     else if($('#chatpanel').classList.contains('on')) cerrarChat();
     else cerrarPanel(); }
+});
+
+// ── modo de trabajo: Vista Rápida (efímera) vs Proyecto (guardado) ──────
+async function setModo(m, seleccionar){
+  MODO = m;
+  localStorage.setItem('cueva_modo', m);
+  $('#modo-rapida').classList.toggle('activa', m==='rapida');
+  $('#modo-proyecto').classList.toggle('activa', m==='proyecto');
+  $('#ctl-rapida').style.display = m==='rapida' ? 'flex' : 'none';
+  $('#ctl-proyecto').style.display = m==='proyecto' ? 'flex' : 'none';
+  if(m==='rapida'){
+    PROYECTO_ID = null; PIZ = null;
+    cerrarPanel(); cerrarChat();
+    aplicarGates(); enviarContexto();
+  } else {
+    await cargarProyectos(seleccionar);
+  }
+}
+
+function aplicarGates(){
+  const activo = MODO==='proyecto' && !!PROYECTO_ID;
+  document.querySelectorAll('#sidebar .sbtn').forEach(b=>{
+    if(!b.dataset.t) b.dataset.t = b.title;
+    b.classList.toggle('gated', !activo);
+    b.title = activo ? b.dataset.t : b.dataset.t + '  (disponible dentro de un Proyecto)';
+  });
+  $('#fab').style.display = activo ? 'flex' : 'none';
+}
+
+// ── modal de nombre (crear / renombrar / promover) ──────────────────────
+let _mnResolve = null;
+function pedirNombre(titulo, hint, valor, okLabel){
+  return new Promise(res=>{
+    _mnResolve = res;
+    $('#mn-titulo').textContent = titulo;
+    $('#mn-hint').textContent = hint || '';
+    $('#mn-ok').textContent = okLabel || 'Aceptar';
+    const inp = $('#mn-input'); inp.value = valor || '';
+    $('#modal-nombre-bg').classList.add('on');
+    setTimeout(()=>inp.focus(), 60);
+  });
+}
+function cerrarModalNombre(v){
+  $('#modal-nombre-bg').classList.remove('on');
+  if(_mnResolve){ _mnResolve(v); _mnResolve = null; }
+}
+$('#mn-ok').addEventListener('click', ()=>{
+  const v = $('#mn-input').value.trim();
+  if(!v) { $('#mn-input').focus(); return; }
+  cerrarModalNombre(v);
+});
+$('#mn-input').addEventListener('keydown', e=>{
+  if(e.key==='Enter'){ e.preventDefault(); $('#mn-ok').click(); }
 });
 
 // ── proyectos (investigaciones guardadas) ───────────────────────────────
 async function cargarProyectos(seleccionar){
   const lista = await fetch('/api/v1/proyectos').then(r=>r.json());
   const sel = $('#proj-select');
-  sel.innerHTML = lista.map(p=>`<option value="${escapeHtml(p.id)}">${escapeHtml(p.titulo||'(sin título)')}</option>`).join('');
   if(!lista.length){
-    await crearProyecto();
+    sel.innerHTML = '<option value="">(sin proyectos — creá uno con ＋)</option>';
+    PROYECTO_ID = null; PIZ = null;
+    cerrarPanel(); aplicarGates(); enviarContexto();
     return;
   }
+  sel.innerHTML = lista.map(p=>`<option value="${escapeHtml(p.id)}">${escapeHtml(p.titulo||'(sin título)')}</option>`).join('');
   const guardado = localStorage.getItem('cueva_proyecto');
   let id = seleccionar || guardado;
   if(!id || !lista.some(p=>p.id===id)) id = lista[0].id;
@@ -387,22 +560,68 @@ async function cargarProyectos(seleccionar){
   await seleccionarProyecto(id);
 }
 async function crearProyecto(){
+  const nombre = await pedirNombre('＋ Nuevo proyecto',
+    'El proyecto guarda series, estudios, notas, chats con los agentes e informe.',
+    '', 'Crear');
+  if(!nombre) return;
   const piz = await fetch('/api/v1/proyectos',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({titulo:'Investigación sin título'})}).then(r=>r.json());
+    body:JSON.stringify({titulo:nombre})}).then(r=>r.json());
   await cargarProyectos(piz.id);
+}
+async function renombrarProyecto(){
+  if(!PROYECTO_ID || !PIZ) return;
+  const nombre = await pedirNombre('✎ Renombrar proyecto', '', PIZ.proyecto.titulo||'', 'Renombrar');
+  if(!nombre || nombre===PIZ.proyecto.titulo) return;
+  PIZ = await fetch('/api/v1/proyectos/'+PROYECTO_ID,{method:'PATCH',
+    headers:{'Content-Type':'application/json'}, body:JSON.stringify({titulo:nombre})}).then(r=>r.json());
+  const opt = $('#proj-select').querySelector(`option[value="${PROYECTO_ID}"]`);
+  if(opt) opt.textContent = nombre;
+  $('#titulo').value = nombre;
+  renderInforme(); enviarContexto();
 }
 async function eliminarProyectoActual(){
   if(!PROYECTO_ID) return;
-  if(!confirm('¿Eliminar esta investigación? No se puede deshacer.')) return;
+  if(!confirm('¿Eliminar este proyecto? Se mueve a la papelera.')) return;
   await fetch('/api/v1/proyectos/'+PROYECTO_ID,{method:'DELETE'});
   PROYECTO_ID=null; localStorage.removeItem('cueva_proyecto');
   await cargarProyectos();
 }
 async function seleccionarProyecto(id){
+  if(!id) return;
   PROYECTO_ID = id;
   localStorage.setItem('cueva_proyecto', id);
   PIZ = await fetch('/api/v1/proyectos/'+id).then(r=>r.json());
   renderProyecto();
+  aplicarGates(); enviarContexto();
+}
+
+// ── promover la Vista Rápida a proyecto (se lleva series y pasos) ───────
+async function promoverVR(){
+  let vr = null;
+  try{ vr = JSON.parse(sessionStorage.getItem('cueva_vr')||'null'); }catch(e){}
+  const nPasos = (vr && vr.estudios && vr.estudios.length) || 0;
+  const nSeries = (vr && vr.series && vr.series.length) || 0;
+  const hint = nPasos || nSeries
+    ? `Se llevan ${nPasos} paso(s) del Estudio y ${nSeries} serie(s) exploradas. La Vista Rápida queda limpia.`
+    : 'La Vista Rápida está vacía: se crea un proyecto nuevo en blanco.';
+  const nombre = await pedirNombre('💾 Promover a proyecto', hint, '', 'Crear proyecto');
+  if(!nombre) return;
+  const cuerpo = { titulo: nombre };
+  if(vr){
+    cuerpo.series = vr.series || [];
+    if(vr.serie_dependiente) cuerpo.serie_dependiente = vr.serie_dependiente;
+    if(vr.frecuencia) cuerpo.frecuencia = vr.frecuencia;
+    cuerpo.estudios = (vr.estudios||[]).map(e=>({
+      herramienta:e.herramienta, args:e.args, resumen:e.resumen||'', resultado:e.resultado||null}));
+  }
+  const r = await fetch('/api/v1/proyectos',{method:'POST',
+    headers:{'Content-Type':'application/json'}, body:JSON.stringify(cuerpo)});
+  const piz = await r.json();
+  if(!r.ok){ alert('No se pudo crear el proyecto: '+(piz.error?.mensaje||r.status)); return; }
+  sessionStorage.removeItem('cueva_vr');
+  const f=$('#viz-frame');
+  if(f && f.contentWindow) f.contentWindow.postMessage({tipo:'cueva:vr-limpiar'},'*');
+  await setModo('proyecto', piz.id);
 }
 
 function renderProyecto(){
@@ -440,30 +659,45 @@ async function guardarCambios(){
     headers:{'Content-Type':'application/json'}, body:JSON.stringify(cuerpo)}).then(r=>r.json());
   const opt = $('#proj-select').querySelector(`option[value="${PROYECTO_ID}"]`);
   if(opt) opt.textContent = PIZ.proyecto.titulo || '(sin título)';
+  enviarContexto();
 }
 
-// ── búsqueda de series (con pestañas de categoría, símil buscador de símbolos) ──
+// ── búsqueda de series (pestañas por FAMILIA del catálogo curado) ──────
 let tBuscar;
 let CATEGORIA = '';
-function filtrarCategoria(o){
-  CATEGORIA = o;
-  document.querySelectorAll('.cat-tab').forEach(b=>b.classList.toggle('activa', b.dataset.o===o));
+let SERIES_TODAS = null;   // catálogo completo, cacheado
+let GRUPOS = [];
+
+async function cargarSeriesTodas(){
+  if(SERIES_TODAS) return SERIES_TODAS;
+  SERIES_TODAS = await fetch('/api/v1/series?limite=0').then(r=>r.json());
+  GRUPOS = [...new Set(SERIES_TODAS.map(s=>s.grupo).filter(Boolean))].sort();
+  $('#cat-tabs').innerHTML =
+    `<button class="cat-tab activa" onclick="filtrarCategoria(-1)">Todas</button>` +
+    GRUPOS.map((g,i)=>`<button class="cat-tab" onclick="filtrarCategoria(${i})">${escapeHtml(g)}</button>`).join('');
+  return SERIES_TODAS;
+}
+function filtrarCategoria(i){
+  CATEGORIA = i>=0 ? GRUPOS[i] : '';
+  document.querySelectorAll('.cat-tab').forEach((b,j)=>b.classList.toggle('activa', j===i+1));
   _buscar();
 }
 function buscarSeries(){ clearTimeout(tBuscar); tBuscar=setTimeout(_buscar,200); }
-function _buscar(){
-  const q=$('#buscar')?.value.trim() || '';
-  const url='/api/v1/series?limite=60&filtro='+encodeURIComponent(q)+'&origen='+encodeURIComponent(CATEGORIA);
-  fetch(url).then(r=>r.json()).then(rows=>{
-    SERIES=rows;
-    $('#lista-series').innerHTML = rows.map(s=>`
-      <div class="serie" onclick="toggle('${s.id}')">
-        <span>${SEL.includes(s.id)?'☑':'☐'}</span>
-        <span>${escapeHtml(s.nombre)}</span>
-        <small>${escapeHtml(s.origen.split(' ')[0])} · n=${s.n}</small>
-      </div>`).join('') || '<div class="serie">sin resultados</div>';
-    renderChips();
-  });
+async function _buscar(){
+  const q=($('#buscar')?.value || '').trim().toLowerCase();
+  const todas = await cargarSeriesTodas();
+  const rows = todas.filter(s=>
+    (!CATEGORIA || s.grupo===CATEGORIA) &&
+    (!q || [s.id,s.nombre,s.grupo,s.subgrupo].some(c=>(c||'').toLowerCase().includes(q)))
+  ).slice(0,90);
+  SERIES=rows;
+  $('#lista-series').innerHTML = rows.map(s=>`
+    <div class="serie" onclick="toggle('${s.id}')">
+      <span>${SEL.includes(s.id)?'☑':'☐'}</span>
+      <span>${escapeHtml(s.nombre)}</span>
+      <small>${escapeHtml(s.subgrupo||s.grupo||s.origen)} · n=${s.n}</small>
+    </div>`).join('') || '<div class="serie">sin resultados</div>';
+  renderChips();
 }
 function toggle(id){
   if(SEL.includes(id)) SEL=SEL.filter(x=>x!==id);
@@ -473,7 +707,7 @@ function toggle(id){
 }
 function renderChips(){
   $('#chips').innerHTML = SEL.map(id=>{
-    const s=SERIES.find(x=>x.id===id)||{nombre:id};
+    const s=(SERIES_TODAS||SERIES).find(x=>x.id===id)||{nombre:id};
     const esDep=DEP===id;
     return `<span class="chip ${esDep?'dep':''}">
       <span onclick="marcarDep('${id}')" title="marcar dependiente" style="cursor:pointer">${esDep?'⭐Y':'☆'}</span>
@@ -821,8 +1055,8 @@ async function guardarInforme(key){
     headers:{'Content-Type':'application/json'}, body:JSON.stringify({texto})});
 }
 
-// ── arranque ──────────────────────────────────────────────────────────
-cargarProyectos();
+// ── arranque: aplicar el modo guardado (por defecto, Vista Rápida) ──────
+setModo(MODO);
 </script>
 </body>
 </html>

@@ -1,0 +1,30 @@
+id,archivo,descripcion,unidad,moneda,periodicidad,categoria,n_obs,desde,hasta,consultado
+1244,1244_reservas_internacionales.csv,Reservas internacionales,En millones de USD,ME,D,Activos y pasivos del BCRA,7578,1996-01-02,2026-10-13,2026-10-15
+1245,1245_oro_divisas_colocaciones_a_plazo_y_otros_activos_incluidos_e.csv,"Oro, divisas, colocaciones a plazo y otros activos incluidos en las reservas internacionales",En millones de USD,ME,D,Activos y pasivos del BCRA,7578,1996-01-02,2026-10-13,2026-10-15
+1246,1246_integracion_de_requisitos_de_liquidez_en_corresponsales_del_.csv,Integración de requisitos de liquidez en corresponsales del exterior,En millones de USD,ME,D,Activos y pasivos del BCRA,1540,1996-01-02,2002-02-28,2026-10-15
+1247,1247_pasivos_monetarios_base_monetaria_depositos_y_otros_pasivos_.csv,Pasivos monetarios (base monetaria + depósitos y otros pasivos monetarios en moneda extranjera),En millones de ARS,ME,D,Activos y pasivos del BCRA,7578,1996-01-02,2026-10-13,2026-10-15
+1248,1248_base_monetaria.csv,Base monetaria,En millones de ARS,ML,D,Activos y pasivos del BCRA,7578,1996-01-02,2026-10-13,2026-10-15
+1249,1249_circulacion_monetaria.csv,Circulación monetaria,En millones de ARS,ML,D,Activos y pasivos del BCRA,7578,1996-01-02,2026-10-13,2026-10-15
+1250,1250_cuenta_corriente_en_pesos_en_el_bcra.csv,Cuenta corriente en pesos en el BCRA,En millones de ARS,ML,D,Activos y pasivos del BCRA,6226,2001-06-01,2026-10-13,2026-10-15
+1251,1251_cuenta_corriente_en_pesos_en_el_bcra_de_fondos_para_el_pago_.csv,Cuenta corriente en pesos en el BCRA de fondos para el pago de órdenes de pago previsional,En millones de ARS,ML,D,Activos y pasivos del BCRA,6223,2001-06-01,2026-10-13,2026-10-15
+1252,1252_cuenta_corriente_en_pesos_en_el_bcra_de_fondos_no_utilizados.csv,Cuenta corriente en pesos en el BCRA de fondos no utilizados para el pago de órdenes de pago previsional,En millones de ARS,ML,D,Activos y pasivos del BCRA,6223,2001-06-01,2026-10-13,2026-10-15
+1253,1253_fondo_de_liquidez_bancaria_en_pesos.csv,Fondo de liquidez bancaria en pesos,En millones de ARS,ML,D,Activos y pasivos del BCRA,4420,2001-12-28,2026-10-13,2026-10-15
+1254,1254_depositos_y_otros_pasivos_monetarios_en_moneda_extranjera_en.csv,Depósitos y otros pasivos monetarios en moneda extranjera en el BCRA,En millones de ARS,ME,D,Activos y pasivos del BCRA,7578,1996-01-02,2026-10-13,2026-10-15
+1255,1255_fondo_de_liquidez_bancaria_en_moneda_extranjera.csv,Fondo de liquidez bancaria en moneda extranjera,En millones de ARS,ME,D,Activos y pasivos del BCRA,4420,2001-12-28,2026-10-13,2026-10-15
+1256,1256_cuenta_corriente_en_moneda_extranjera_en_el_bcra.csv,Cuenta corriente en moneda extranjera en el BCRA,En millones de ARS,ME,D,Activos y pasivos del BCRA,7578,1996-01-02,2026-10-13,2026-10-15
+1257,1257_cedin_y_cheques_cancelatorios_en_moneda_extranjera.csv,Cedin y cheques cancelatorios en moneda extranjera,En millones de ARS,ME,D,Activos y pasivos del BCRA,3864,2010-11-23,2026-10-13,2026-10-15
+1258,1258_lebac_nobac_y_otras_letras_emitidas_por_el_bcra_en_pesos_no_.csv,"Lebac, nobac y otras letras emitidas por el BCRA en pesos (no incluye leliq ni notaliq)",En millones de ARS,ML,D,Activos y pasivos del BCRA,6028,2002-03-15,2026-10-13,2026-10-15
+1259,1259_lebac_nobac_y_otras_letras_emitidas_por_el_bcra_en_moneda_ex.csv,"Lebac, nobac y otras letras emitidas por el BCRA en moneda extranjera",En millones de ARS,ME,D,Activos y pasivos del BCRA,6028,2002-03-15,2026-10-13,2026-10-15
+1260,1260_leliq_y_notaliq.csv,Leliq y notaliq,En millones de ARS,ML,D,Activos y pasivos del BCRA,2130,2018-01-02,2026-10-13,2026-10-15
+1261,1261_posicion_neta_de_pases_pasivos_activos.csv,Posición neta de pases (pasivos - activos),En millones de ARS,ML,D,Activos y pasivos del BCRA,7578,1996-01-02,2026-10-13,2026-10-15
+1262,1262_posicion_de_pases_pasivos.csv,Posición de pases pasivos,En millones de ARS,ML,D,Activos y pasivos del BCRA,7578,1996-01-02,2026-10-13,2026-10-15
+1263,1263_posicion_de_pases_activos.csv,Posición de pases activos,En millones de ARS,ML,D,Activos y pasivos del BCRA,7576,1996-01-02,2026-10-13,2026-10-15
+1264,1264_depositos_del_gobierno_en_el_bcra.csv,Depósitos del gobierno en el BCRA,En millones de ARS,ML,D,Activos y pasivos del BCRA,7578,1996-01-02,2026-10-13,2026-10-15
+1265,1265_depositos_del_gobierno_en_el_bcra_en_pesos.csv,Depósitos del gobierno en el BCRA en pesos,En millones de ARS,ML,D,Activos y pasivos del BCRA,674,2024-01-02,2026-10-13,2026-10-15
+1266,1266_depositos_del_gobierno_en_el_bcra_en_moneda_extranjera.csv,Depósitos del gobierno en el BCRA en moneda extranjera,En millones de ARS,ME,D,Activos y pasivos del BCRA,674,2024-01-02,2026-10-13,2026-10-15
+1267,1267_redescuentos_y_adelantos_por_iliquidez_otorgados_al_sistema_.csv,Redescuentos y adelantos por iliquidez otorgados al sistema financiero,En millones de ARS,ML,D,Activos y pasivos del BCRA,6080,2002-01-02,2026-10-13,2026-10-15
+1268,1268_adelantos_transitorios_del_bcra_al_gobierno_nacional.csv,Adelantos transitorios del BCRA al gobierno nacional,En millones de ARS,ML,D,Activos y pasivos del BCRA,5830,2003-01-02,2026-10-14,2026-10-15
+1269,1269_monto_acumulado_del_rescate_de_cuasimonedas.csv,Monto acumulado del rescate de cuasimonedas,En millones de ARS,ML,D,Activos y pasivos del BCRA,754,2003-01-02,2005-12-31,2026-10-15
+1270,1270_asignaciones_de_degs_2009.csv,Asignaciones de DEGS 2009,En millones de USD,ME,D,Activos y pasivos del BCRA,86,2009-08-28,2009-12-31,2026-10-15
+1604,1604_tipo_de_cambio_para_valuacion_de_activos_y_pasivos_del_bcra.csv,Tipo de cambio para valuación de activos y pasivos del BCRA,Pesos argentinos por dólar estadounidense,ML,D,Activos y pasivos del BCRA,2058,1996-01-02,2004-03-26,2026-10-15
+1605,1605_reservas_internacionales.csv,Reservas internacionales,En millones de USD,ME,M,Activos y pasivos del BCRA,1041,1940-01-31,2026-09-30,2026-10-15

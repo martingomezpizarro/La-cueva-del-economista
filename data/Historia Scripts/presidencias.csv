@@ -1,0 +1,61 @@
+orden,nombre,desde,hasta,tipo,fuerza_politica,acceso,salida,fuente,verificado,nota
+1,Julio Argentino Roca,1880-10-12,1886-10-12,constitucional,Partido Autonomista Nacional,elección,fin de mandato,Casa Rosada — Galería de Presidentes,no,
+2,Miguel Juárez Celman,1886-10-12,1890-08-06,constitucional,Partido Autonomista Nacional,elección,renuncia,Casa Rosada — Galería de Presidentes,no,"Renuncia tras la Revolución del Parque, en plena crisis de 1890."
+3,Carlos Pellegrini,1890-08-06,1892-10-12,constitucional,Partido Autonomista Nacional,sucesión constitucional,fin de mandato,Casa Rosada — Galería de Presidentes,no,Vicepresidente en ejercicio. Gestiona la crisis Baring.
+4,Luis Sáenz Peña,1892-10-12,1895-01-23,constitucional,Partido Autonomista Nacional,elección,renuncia,Casa Rosada — Galería de Presidentes,no,
+5,José Evaristo Uriburu,1895-01-23,1898-10-12,constitucional,Partido Autonomista Nacional,sucesión constitucional,fin de mandato,Casa Rosada — Galería de Presidentes,no,
+6,Julio Argentino Roca,1898-10-12,1904-10-12,constitucional,Partido Autonomista Nacional,elección,fin de mandato,Casa Rosada — Galería de Presidentes,no,Segunda presidencia.
+7,Manuel Quintana,1904-10-12,1906-03-12,constitucional,Partido Autonomista Nacional,elección,muerte,Casa Rosada — Galería de Presidentes,no,
+8,José Figueroa Alcorta,1906-03-12,1910-10-12,constitucional,Partido Autonomista Nacional,sucesión constitucional,fin de mandato,Casa Rosada — Galería de Presidentes,no,
+9,Roque Sáenz Peña,1910-10-12,1914-08-09,constitucional,Partido Autonomista Nacional,elección,muerte,Casa Rosada — Galería de Presidentes,no,Ley Sáenz Peña (1912): sufragio secreto y obligatorio.
+10,Victorino de la Plaza,1914-08-09,1916-10-12,constitucional,Partido Autonomista Nacional,sucesión constitucional,fin de mandato,Casa Rosada — Galería de Presidentes,no,
+11,Hipólito Yrigoyen,1916-10-12,1922-10-12,constitucional,Unión Cívica Radical,elección,fin de mandato,Casa Rosada — Galería de Presidentes,no,Primer presidente por voto secreto y obligatorio.
+12,Marcelo Torcuato de Alvear,1922-10-12,1928-10-12,constitucional,Unión Cívica Radical,elección,fin de mandato,Casa Rosada — Galería de Presidentes,no,
+13,Hipólito Yrigoyen,1928-10-12,1930-09-06,constitucional,Unión Cívica Radical,elección,golpe,Casa Rosada — Galería de Presidentes,no,Segunda presidencia. Derrocado por el primer golpe del siglo XX.
+14,José Félix Uriburu,1930-09-06,1932-02-20,de_facto,Fuerzas Armadas,golpe,entrega a gobierno electo,Casa Rosada — Galería de Presidentes,no,
+15,Agustín Pedro Justo,1932-02-20,1938-02-20,constitucional,Concordancia (UCR Antipersonalista),elección,fin de mandato,Casa Rosada — Galería de Presidentes,no,Elección con proscripción del radicalismo yrigoyenista.
+16,Roberto Marcelino Ortiz,1938-02-20,1942-06-27,constitucional,Concordancia (UCR Antipersonalista),elección,renuncia,Casa Rosada — Galería de Presidentes,no,"DISCUTIDO: delegó el mando en Castillo el 1940-07-03 por enfermedad; renunció formalmente el 1942-06-27. Según qué fecha se tome, cambia el corte de la serie."
+17,Ramón S. Castillo,1942-06-27,1943-06-04,constitucional,Partido Demócrata Nacional,sucesión constitucional,golpe,Casa Rosada — Galería de Presidentes,no,DISCUTIDO: ejerce de hecho desde 1940-07-03 como vicepresidente en ejercicio.
+18,Arturo Rawson,1943-06-04,1943-06-07,de_facto,Fuerzas Armadas,golpe,desplazado,Casa Rosada — Galería de Presidentes,no,Tres días. Se omite en casi todos los listados.
+19,Pedro Pablo Ramírez,1943-06-07,1944-03-09,de_facto,Fuerzas Armadas,golpe,desplazado,Casa Rosada — Galería de Presidentes,no,
+20,Edelmiro Julián Farrell,1944-03-09,1946-06-04,de_facto,Fuerzas Armadas,sucesión de facto,entrega a gobierno electo,Casa Rosada — Galería de Presidentes,no,
+21,Juan Domingo Perón,1946-06-04,1952-06-04,constitucional,Partido Laborista / Peronista,elección,fin de mandato,Casa Rosada — Galería de Presidentes,no,
+22,Juan Domingo Perón,1952-06-04,1955-09-21,constitucional,Partido Peronista,elección,golpe,Casa Rosada — Galería de Presidentes,no,Segunda presidencia. Derrocado por la Revolución Libertadora.
+23,Junta Militar (Revolución Libertadora),1955-09-21,1955-09-23,junta_militar,Fuerzas Armadas,golpe,designa presidente,Casa Rosada — Galería de Presidentes,no,Entre la caída de Perón y la asunción de Lonardi.
+24,Eduardo Lonardi,1955-09-23,1955-11-13,de_facto,Fuerzas Armadas,golpe,desplazado,Casa Rosada — Galería de Presidentes,no,Entre el 21 y el 23 de septiembre gobierna una junta militar.
+25,Pedro Eugenio Aramburu,1955-11-13,1958-05-01,de_facto,Fuerzas Armadas,golpe interno,entrega a gobierno electo,Casa Rosada — Galería de Presidentes,no,
+26,Arturo Frondizi,1958-05-01,1962-03-29,constitucional,Unión Cívica Radical Intransigente,elección,destitución,Casa Rosada — Galería de Presidentes,no,Depuesto por las Fuerzas Armadas; el peronismo estaba proscripto.
+27,José María Guido,1962-03-29,1963-10-12,provisional,Unión Cívica Radical Intransigente,acefalía (Senado),entrega a gobierno electo,Casa Rosada — Galería de Presidentes,no,Presidente provisional del Senado; asume por la ley de acefalía.
+28,Arturo Umberto Illia,1963-10-12,1966-06-28,constitucional,Unión Cívica Radical del Pueblo,elección,golpe,Casa Rosada — Galería de Presidentes,no,
+29,Junta Revolucionaria,1966-06-28,1966-06-29,junta_militar,Fuerzas Armadas,golpe,designa presidente,Casa Rosada — Galería de Presidentes,no,Entre la caída de Illia y la asunción de Onganía.
+30,Juan Carlos Onganía,1966-06-29,1970-06-08,de_facto,Fuerzas Armadas,golpe,desplazado,Casa Rosada — Galería de Presidentes,no,«Revolución Argentina».
+31,Junta de Comandantes en Jefe,1970-06-08,1970-06-18,junta_militar,Fuerzas Armadas,golpe interno,designa presidente,Casa Rosada — Galería de Presidentes,no,Diez días entre Onganía y Levingston.
+32,Roberto Marcelo Levingston,1970-06-18,1971-03-22,de_facto,Fuerzas Armadas,designación de la Junta,desplazado,Casa Rosada — Galería de Presidentes,no,Del 8 al 18 de junio de 1970 gobierna la Junta de Comandantes.
+33,Junta de Comandantes en Jefe,1971-03-22,1971-03-26,junta_militar,Fuerzas Armadas,golpe interno,designa presidente,Casa Rosada — Galería de Presidentes,no,Entre Levingston y Lanusse.
+34,Alejandro Agustín Lanusse,1971-03-26,1973-05-25,de_facto,Fuerzas Armadas,golpe interno,entrega a gobierno electo,Casa Rosada — Galería de Presidentes,no,
+35,Héctor José Cámpora,1973-05-25,1973-07-13,constitucional,Partido Justicialista,elección,renuncia,Casa Rosada — Galería de Presidentes,no,
+36,Raúl Alberto Lastiri,1973-07-13,1973-10-12,interino,Partido Justicialista,acefalía (Diputados),entrega a gobierno electo,Casa Rosada — Galería de Presidentes,no,Presidente de la Cámara de Diputados.
+37,Juan Domingo Perón,1973-10-12,1974-07-01,constitucional,Partido Justicialista,elección,muerte,Casa Rosada — Galería de Presidentes,no,Tercera presidencia.
+38,María Estela Martínez de Perón,1974-07-01,1976-03-24,constitucional,Partido Justicialista,sucesión constitucional,golpe,Casa Rosada — Galería de Presidentes,no,
+39,Junta Militar (Proceso de Reorganización Nacional),1976-03-24,1976-03-29,junta_militar,Fuerzas Armadas,golpe,designa presidente,Casa Rosada — Galería de Presidentes,no,Entre el golpe del 24 de marzo y la asunción de Videla.
+40,Jorge Rafael Videla,1976-03-29,1981-03-29,de_facto,Fuerzas Armadas,golpe,fin de mandato de facto,Casa Rosada — Galería de Presidentes,no,Del 24 al 29 de marzo de 1976 gobierna la Junta Militar.
+41,Roberto Eduardo Viola,1981-03-29,1981-12-11,de_facto,Fuerzas Armadas,designación de la Junta,desplazado,Casa Rosada — Galería de Presidentes,no,
+42,Carlos Alberto Lacoste,1981-12-11,1981-12-22,de_facto,Fuerzas Armadas,interinato,desplazado,Casa Rosada — Galería de Presidentes,no,Once días. Se omite en casi todos los listados.
+43,Leopoldo Fortunato Galtieri,1981-12-22,1982-06-18,de_facto,Fuerzas Armadas,designación de la Junta,desplazado,Casa Rosada — Galería de Presidentes,no,Guerra de Malvinas.
+44,Alfredo Óscar Saint-Jean,1982-06-18,1982-07-01,de_facto,Fuerzas Armadas,interinato,desplazado,Casa Rosada — Galería de Presidentes,no,Trece días. Se omite en casi todos los listados.
+45,Reynaldo Benito Bignone,1982-07-01,1983-12-10,de_facto,Fuerzas Armadas,designación de la Junta,entrega a gobierno electo,Casa Rosada — Galería de Presidentes,no,
+46,Raúl Ricardo Alfonsín,1983-12-10,1989-07-08,constitucional,Unión Cívica Radical,elección,renuncia anticipada,Casa Rosada — Galería de Presidentes,no,"Entrega el mando seis meses antes, en plena hiperinflación."
+47,Carlos Saúl Menem,1989-07-08,1995-07-08,constitucional,Partido Justicialista,elección,fin de mandato,Casa Rosada — Galería de Presidentes,no,
+48,Carlos Saúl Menem,1995-07-08,1999-12-10,constitucional,Partido Justicialista,elección,fin de mandato,Casa Rosada — Galería de Presidentes,no,"Segunda presidencia, ya bajo la Constitución de 1994."
+49,Fernando de la Rúa,1999-12-10,2001-12-21,constitucional,Alianza (UCR-Frepaso),elección,renuncia,Casa Rosada — Galería de Presidentes,no,
+50,Ramón Puerta,2001-12-21,2001-12-23,interino,Partido Justicialista,acefalía (Senado),renuncia,Casa Rosada — Galería de Presidentes,no,Dos días. FALTA en la mayoría de los listados automáticos.
+51,Adolfo Rodríguez Saá,2001-12-23,2001-12-30,provisional,Partido Justicialista,Asamblea Legislativa,renuncia,Casa Rosada — Galería de Presidentes,no,Declara el default de la deuda soberana el 2001-12-23.
+52,Eduardo Camaño,2001-12-30,2002-01-02,interino,Partido Justicialista,acefalía (Diputados),entrega a designado,Casa Rosada — Galería de Presidentes,no,Tres días. FALTA en la mayoría de los listados automáticos.
+53,Eduardo Duhalde,2002-01-02,2003-05-25,provisional,Partido Justicialista,Asamblea Legislativa,entrega a gobierno electo,Casa Rosada — Galería de Presidentes,no,Fin de la convertibilidad y pesificación.
+54,Néstor Carlos Kirchner,2003-05-25,2007-12-10,constitucional,Frente para la Victoria (PJ),elección,fin de mandato,Casa Rosada — Galería de Presidentes,no,
+55,Cristina Fernández de Kirchner,2007-12-10,2011-12-10,constitucional,Frente para la Victoria (PJ),elección,fin de mandato,Casa Rosada — Galería de Presidentes,no,
+56,Cristina Fernández de Kirchner,2011-12-10,2015-12-09,constitucional,Frente para la Victoria (PJ),elección,fin de mandato,Casa Rosada — Galería de Presidentes,no,"DISCUTIDO: el mandato termina el 2015-12-09 por resolución judicial, no el 10."
+57,Federico Pinedo,2015-12-09,2015-12-10,provisional,Propuesta Republicana,acefalía (Senado),entrega a gobierno electo,Casa Rosada — Galería de Presidentes,no,Doce horas. Caso límite: se incluye porque el traspaso 2015 se cita en la literatura.
+58,Mauricio Macri,2015-12-10,2019-12-10,constitucional,Cambiemos (PRO),elección,fin de mandato,Casa Rosada — Galería de Presidentes,no,
+59,Alberto Fernández,2019-12-10,2023-12-10,constitucional,Frente de Todos (PJ),elección,fin de mandato,Casa Rosada — Galería de Presidentes,no,
+60,Javier Milei,2023-12-10,,constitucional,La Libertad Avanza,elección,,Casa Rosada — Galería de Presidentes,no,En ejercicio. `hasta` vacío = mandato abierto.

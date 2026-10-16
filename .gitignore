@@ -27,3 +27,28 @@ cueva.local.toml
 # Backups
 *.tgz
 *.zip
+
+# Series descargadas: se reponen con los scripts de cueva/fuentes (ver docs/DATOS.md).
+# Solo se versiona el índice de cada organismo, que es lo que permite auditar la descarga.
+data/series/**/*.csv
+!data/series/**/_index.csv
+
+# Cuadro de series: se regenera con `python scripts/cuadro_series.py`
+docs/cuadro_series.html
+
+# Crudos de la cronología: se reponen con sus scripts, no se republican (ver registro.json)
+data/historia/_crudo/
+
+# Grilla de revisión: derivada del catálogo, se regenera con scripts/cuadro_revision.py
+docs/cuadro_revision.html
+
+# Planilla de campaña: derivada del catálogo, se regenera con scripts/catalogo_planilla.py
+docs/catalogo_series.xlsx
+
+# Corpus del RAG: los libros/papers en PDF no se suben (derechos y peso); sí fichas, skills y bibliografía
+RAG/corpus/**/*.pdf
+RAG/corpus/**/*.epub
+
+# Salidas sueltas y papelera local
+Claude outputs/
+docs/_to_delete/
