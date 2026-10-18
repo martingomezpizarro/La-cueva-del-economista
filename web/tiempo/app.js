@@ -239,8 +239,8 @@ async function arrancar() {
   pintarDetalle();
   pintarLista();
 
-  // permalink: /tiempo/<id> abre con la ficha puesta
-  const id = decodeURIComponent(location.pathname.replace(/^\/tiempo\/?/, ''));
+  // permalink: /tiempo/<id> abre con la ficha puesta (en el sitio estático llega como /tiempo/<id>/)
+  const id = decodeURIComponent(location.pathname.replace(/^\/tiempo\/?/, '').replace(/\/$/, ''));
   if (id) ficha.abrir(id);
 }
 

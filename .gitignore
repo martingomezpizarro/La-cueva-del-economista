@@ -52,3 +52,4 @@ RAG/corpus/**/*.epub
 # Salidas sueltas y papelera local
 Claude outputs/
 docs/_to_delete/
+_sitio/
