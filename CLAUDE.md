@@ -13,6 +13,16 @@ visual: `docs/mockup/cueva-mockup.html` (publicado como artifact; el documento m
 
 ## Estado (actualizado 2026-07-14)
 
+**Sitio publicado, versión estática (sesión 2026-10-18)** — `docs/PUBLICAR_SITIO.md`.
+`scripts/construir_sitio.py` → `_sitio/` congela la API de lectura (historia, fichas, datos del
+explorador) en JSON e inyecta `web/estatico/estatico.js`, que traduce los `fetch` a esos
+archivos y hace fallar con un mensaje claro lo que necesita Python (Estudio, Kalman, agentes).
+`/` = Mesa (`web/estatico/mesa.html` + explorador en iframe), `/tiempo/<id>/` = permalinks.
+`.github/workflows/pages.yml` publica en GitHub Pages en cada push a `main`, con el dominio
+`cuevadeleconomista.martingomezpizarro.com.ar`. **Las series NO están en el repo**: se
+publican con `--exportar-datos-explorador` → `data/publico/explorador_datos.json`, que se
+corre en la máquina con la carpeta del Trabajo Final. Tests: `tests/test_sitio.py`.
+
 **Una sola plataforma a la vista (sesión 2026-09-17).** La Mesa (`/`) y la Línea de Tiempo
 (`/tiempo`) comparten cascarón:
 - `web/index.html` carga `web/estilo/tokens.css` y tiene la **topbar del mockup**: marca,
