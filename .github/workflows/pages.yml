@@ -1,10 +1,17 @@
-# Pages — publica la versión estática de La Cueva (Línea de Tiempo + Mesa/explorador)
-# en GitHub Pages, con el dominio de scripts/construir_sitio.py. Ver docs/PUBLICAR_SITIO.md.
+# Pages — publica cuevadeleconomista.martingomezpizarro.com.ar.
+# Sube SOLO la carpeta sitio/ (la plataforma unificada: Línea de Tiempo + Mesa de Trabajo).
+# Nunca la raíz del repo: ahí están el corpus del RAG con derechos, .env y los datos de trabajo.
+# sitio/index.html se regenera con: python scripts/unificar_mockup.py
+#
+# Requisito único, en GitHub: Settings → Pages → Build and deployment → Source: "GitHub Actions".
 name: pages
 
 on:
   push:
     branches: [main]
+    paths:
+      - "sitio/**"
+      - ".github/workflows/pages.yml"
   workflow_dispatch:
 
 permissions:
@@ -17,34 +24,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  construir:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-          cache: pip
-
-      - name: Instalar dependencias
-        run: |
-          python -m pip install --upgrade pip
-          pip install -e .
-
-      - name: Armar el sitio
-        run: python scripts/construir_sitio.py --salida _sitio
-
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: _sitio
-
-  publicar:
-    needs: construir
+  deploy:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: sitio
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: sitio
       - id: deploy
         uses: actions/deploy-pages@v4

@@ -1,16 +1,25 @@
 # Publicar el sitio — cuevadeleconomista.martingomezpizarro.com.ar
 
-La versión publicada es **estática** y vive en GitHub Pages. Tiene las dos pantallas:
+**Desde 2026-10-20 el dominio publica la plataforma unificada del mockup**: Línea de Tiempo +
+Mesa de Trabajo (Explorar, Tests, Transformaciones con Kalman, Modelado con especificador e
+iteración, Laboratorio con gráficos) en una sola página, `sitio/index.html`.
 
-| Ruta | Qué es |
-|---|---|
-| `/` | Mesa de Trabajo: cascarón + explorador de series (iframe a `/explorador/`) |
-| `/tiempo/` | Línea de Tiempo |
-| `/tiempo/<evento>` | permalink de un evento (abre con la ficha puesta) |
+- Se regenera con `python scripts/unificar_mockup.py` (une `docs/mockup/mesa-de-trabajo.html`
+  y la Línea de Tiempo de `docs/mockup/cueva-mockup.html`; escribe también
+  `docs/mockup/cueva-unificada.html`).
+- `.github/workflows/pages.yml` publica **solo la carpeta `sitio/`** en cada push a `main` que
+  la toque. Nunca la raíz del repo: ahí están el corpus del RAG con derechos, los CSV y la
+  configuración local. Con «Deploy from a branch» GitHub Pages publica todo el repo de forma
+  pública aunque el repo sea privado; por eso la fuente tiene que ser «GitHub Actions».
+- Requisito único en GitHub: **Settings → Pages → Build and deployment → Source: «GitHub
+  Actions»**, y en «Custom domain» el dominio de arriba (pasos 2 a 7 de abajo).
 
-**Qué NO hay**: el banco ⚗️ Estudio, el Kalman, el análisis básico, los proyectos y los
-agentes. Todo eso ejecuta Python en el servidor; en el sitio avisa «necesita el servidor»
-en vez de fallar mudo. Es la opción B; la plataforma completa (Docker + PaaS) sigue pendiente.
+La versión estática de la plataforma real (`scripts/construir_sitio.py`, opción B de abajo)
+queda como alternativa para cuando las pantallas nuevas existan en `web/`.
+
+---
+
+## Opción B: versión estática de la plataforma real (en pausa)
 
 ## Cómo se arma
 
