@@ -109,7 +109,7 @@ AVISO = """
 .aviso-sitio button:focus-visible{outline:2px solid var(--accent)}
 html body.en-tiempo > div#aviso-sitio.aviso-sitio.aviso-sitio{display:flex!important}
 </style>
-<div class="aviso-sitio" id="aviso-sitio" role="note"><span><b>Vista previa de la plataforma, en construcción.</b> La Mesa de Trabajo usa datos reales del BCRA y del INDEC; las curvas de la Línea de Tiempo todavía son ilustrativas.</span><button type="button" aria-label="Cerrar aviso" onclick="this.parentNode.remove()">✕</button></div>
+<div class="aviso-sitio" id="aviso-sitio" role="note"><span><b>Vista previa de la plataforma, en construcción.</b> Todas las series son datos reales (BCRA, INDEC, FMI, Maddison y otras fuentes académicas); cada una indica su fuente.</span><button type="button" aria-label="Cerrar aviso" onclick="this.parentNode.remove()">✕</button></div>
 """
 sitio = Path(__file__).resolve().parents[1] / "sitio"
 sitio.mkdir(exist_ok=True)

@@ -23,6 +23,17 @@ archivos y hace fallar con un mensaje claro lo que necesita Python (Estudio, Kal
 publican con `--exportar-datos-explorador` → `data/publico/explorador_datos.json`, que se
 corre en la máquina con la carpeta del Trabajo Final. Tests: `tests/test_sitio.py`.
 
+**Línea de Tiempo con datos reales (sesión 2026-10-21).** El mockup publicado (`sitio/`, armado por
+`scripts/unificar_mockup.py`) ya no dibuja curvas inventadas: `SERIES_HIST` en `docs/mockup/cueva-mockup.html`
+trae 9 series anuales reales, generadas con `scripts/series_linea_de_tiempo.py` →
+`data/historia/series_troncales.json`. Fuentes: Maddison 2023 (PBI pc, población), MOxLAD + BCRA
+(inflación, promedio anual, empalme 1945), Bruegel REER invertido + ITCRM BCRA (TCR, empalme 1997;
+Bruegel NO después de 1997 porque deflacta con el IPC del INDEC 2007-2015), FMI Public Finances in
+Modern History + WEO (deuda y resultado fiscal GLOBAL, no primario), Fouquin-Hugot (apertura),
+INDEC (términos de intercambio desde 1986, desempleo EPH desde 1982). Los .dta salen del Global Macro
+Database en GitHub (único host de datos alcanzable desde el sandbox). **Salario real: falta** (sin
+serie larga abierta). Modo por defecto: Paneles.
+
 **Una sola plataforma a la vista (sesión 2026-09-17).** La Mesa (`/`) y la Línea de Tiempo
 (`/tiempo`) comparten cascarón:
 - `web/index.html` carga `web/estilo/tokens.css` y tiene la **topbar del mockup**: marca,
