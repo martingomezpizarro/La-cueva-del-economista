@@ -358,4 +358,5 @@ Paralelo (conocimiento): conseguir Enders; iterar retrieval midiendo con
 ## Reglas de proceso
 
 Cómo trabajar conmigo (confirmaciones, estilo de respuesta, git, subagentes): `docs/WORKFLOW.md`.
-Git: repo en la raíz; comitear solo con aprobación explícita; nunca push (lo maneja el usuario).
+Git: repo en la raíz; comitear solo con aprobación explícita; con esa aprobación el asistente
+empuja a `main` directo (nunca `--force`).
