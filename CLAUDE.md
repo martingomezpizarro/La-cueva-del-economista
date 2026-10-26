@@ -369,5 +369,7 @@ Paralelo (conocimiento): conseguir Enders; iterar retrieval midiendo con
 ## Reglas de proceso
 
 Cómo trabajar conmigo (confirmaciones, estilo de respuesta, git, subagentes): `docs/WORKFLOW.md`.
-Git: repo en la raíz; comitear solo con aprobación explícita; con esa aprobación el asistente
-empuja a `main` directo (nunca `--force`).
+Git: repo en la raíz. Flujo por pedido (2026-10-26): cuando Martín pide un cambio, el asistente lo
+ejecuta, hace commit con mensaje claro y empuja a `main` directo (nunca `--force`), sin que Martín
+haga pull/merge/push a mano. Después de cada push informa qué cambió, el hash y la rama. Pide
+confirmación antes de cambios grandes o destructivos (borrar archivos, reescribir historial).
