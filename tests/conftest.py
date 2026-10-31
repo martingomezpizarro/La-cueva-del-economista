@@ -73,6 +73,9 @@ def datos_temporales(tmp_path, monkeypatch):
 
     monkeypatch.setenv("CUEVA_DATA", str(tmp_path / "data"))
     monkeypatch.setenv("CUEVA_INDICE", str(tmp_path / "indice"))
+    # data/series real afuera: cada test que la necesite arma la suya
+    monkeypatch.setenv("CUEVA_SERIES", str(tmp_path / "sin_series"))
+    S.refrescar()
     recuperar.limpiar_cache()
     yield
     recuperar.limpiar_cache()

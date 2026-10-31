@@ -269,7 +269,7 @@ Lo específico de la Mesa:
 | Pantalla | En el repo | Brecha con este documento |
 |---|---|---|
 | Cascarón (topbar, tema) | ✅ `web/index.html` usa `web/estilo/tokens.css` y la topbar del mockup (2026-09-17) | — |
-| Explorar | ✅ `web/explorador.html` (SPA nativa, estructura del visualizador del TF), datos en vivo por `GET /api/v1/explorador/datos` | sidebar editable con ficha `proc`; spread/cuadro/correlación/dispersión con el diseño de §2.6; ocultador tipo pestaña; **el iframe sigue con su tema oscuro propio: no sigue al de la plataforma** |
+| Explorar | ✅ **nativo en `/`** (2026-10-16): `web/mesa/explorar.{js,css}` sobre `tokens.css`, datos reales de `data/series` por `GET /api/v1/series/{id}/datos`. El clásico (`web/explorador.html`) sigue en `/explorador` | media móvil, dispersión y rango 1M/3M/6M/YTD de §2.6; agregación declarada en `proc` (hoy es una regla, marcada «supuesto»); Kalman y Estudio siguen solo en el clásico |
 | Tests | ⏳ las herramientas existen (`estacionariedad`, `arch_lm`, `diagnosticos`) y se corren desde el Estudio | pantalla de baterías; Bai-Perron; correlograma; cruce con eventos |
 | Transformaciones | ⏳ `transf` como parámetro de toda herramienta | constructor de expresiones con receta; tabla de series construidas |
 | Modelado | ✅ pestaña «⚗️ Estudio»: pasos persistidos con id y resultado, 11 herramientas | acciones sugeridas desde el veredicto; duplicar; exportar a LaTeX |
@@ -290,7 +290,14 @@ Línea de Tiempo:
    `cueva_tema` en localStorage), que usan las dos pantallas.
    ⏳ **Falta**: `web/explorador.html` (el iframe) sigue con su paleta oscura fija — se
    unifica en el punto 2. Y sigue pendiente borrar la econometría duplicada en JS.
-2. **Explorar** — sidebar editable con ficha, paneles de Comparar, ocultador.
+2. **Explorar** — ✅ **primera pasada hecha el 2026-10-16.** `/` monta Explorar nativo
+   (`web/mesa/explorar.js` + `explorar.css`, todo bajo `.ex`) en lugar del iframe: series del
+   trabajo con receta (log, Δ), vista paneles/base 100/estandarizado, frecuencia común,
+   interanual, rango, franja de gobiernos, distribución/cuadro/correlación/spread, ficha con
+   `proc` y catálogo por familia. Comparte las series con el proyecto vía `window.CuevaMesa`
+   ↔ `window.CuevaExplorar`. El explorador clásico queda en `/explorador`.
+   ⏳ **Falta**: media móvil y dispersión, rango 1M/3M/6M/YTD, Kalman, y que `catalogo.json`
+   declare `agregacion` por serie (hoy la infiere `series.tipo_agregacion`).
 3. **Dominio de investigación** — `cueva/investigacion/`: `Hipotesis`, `Objetivo`, `Estudio`,
    `Seccion`, `Cita` (usa `knowledge-base/referencias.bib`, que crea la fase T2 de la Línea de Tiempo).
 4. **`ContextoDelCopiloto`** — `cueva/agentes/contexto.py`, uno solo para los tres modos.
@@ -324,3 +331,6 @@ Línea de Tiempo:
 | 2026-09-17 | La Mesa adopta `tokens.css` por **alias puente**, no reescribiendo su CSS: `--bg`, `--panel`, `--txt`… pasan a apuntar a los tokens |
 | 2026-09-17 | El **tema es del usuario, no de la pantalla**: `web/estilo/tema.js` lo guarda y lo comparten los dos módulos |
 | 2026-09-17 | La subnav de cinco vistas (§1) **no se construye todavía**: tres de esas pantallas no existen y poner pestañas vacías sería maqueta, no plataforma |
+| 2026-10-16 | Explorar nativo reemplaza al iframe en `/`; el clásico convive en `/explorador` hasta que la Mesa nueva lo cubra |
+| 2026-10-16 | `cueva/datos/series.py` resuelve primero en `data/series/` (sin `<Familia>_Fuentes/`) y el Trabajo Final queda de respaldo marcado `origen="Trabajo Final"` |
+| 2026-10-16 | Lo diario se baja a mensual en el servidor; lo mensual o más grueso viaja nativo y el navegador agrega. Nunca se inventan datos más finos que el nativo: se avisa |

@@ -184,16 +184,34 @@ def crear_app() -> FastAPI:
     # ── UI ─────────────────────────────────────────────────────────────────
     @app.get("/", response_class=HTMLResponse)
     def home():
+        """Portada pública: qué es la Cueva, los dos módulos y cómo se usa."""
         idx = WEB / "index.html"
         if not idx.exists():
             return HTMLResponse("<h1>Falta web/index.html</h1>", status_code=500)
         return HTMLResponse(idx.read_text(encoding="utf-8"))
+
+    @app.get("/mesa", response_class=HTMLResponse)
+    def mesa():
+        """Módulo 2: la Mesa de Trabajo (antes vivía en /)."""
+        pagina = WEB / "mesa" / "index.html"
+        if not pagina.exists():
+            return HTMLResponse("<h1>Falta web/mesa/index.html</h1>", status_code=500)
+        return HTMLResponse(pagina.read_text(encoding="utf-8"))
 
     @app.get("/explorador", response_class=HTMLResponse)
     def explorador():
         pagina = WEB / "explorador.html"
         if not pagina.exists():
             return HTMLResponse("<h1>Falta web/explorador.html</h1>", status_code=500)
+        return HTMLResponse(pagina.read_text(encoding="utf-8"))
+
+    @app.get("/terminos", response_class=HTMLResponse)
+    def terminos():
+        """Términos y condiciones de uso + privacidad. Los datos institucionales
+        (mail, fecha, licencia) los completa web/estilo/pie.js desde web/estilo/sitio.js."""
+        pagina = WEB / "terminos.html"
+        if not pagina.exists():
+            return HTMLResponse("<h1>Falta web/terminos.html</h1>", status_code=500)
         return HTMLResponse(pagina.read_text(encoding="utf-8"))
 
     # ── módulo 1: Línea de Tiempo ──────────────────────────────────────────
@@ -298,6 +316,19 @@ def crear_app() -> FastAPI:
         if refrescar:
             S.refrescar()
         return JSONResponse(S.listar(filtro=filtro, origen=origen, limite=limite))
+
+    @app.get("/api/v1/series/familias")
+    def series_familias():
+        """Explorar: por familia, cuántas entradas del catálogo resuelven en data/series."""
+        return JSONResponse(S.resumen_familias())
+
+    @app.get("/api/v1/series/{sid}/datos")
+    def series_datos(sid: str = Path(pattern=r"^[A-Za-z0-9_.\-]{1,120}$")):
+        """Explorar: ficha (catálogo + procedencia) y valores de UNA serie, listos para graficar."""
+        try:
+            return JSONResponse(S.datos_explorar(sid))
+        except KeyError as e:
+            raise HTTPException(404, f"Serie desconocida: {sid}") from e
 
     @app.get("/api/v1/herramientas")
     def listar_herramientas():

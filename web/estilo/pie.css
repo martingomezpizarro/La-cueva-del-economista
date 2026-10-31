@@ -1,0 +1,116 @@
+/* pie.css — pie de página institucional (ver web/estilo/pie.js).
+ *
+ * Usa los tokens de tokens.css. Cada var() trae un valor de respaldo OSCURO
+ * para las pantallas que todavía no cargan tokens.css (web/explorador.html,
+ * paleta oscura fija): ahí el pie igual se ve bien y no hereda colores raros.
+ * Todo vive bajo .pie / .pie-panel: no toca nada de la pantalla anfitriona.
+ */
+
+/* ── común ─────────────────────────────────────────────────────────── */
+.pie, .pie-panel{
+  font-family:var(--sans, "IBM Plex Sans", -apple-system, "Segoe UI", Roboto, sans-serif);
+  color:var(--ink-2, #C2CEC8);
+  -webkit-font-smoothing:antialiased;
+  box-sizing:border-box;
+}
+.pie *, .pie-panel *{box-sizing:border-box}
+.pie a, .pie-panel a{color:var(--accent, #E9C46A); text-decoration:none}
+.pie a:hover, .pie-panel a:hover{text-decoration:underline}
+.pie b, .pie-panel b{color:var(--ink, #E7EDE9); font-weight:600}
+.pie-falta{
+  display:inline-block; padding:0 5px; border-radius:4px; font-family:var(--mono, ui-monospace, monospace);
+  font-size:.92em; background:var(--warn-soft, rgba(224,138,76,.14)); color:var(--warn, #E08A4C);
+  border:1px dashed var(--warn, #E08A4C);
+}
+
+/* ── variante «barra»: una línea fina al pie de la pantalla de trabajo ── */
+.pie-barra{
+  flex:0 0 auto; display:flex; align-items:center; flex-wrap:nowrap; gap:4px 14px;
+  min-height:28px; padding:4px 14px; position:relative; z-index:20;
+  background:var(--surface, #18211E); border-top:1px solid var(--line, #2C3833);
+  font-size:11.5px; line-height:1.4; color:var(--ink-dim, #8B9A93);
+}
+.pie-barra .pie-item{white-space:nowrap; flex:0 0 auto}
+.pie-barra .pie-autor b{font-weight:500; color:var(--ink-2, #C2CEC8)}
+.pie-barra .pie-descargo{color:var(--ink-faint, #66766E); overflow:hidden; text-overflow:ellipsis; flex:0 1 auto; min-width:0}
+.pie-barra .pie-sep{flex:1 1 0; min-width:0}
+.pie-barra .pie-link{
+  background:none; border:0; padding:0; font:inherit; cursor:pointer;
+  color:var(--accent, #E9C46A); font-weight:500;
+}
+.pie-barra .pie-link:hover{text-decoration:underline}
+.pie-barra .pie-meta{color:var(--ink-faint, #66766E)}
+
+/* ── variante «completo»: páginas de lectura ───────────────────────── */
+.pie-completo{
+  background:var(--surface, #18211E); border-top:1px solid var(--line, #2C3833);
+  padding:32px 16px 22px; font-size:13px; line-height:1.55;
+}
+.pie-grilla{
+  max-width:1080px; margin:0 auto; display:grid; gap:26px 36px;
+  grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));
+}
+.pie-h{
+  margin:0 0 10px; font-size:10.5px; letter-spacing:.09em; text-transform:uppercase;
+  color:var(--ink-dim, #8B9A93); font-weight:600; font-family:inherit;
+}
+.pie-completo .pie-texto{margin:0 0 6px}
+.pie-legal{
+  max-width:1080px; margin:24px auto 0; padding-top:14px; border-top:1px solid var(--line-soft, #232E2A);
+  display:flex; flex-wrap:wrap; justify-content:space-between; gap:6px 20px;
+  font-size:11.5px; color:var(--ink-faint, #66766E);
+}
+
+/* ── bloque de colaboración (completo y panel) ─────────────────────── */
+.pie-texto{margin:0 0 10px}
+.pie-acciones{display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:0 0 10px}
+.pie-boton{
+  display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:var(--r, 6px);
+  border:1px solid var(--line, #2C3833); background:var(--surface-2, #1F2A26);
+  color:var(--ink, #E7EDE9) !important; font-size:12.5px; font-weight:500; text-decoration:none !important;
+}
+.pie-boton:hover{border-color:var(--ink-faint, #66766E)}
+.pie-boton-primario{background:var(--accent, #E9C46A); border-color:var(--accent, #E9C46A); color:var(--accent-ink, #151E1B) !important; font-weight:600}
+.pie-boton-primario:hover{filter:brightness(1.06)}
+.pie-boton.is-falta{background:var(--warn-soft, rgba(224,138,76,.14)); border:1px dashed var(--warn, #E08A4C); color:var(--warn, #E08A4C) !important; cursor:default}
+.pie-alt{display:flex; flex-wrap:wrap; align-items:center; gap:6px; font-size:12px}
+.pie-alt-lbl{color:var(--ink-dim, #8B9A93)}
+.pie-alias{font-family:var(--mono, ui-monospace, monospace); font-size:12px; padding:2px 6px; border-radius:4px; background:var(--sunken, #0C1211); color:var(--ink, #E7EDE9)}
+.pie-copiar{background:none; border:1px solid var(--line, #2C3833); border-radius:4px; padding:2px 7px; font:inherit; font-size:11px; color:var(--ink-dim, #8B9A93); cursor:pointer}
+.pie-copiar:hover{color:var(--ink, #E7EDE9)}
+.pie-aclaracion{margin:0; font-size:11.5px; color:var(--ink-faint, #66766E); line-height:1.5}
+
+/* ── panel flotante de «Colaborar» ─────────────────────────────────── */
+.pie-panel{
+  position:fixed; right:14px; bottom:40px; z-index:85; width:min(380px, calc(100vw - 32px));
+  max-height:calc(100vh - 80px); overflow:auto;
+  background:var(--surface, #18211E); border:1px solid var(--line, #2C3833); border-radius:var(--r-lg, 10px);
+  box-shadow:var(--shadow, 0 12px 32px -16px rgba(0,0,0,.7)); padding:14px 16px; font-size:12.5px; line-height:1.5;
+}
+.pie-panel[hidden]{display:none}
+.pie-panel.pie-panel-izq{right:auto; left:14px; bottom:52px}
+.pie-panel-hd{display:flex; align-items:center; gap:8px; margin-bottom:10px}
+.pie-panel-hd b{font-family:var(--display, Georgia, serif); font-size:15px}
+.pie-cerrar{margin-left:auto; background:none; border:0; color:var(--ink-dim, #8B9A93); cursor:pointer; font-size:15px; padding:2px 4px}
+.pie-cerrar:hover{color:var(--ink, #E7EDE9)}
+.pie-panel-pie{
+  margin-top:12px; padding-top:10px; border-top:1px solid var(--line-soft, #232E2A);
+  display:flex; flex-direction:column; gap:5px; font-size:11.5px; color:var(--ink-dim, #8B9A93);
+}
+
+/* ── variante «flotante»: botón chico en la esquina inferior izquierda ── */
+.pie-flotante{position:fixed; left:10px; bottom:10px; z-index:84}
+.pie-flotante-btn{
+  width:24px; height:24px; border-radius:50%; display:grid; place-items:center; cursor:pointer;
+  font:italic 600 13px/1 Georgia, serif; opacity:.55;
+  background:var(--surface, #18211E); color:var(--ink-dim, #8B9A93); border:1px solid var(--line, #2C3833);
+}
+.pie-flotante-btn:hover, .pie-flotante-btn[aria-expanded="true"]{opacity:1; color:var(--accent, #E9C46A)}
+
+/* ── foco visible y teléfono ───────────────────────────────────────── */
+.pie :focus-visible, .pie-panel :focus-visible{outline:2px solid var(--accent, #E9C46A); outline-offset:2px; border-radius:3px}
+@media (max-width:760px){
+  .pie-barra{flex-wrap:wrap; gap:2px 12px; padding:4px 12px}
+  .pie-barra .pie-oculta-movil, .pie-barra .pie-descargo{display:none}
+  .pie-panel{right:16px; left:16px; width:auto; bottom:44px}
+}

@@ -13,14 +13,50 @@ visual: `docs/mockup/cueva-mockup.html` (publicado como artifact; el documento m
 
 ## Estado (actualizado 2026-07-14)
 
+**Portada, pie institucional y recorridos guiados (sesión 2026-10-22).**
+- **Rutas**: `/` es la **portada** (`web/index.html`, página de lectura que scrollea) y la
+  **Mesa se mudó a `/mesa`** (`web/mesa/index.html`, mismo código que antes vivía en
+  `web/index.html`). La marca de la topbar lleva a `/`; el conmutador de módulos, a `/mesa`.
+- **Pie institucional** en todas las pantallas: `web/estilo/pie.{js,css}`. Datos (mail,
+  links de Cafecito / alias de Mercado Pago, licencia, fecha de actualización, fuentes) en
+  **un solo lugar: `web/estilo/sitio.js`**. Variantes: `barra` (módulos a 100vh), `completo`
+  (portada y términos), `flotante` (explorador clásico). Términos y privacidad en `/terminos`
+  (`web/terminos.html`). Pendientes: link de Cafecito y licencia (hoy «todos los derechos
+  reservados»).
+- **Recorridos guiados**: `web/estilo/recorrido.{js,css}`; los pasos de cada módulo están en
+  `PASOS` dentro del JS y apuntan a selectores reales (si uno no está a la vista, el paso se
+  saltea). Se abren solos la primera vez (`localStorage` `cueva_recorrido_<modulo>`), con el
+  botón «?» de la topbar o con `?recorrido=1`. **Si cambiás ids/clases de la Mesa o de la
+  Línea de Tiempo, revisá `PASOS`.**
+- Las cifras de la portada salen de `/api/v1/diag` y `/api/v1/historia`; si fallan quedan «—».
+
+**Explorar nativo en `/` (sesión 2026-10-16).** La Mesa ya no embebe `web/explorador.html`:
+- `web/mesa/explorar.js` (ES module) + `explorar.css` (todo bajo `.ex`, solo tokens) portan el
+  Explorar de `docs/mockup/mesa-de-trabajo.html` con **datos reales**. El clásico sigue en
+  `/explorador` (Kalman y Estudio viven ahí hasta que existan Tests/Modelado propios).
+- **`cueva/datos/series.py` lee primero de `data/series/`** (excluye `<Familia>_Fuentes/`); el
+  Trabajo Final es respaldo y la serie queda con `origen="Trabajo Final"`. `config.carpeta_series()`
+  (override `CUEVA_SERIES`; los tests la apuntan a una carpeta vacía en `conftest.py`).
+  Hoy resuelven **719 series**, todas desde `data/series`.
+- API nueva: `GET /api/v1/series/{id}/datos` (ficha + `proc` + valores; lo diario baja a mensual
+  con `tipo_agregacion`: fin de período / compuesta / promedio — **regla inferida, marcada
+  «supuesto» en la UI** hasta que `proc` declare `agregacion`) y `GET /api/v1/series/familias`.
+- Puente página↔Explorar: `window.CuevaMesa.seriesCambiaron(ids, dep)` y
+  `window.CuevaExplorar.fijarSeries(SEL, DEP)`; en Vista Rápida las series van a `cueva_vr`.
+- ⚠ `SerieInfo.desde/hasta/n` salen de un encabezado de 400 filas: para series largas son
+  falsos. Explorar usa el rango real de `/datos`; el listado sigue con el dato corto.
+- Tests: `tests/test_explorar.py` (11).
+- `docs/mockup/cueva-unificada.html` = los dos mockups en un archivo (`scripts/unificar_mockup.py`).
+
 **Sitio publicado, versión estática (sesión 2026-10-18)** — `docs/PUBLICAR_SITIO.md`.
 `scripts/construir_sitio.py` → `_sitio/` congela la API de lectura (historia, fichas, datos del
 explorador) en JSON e inyecta `web/estatico/estatico.js`, que traduce los `fetch` a esos
 archivos y hace fallar con un mensaje claro lo que necesita Python (Estudio, Kalman, agentes).
 `/` = Mesa (`web/estatico/mesa.html` + explorador en iframe), `/tiempo/<id>/` = permalinks.
 `.github/workflows/pages.yml` publica en GitHub Pages en cada push a `main`, con el dominio
-`cuevadeleconomista.martingomezpizarro.com.ar`. **Las series NO están en el repo**: se
-publican con `--exportar-datos-explorador` → `data/publico/explorador_datos.json`, que se
+`cuevadeleconomista.martingomezpizarro.com.ar`. **Los CSV de las series SÍ están en el repo desde 2026-10-31** (`data/series/`;
+los PDFs del corpus del RAG NO, quedan en la máquina local). El payload del explorador se
+publica con `--exportar-datos-explorador` → `data/publico/explorador_datos.json`, que se
 corre en la máquina con la carpeta del Trabajo Final. Tests: `tests/test_sitio.py`.
 
 **Línea de Tiempo con datos reales (sesión 2026-10-21).** El mockup publicado (`sitio/`, armado por

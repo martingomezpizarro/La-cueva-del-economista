@@ -82,6 +82,13 @@ def _cargar_toml_local() -> dict:
 _LOCAL = _cargar_toml_local()
 
 
+def carpeta_series() -> Path:
+    """Carpeta `data/series/`: la ÚNICA fuente de verdad de los datos de las series.
+
+    Override: CUEVA_SERIES (los tests la apuntan a una carpeta vacía para aislarse)."""
+    return Path(os.environ.get("CUEVA_SERIES", ROOT / "data" / "series"))
+
+
 def carpeta_trabajo_final() -> Path | None:
     """Carpeta raíz del Trabajo Final (contiene data/Variables Finales)."""
     return _primero_que_existe(

@@ -147,8 +147,22 @@ def test_la_pantalla_de_tiempo_se_sirve(cliente):
 
 def test_las_dos_pantallas_comparten_el_sistema_de_diseno(cliente):
     """Un solo lugar donde vive el tema: si la Mesa vuelve a tener CSS propio, esto se cae."""
-    inicio = cliente.get("/").text
+    inicio = cliente.get("/mesa").text
     assert "/web/estilo/tokens.css" in inicio, "la Mesa no carga los tokens compartidos"
     assert "/web/estilo/tema.js" in inicio, "la Mesa no carga el tema compartido"
     assert cliente.get("/web/estilo/tema.js").status_code == 200
     assert "/web/estilo/tema.js" in cliente.get("/tiempo").text
+
+
+def test_todas_las_pantallas_llevan_el_pie_institucional(cliente):
+    """El pie es uno solo (web/estilo/pie.js) y sus datos viven en web/estilo/sitio.js."""
+    for ruta in ("/", "/mesa", "/tiempo", "/explorador", "/terminos"):
+        html = cliente.get(ruta).text
+        assert "data-cueva-pie" in html, f"{ruta} no tiene el contenedor del pie"
+        assert "/web/estilo/sitio.js" in html, f"{ruta} no carga la configuración del sitio"
+        assert "/web/estilo/pie.js" in html, f"{ruta} no carga el pie"
+    for archivo in ("sitio.js", "pie.js", "pie.css"):
+        assert cliente.get(f"/web/estilo/{archivo}").status_code == 200
+    terminos = cliente.get("/terminos")
+    assert terminos.status_code == 200
+    assert "Ley 26.831" in terminos.text and "Ley 25.326" in terminos.text

@@ -10,8 +10,10 @@ Sobre ese catálogo:
 - Las columnas que el catálogo cubre NO se vuelven a listar como series "crudas": el escaneo
   de archivos queda solo como *fallback* para CSVs sueltos (datos sintéticos de test, subidas
   futuras, archivos aún sin curar).
-- Se leen los archivos in situ desde la carpeta del Trabajo Final (ver `cueva/config.py`); no se
-  mueve ni copia nada. ANÁLISIS MATRIZ ARG queda excluido: sus CSVs duplicaban EMAE/ICA que ya
+- Los archivos se buscan primero en `data/series/` (la fuente de verdad, sin las carpetas
+  `<Familia>_Fuentes/` de crudos) y solo si no están ahí en la carpeta del Trabajo Final, que
+  es una muleta: la serie queda marcada con `origen="Trabajo Final"` para que se vea.
+  ANÁLISIS MATRIZ ARG queda excluido: sus CSVs duplicaban EMAE/ICA que ya
   están, mejor abiertos, en el Trabajo Final.
 
 El catálogo se cachea en memoria y se invalida cuando cambia el contenido de la carpeta fuente o
@@ -37,7 +39,7 @@ _RUTA_CATALOGO = Path(__file__).with_name("catalogo.json")
 class SerieInfo:
     id: str
     nombre: str
-    origen: str  # "Trabajo Final"
+    origen: str  # "data/series" | "Trabajo Final" (muleta) | carpeta del escaneo
     archivo: str  # ruta absoluta de la fuente primaria
     col_fecha: str
     col_valor: str
@@ -75,6 +77,37 @@ def _carpeta_vars() -> Path | None:
     return carpeta if carpeta.exists() else None
 
 
+def _normalizar_nombre(nombre: str) -> str:
+    return unicodedata.normalize("NFC", nombre).lower()
+
+
+def _indice_data_series() -> dict[str, Path]:
+    """{nombre de archivo normalizado → ruta} dentro de data/series, sin `<Familia>_Fuentes/`."""
+    raiz = config.carpeta_series()
+    if not raiz.exists():
+        return {}
+    return {
+        _normalizar_nombre(r.name): r
+        for r in raiz.rglob("*")
+        if r.is_file() and not any(p.name.endswith("_Fuentes") for p in r.relative_to(raiz).parents)
+    }
+
+
+def _resolver(nombre: str, indice: dict[str, Path], carpeta_tf: Path | None) -> tuple[Path, str] | None:
+    """Ruta y origen de un archivo del catálogo: data/series primero, Trabajo Final de respaldo."""
+    p = indice.get(_normalizar_nombre(nombre))
+    if p is not None:
+        return p, ORIGEN_DATA_SERIES
+    if carpeta_tf is not None:
+        q = carpeta_tf / nombre
+        if q.exists():
+            return q, "Trabajo Final"
+    return None
+
+
+ORIGEN_DATA_SERIES = "data/series"
+
+
 def _fuentes() -> list[tuple[str, Path]]:
     carpeta = _carpeta_vars()
     return [("Trabajo Final", carpeta)] if carpeta else []
@@ -87,6 +120,17 @@ def _firma() -> tuple:
         archivos = sorted(Path(carpeta).glob("*.csv"))
         partes.append(
             (origen, str(carpeta), len(archivos), max((f.stat().st_mtime for f in archivos), default=0))
+        )
+    raiz = config.carpeta_series()
+    if raiz.exists():
+        archivos = [f for f in raiz.rglob("*.csv")]
+        partes.append(
+            (
+                ORIGEN_DATA_SERIES,
+                str(raiz),
+                len(archivos),
+                max((f.stat().st_mtime for f in archivos), default=0),
+            )
         )
     cat_mtime = _RUTA_CATALOGO.stat().st_mtime if _RUTA_CATALOGO.exists() else 0
     return (cat_mtime, tuple(partes))
@@ -179,6 +223,7 @@ def catalogo() -> dict[str, SerieInfo]:
     import pandas as pd
 
     carpeta = _carpeta_vars()
+    indice = _indice_data_series()
     _cache_df: dict = {}  # ruta -> DataFrame de encabezado (nrows=400) o None
 
     def _encabezado(path: Path):
@@ -201,17 +246,15 @@ def catalogo() -> dict[str, SerieInfo]:
         # explotar sus otras columnas (así no reaparecen los slugs crípticos de los INDEC anuales).
         for f in hoja["fuentes"]:
             archivos_curados.add(f["file"].lower())
-        if not carpeta:
-            continue
         # resolver fuentes CSV existentes; primaria = la de frecuencia más fina disponible
         resueltas = []
         for f in hoja["fuentes"]:
             if not f["file"].lower().endswith(".csv"):
                 continue
-            p = carpeta / f["file"]
-            if p.exists():
+            r = _resolver(f["file"], indice, carpeta)
+            if r is not None:
                 g = dict(f)
-                g["path"] = str(p)
+                g["path"], g["origen"] = str(r[0]), r[1]
                 resueltas.append(g)
         if not resueltas:
             continue
@@ -235,7 +278,7 @@ def catalogo() -> dict[str, SerieInfo]:
         cat[hoja["id"]] = SerieInfo(
             id=hoja["id"],
             nombre=hoja["etiqueta"],
-            origen="Trabajo Final",
+            origen=prim["origen"],
             archivo=prim["path"],
             col_fecha=col_fecha,
             col_valor=prim["valCol"],
@@ -365,3 +408,120 @@ def panel(sids: list[str], freq: str = "mensual"):
     if not cols:
         return pd.DataFrame()
     return pd.concat(cols, axis=1).dropna(how="all")
+
+
+# ── Explorar: ficha, datos listos para graficar y estado por familia ─────────
+_NATIVA = {"D": "diaria", "W": "semanal", "M": "mensual", "Q": "trimestral", "A": "anual"}
+
+
+def tipo_agregacion(etiqueta: str, unidad: str) -> str:
+    """Cómo se agrega la serie al bajar de frecuencia: 'ult' (stock, fin de período),
+    'comp' (tasa mensual que se compone) o 'prom' (promedio).
+
+    El catálogo todavía no lo declara, así que es una REGLA sobre etiqueta y unidad; la UI la
+    muestra como supuesto. Cuando `proc` traiga `agregacion`, esa manda."""
+    e, u = etiqueta.lower(), unidad.lower()
+    if "%" in u and ("mensual" in u or "mensual" in e) and ("inflaci" in e or "var" in e or "ipc" in e):
+        return "comp"
+    if "%" in u or "tna" in u or "pb" == u.strip() or "tasa" in e:
+        return "prom"
+    if any(
+        k in e for k in ("saldo", "reservas", "stock", "base monetaria", "deuda", "depósitos", "préstamos")
+    ):
+        return "ult"
+    return "prom"
+
+
+def _item_crudo(sid: str) -> tuple[str, str, dict] | None:
+    """(familia, subgrupo, item) tal como está en catalogo.json, o None."""
+    if not _RUTA_CATALOGO.exists():
+        return None
+    doc = json.loads(_RUTA_CATALOGO.read_text(encoding="utf-8"))
+    for g, s, item in _iter_hojas(doc.get("familias", [])):
+        if item.get("id") == sid:
+            return g, s, item
+    return None
+
+
+def ficha(sid: str) -> dict:
+    """Metadatos de una serie para la ficha de Explorar: catálogo + procedencia + archivo."""
+    cat = catalogo()
+    if sid not in cat:
+        raise KeyError(f"Serie desconocida: {sid}")
+    info = cat[sid]
+    crudo = _item_crudo(sid)
+    item = crudo[2] if crudo else {}
+    prim = info.fuentes[0] if info.fuentes else {}
+    proc = dict(item.get("proc") or {})
+    # una serie con varias frecuencias puede tener `proc` por fuente: vale el de la primaria
+    for f in item.get("sources") or []:
+        if f.get("file") == prim.get("file") and f.get("proc"):
+            proc = dict(f["proc"])
+    raiz = config.carpeta_series()
+    try:
+        archivo = Path(info.archivo).resolve().relative_to(raiz.resolve()).as_posix()
+    except ValueError:
+        archivo = Path(info.archivo).name
+    freq = prim.get("freq", "")
+    return {
+        "id": info.id,
+        "nombre": info.nombre,
+        "unidad": info.unidad,
+        "familia": info.grupo,
+        "subgrupo": info.subgrupo,
+        "origen": info.origen,
+        "archivo": archivo,
+        "frecuencia_nativa": _NATIVA.get(freq, freq or "—"),
+        "frecuencias": sorted({f.get("freq", "") for f in info.fuentes}, key=lambda f: _ORD_FREQ.get(f, 9)),
+        "desde": info.desde,
+        "hasta": info.hasta,
+        "agregacion": proc.get("agregacion") or tipo_agregacion(info.nombre, info.unidad),
+        "agregacion_supuesta": not proc.get("agregacion"),
+        "proc": proc,
+    }
+
+
+def datos_explorar(sid: str) -> dict:
+    """Ficha + valores para Explorar. Lo diario/semanal se baja a MENSUAL acá (con la regla
+    de agregación de la ficha) para no mandar miles de puntos; lo mensual o más grueso viaja
+    en su frecuencia nativa y el navegador lo agrega a trimestral/anual."""
+    import pandas as pd
+
+    f = ficha(sid)
+    s = cargar(sid)
+    nativa = f["frecuencias"][0] if f["frecuencias"] else "M"
+    entrega = nativa
+    if nativa in ("D", "W"):
+        regla = {"ult": "last", "comp": "mean", "prom": "mean"}[f["agregacion"]]
+        s = s.resample("ME").agg(regla).dropna()
+        entrega = "M"
+    s = s[pd.notna(s.values)]
+    if len(s):  # el catálogo calcula el rango sobre un encabezado; acá va el real
+        f["desde"], f["hasta"] = str(s.index.min().date()), str(s.index.max().date())
+    return {
+        **f,
+        "frecuencia_entrega": entrega,
+        "fechas": [d.strftime("%Y-%m-%d") for d in s.index],
+        "valores": [float(v) for v in s.values],
+    }
+
+
+def resumen_familias() -> list[dict]:
+    """Por familia del catálogo: entradas totales, cuántas resuelven en data/series y cuántas
+    siguen colgadas del Trabajo Final. Es el «datos conectados» de Explorar."""
+    cat = catalogo()
+    orden: list[str] = []
+    cuentas: dict[str, dict] = {}
+    for hoja in _cargar_definicion_curada():
+        g = hoja["grupo"]
+        if g not in cuentas:
+            orden.append(g)
+            cuentas[g] = {"familia": g, "total": 0, "conectadas": 0, "trabajo_final": 0}
+        c = cuentas[g]
+        c["total"] += 1
+        info = cat.get(hoja["id"])
+        if info is not None and info.origen == ORIGEN_DATA_SERIES:
+            c["conectadas"] += 1
+        elif info is not None:
+            c["trabajo_final"] += 1
+    return [cuentas[g] for g in orden]

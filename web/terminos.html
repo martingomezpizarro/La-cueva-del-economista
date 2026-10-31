@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Términos y condiciones · La Cueva del Economista</title>
+<meta name="description" content="Términos y condiciones de uso, descargos de responsabilidad y política de privacidad de La Cueva del Economista.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/web/estilo/tokens.css">
+<link rel="stylesheet" href="/web/estilo/pie.css">
+<script src="/web/estilo/tema.js"></script>
+<script src="/web/estilo/sitio.js"></script>
+<style>
+  /* Página de lectura: a diferencia de las pantallas de trabajo, ésta scrollea. */
+  body{min-height:100vh; display:flex; flex-direction:column}
+  .topbar{position:sticky; top:0; z-index:10}
+  .doc{flex:1; width:100%; max-width:760px; margin:0 auto; padding:36px 16px 56px}
+  .doc h1{font-family:var(--display); font-weight:700; font-size:clamp(26px,4.4vw,34px); line-height:1.15; letter-spacing:-.015em; margin:0 0 8px; color:var(--ink)}
+  .doc .bajada{color:var(--ink-dim); margin:0 0 26px; font-size:13.5px}
+  .doc h2{font-family:var(--display); font-weight:600; font-size:20px; margin:34px 0 10px; color:var(--ink); scroll-margin-top:68px}
+  .doc h3{font-size:14px; margin:20px 0 6px; color:var(--ink)}
+  .doc p, .doc li{color:var(--ink-2); line-height:1.65; font-size:14.5px}
+  .doc ul{padding-left:20px}
+  .doc li{margin:4px 0}
+  .doc .indice{background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:14px 18px; margin:0 0 8px}
+  .doc .indice ol{margin:6px 0 0; padding-left:20px; columns:2; column-gap:28px}
+  .doc .indice li{font-size:13.5px; margin:3px 0; break-inside:avoid}
+  .doc .destacado{background:var(--accent-soft); border:1px solid var(--accent-line); border-radius:var(--r); padding:12px 14px; margin:12px 0}
+  .doc .destacado p{margin:0; color:var(--ink)}
+  @media (max-width:600px){ .doc .indice ol{columns:1} .topbar .modswitch{display:none} }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <a class="brand" href="/" style="text-decoration:none; color:inherit">
+    <svg class="glyph" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M3 21V13.5C3 7.7 7 3.5 12 3.5S21 7.7 21 13.5V21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".38"/>
+      <path d="M4.5 21l3.2-5.1 3 3.4 3.4-7.3 2.6 4.6 2.8-3.2" stroke="var(--accent)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    </svg>
+    <div class="brand-name">La Cueva del <em>Economista</em></div>
+  </a>
+  <nav class="modswitch" aria-label="Módulos">
+    <a href="/tiempo">Línea de Tiempo</a>
+    <a href="/mesa">Mesa de Trabajo</a>
+  </nav>
+  <div class="topright">
+    <button class="iconbtn" id="tema" title="Cambiar tema" aria-label="Cambiar tema">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="3.4" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v1.6M8 13.4V15M15 8h-1.6M2.6 8H1M12.9 3.1l-1.1 1.1M4.2 11.8l-1.1 1.1M12.9 12.9l-1.1-1.1M4.2 4.2L3.1 3.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+</header>
+
+<main class="doc">
+  <h1>Términos y condiciones de uso</h1>
+  <p class="bajada">Última actualización: <span data-sitio="actualizado"></span> · Responsable: <span data-sitio="autor"></span> (<span data-sitio="email"></span>)</p>
+
+  <nav class="indice" aria-label="Contenido">
+    <span class="lbl">Contenido</span>
+    <ol>
+      <li><a href="#que-es">Qué es este sitio</a></li>
+      <li><a href="#alcance">Alcance y garantías</a></li>
+      <li><a href="#financiero">No es asesoramiento financiero</a></li>
+      <li><a href="#datos">Datos y fuentes</a></li>
+      <li><a href="#historia">Contenido histórico</a></li>
+      <li><a href="#herramientas">Herramientas y modelos</a></li>
+      <li><a href="#ia">Asistentes de inteligencia artificial</a></li>
+      <li><a href="#terceros">Enlaces a terceros</a></li>
+      <li><a href="#propiedad">Propiedad intelectual</a></li>
+      <li><a href="#colaboraciones">Colaboraciones</a></li>
+      <li><a href="#privacidad">Privacidad y datos personales</a></li>
+      <li><a href="#jurisdiccion">Cambios y jurisdicción</a></li>
+    </ol>
+  </nav>
+
+  <h2 id="que-es">1. Qué es este sitio</h2>
+  <p><span data-sitio="proyecto"></span> es un proyecto independiente y gratuito, desarrollado por <span data-sitio="autor"></span>, para estudiar la economía argentina y hacer análisis econométrico de series de tiempo. Reúne series económicas de fuentes públicas, una línea de tiempo de la historia económica argentina, herramientas de análisis y asistentes basados en inteligencia artificial. Al usar el sitio aceptás estos términos.</p>
+
+  <h2 id="alcance">2. Alcance y garantías</h2>
+  <ul>
+    <li>El contenido es <b>informativo y educativo</b> y se ofrece «tal cual», sin garantías de exactitud, integridad ni actualización.</li>
+    <li>El autor no se responsabiliza por las decisiones que se tomen con base en el sitio ni por daños directos o indirectos derivados de su uso o de su información.</li>
+    <li>Puede haber errores, interrupciones del servicio o cambios en el contenido y las funciones sin previo aviso.</li>
+    <li>Quien use la información para un trabajo académico, una publicación o una decisión es responsable de verificarla en la fuente original.</li>
+  </ul>
+
+  <h2 id="financiero">3. No es asesoramiento financiero</h2>
+  <div class="destacado"><p>La información no constituye asesoramiento, recomendación ni oferta de compra o venta de valores negociables o instrumentos financieros, en los términos de la Ley 26.831 de Mercado de Capitales y la normativa de la Comisión Nacional de Valores (CNV).</p></div>
+  <p>El sitio muestra tasas de interés, tipos de cambio, indicadores de riesgo, precios y pronósticos estadísticos con fines de estudio. Rentabilidades pasadas no garantizan rentabilidades futuras. Invertir implica riesgos, incluida la pérdida del capital. Consultá con un profesional idóneo antes de tomar decisiones. Este sitio no presta servicios de asesoramiento ni de intermediación.</p>
+
+  <h2 id="datos">4. Datos y fuentes</h2>
+  <ul>
+    <li>Las series provienen principalmente de fuentes públicas: <span data-sitio="fuentes"></span>, entre otras. Cada serie indica su origen (organismo, definición y, si corresponde, la transformación aplicada) en su ficha.</li>
+    <li><b>Este no es un sitio oficial</b> ni una publicación de esos organismos, y no tiene afiliación con ellos.</li>
+    <li>Los datos pueden tener <b>rezagos</b> respecto de la publicación original, <b>revisiones</b> posteriores del organismo que todavía no se incorporaron, y <b>transformaciones propias</b>: empalmes, cambios de frecuencia, deflactaciones, desestacionalizaciones o estimaciones (por ejemplo, series mensuales estimadas a partir de datos trimestrales). Las series de elaboración propia están marcadas como tales.</li>
+    <li>Algunos datos de terceros (por ejemplo, índices de proveedores privados o compilaciones académicas) tienen licencias que restringen su redistribución; se muestran con cita a su fuente y conservan su licencia original.</li>
+  </ul>
+
+  <h2 id="historia">5. Contenido histórico</h2>
+  <p>La línea de tiempo, las cronologías y las fichas históricas se elaboran a partir de bibliografía y fuentes citadas en cada caso. Están en construcción: muchas entradas figuran como <b>«sin verificar»</b> hasta su control contra fuentes oficiales, y pueden contener errores u omisiones. Las interpretaciones de la historiografía citada pertenecen a sus autores.</p>
+
+  <h2 id="herramientas">6. Herramientas y modelos</h2>
+  <p>Los resultados de las herramientas de análisis (pruebas estadísticas, regresiones, filtros, pronósticos y demás) son estimaciones basadas en supuestos y en los datos y parámetros que elige quien las usa. Dependen de la especificación del modelo y no reemplazan el análisis profesional.</p>
+
+  <h2 id="ia">7. Asistentes de inteligencia artificial</h2>
+  <p>Parte del contenido se genera o se asiste con inteligencia artificial: los agentes de la Mesa de Trabajo responden con modelos de lenguaje de terceros, apoyados en una base bibliográfica. Sus respuestas <b>pueden contener errores</b>, citas imprecisas o conclusiones equivocadas, aunque se presenten con seguridad. Verificá siempre lo que digan antes de usarlo. Parte del código y de la documentación del proyecto también se desarrolló con asistencia de IA.</p>
+
+  <h2 id="terceros">8. Enlaces a terceros</h2>
+  <p>Los enlaces a sitios de terceros se ofrecen por conveniencia y no implican aval. El autor no responde por su contenido, disponibilidad ni políticas.</p>
+
+  <h2 id="propiedad">9. Propiedad intelectual</h2>
+  <p><span data-sitio="licencia"></span> Esto alcanza al código, al diseño y a los textos propios del sitio. Los datos, obras y bibliografía de terceros pertenecen a sus titulares y conservan sus licencias; se citan con fines académicos.</p>
+
+  <h2 id="colaboraciones">10. Colaboraciones</h2>
+  <p>El proyecto es gratuito. Las colaboraciones son voluntarias, no constituyen contraprestación por ningún servicio ni otorgan derechos sobre el contenido.</p>
+
+  <h2 id="privacidad">11. Privacidad y datos personales</h2>
+  <p>Este apartado se rige por la Ley 25.326 de Protección de Datos Personales.</p>
+  <h3>Qué se guarda</h3>
+  <ul>
+    <li><b>Lo que cargás en un proyecto</b>: título, pregunta, objetivos, notas, series elegidas, conversaciones con los agentes e informe. Se guarda en el servidor para que el proyecto se pueda retomar. La «Vista Rápida» no se guarda en el servidor.</li>
+    <li><b>Archivos que subas</b> a la bibliografía propia (PDF, texto): se guardan y se indexan para que los agentes los puedan citar.</li>
+    <li><b>Preferencias en tu navegador</b> (almacenamiento local): tema claro u oscuro, modo de trabajo, proyecto activo y posición de algunos controles. Quedan en tu dispositivo y no se usan para rastrearte.</li>
+    <li><b>Registros técnicos</b> que genera el servidor al atender pedidos (por ejemplo, fecha, ruta pedida y dirección IP), con fines de funcionamiento y seguridad.</li>
+  </ul>
+  <h3>Para qué y con quién</h3>
+  <ul>
+    <li>Los datos se usan solo para prestar las funciones del sitio. <b>No se venden ni se ceden</b> con fines comerciales.</li>
+    <li>Cuando consultás a un agente, el texto de tu consulta y el contexto del proyecto se envían a un proveedor de modelos de lenguaje para generar la respuesta. Las tipografías se cargan desde Google Fonts, que recibe la dirección IP del navegador.</li>
+    <li>El sitio no usa herramientas de analítica ni cookies publicitarias.</li>
+  </ul>
+  <h3>Recomendación importante</h3>
+  <p>Por ahora el sitio no tiene cuentas de usuario: los proyectos y archivos cargados <b>no son privados</b>. No cargues datos personales, información confidencial ni material que no tengas derecho a compartir.</p>
+  <h3>Tus derechos</h3>
+  <p>Podés pedir el acceso, la rectificación o la eliminación de tus datos escribiendo a <span data-sitio="email"></span>. La Agencia de Acceso a la Información Pública, en su carácter de órgano de control de la Ley 25.326, atiende las denuncias y reclamos que se interpongan con relación al incumplimiento de las normas sobre protección de datos personales.</p>
+
+  <h2 id="jurisdiccion">12. Cambios y jurisdicción</h2>
+  <p>Estos términos pueden modificarse; la versión vigente es la publicada en esta página, con su fecha de actualización. Se rigen por las leyes de la <span data-sitio="jurisdiccion"></span>. Consultas: <span data-sitio="email"></span>.</p>
+</main>
+
+<footer data-cueva-pie="completo"></footer>
+
+<script>document.getElementById('tema').addEventListener('click', () => window.CuevaTema.alternar());</script>
+<script src="/web/estilo/pie.js"></script>
+</body>
+</html>

@@ -1,1062 +1,346 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mesa de Trabajo · La Cueva del Economista</title>
+<title>La Cueva del Economista</title>
+<meta name="description" content="Series económicas argentinas con fuente, historia económica desde 1880 y herramientas de análisis econométrico, en un solo lugar.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;1,9..144,500&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="/web/estilo/tokens.css">
+<link rel="stylesheet" href="/web/estilo/pie.css">
 <script src="/web/estilo/tema.js"></script>
+<script src="/web/estilo/sitio.js"></script>
 <style>
-  /* ── PUENTE hacia el sistema de diseño compartido ─────────────────────
-     Los nombres viejos de esta pantalla (--bg, --panel, --txt…) ya no definen
-     colores: apuntan a los tokens de /web/estilo/tokens.css. Así el CSS que ya
-     estaba sigue funcionando tal cual, pero la Mesa cambia de claro a oscuro
-     con el resto de la plataforma.
-     Regla para lo NUEVO: usar los tokens directamente (--surface, --ink,
-     --accent…), no estos alias, que se van a ir borrando.
-     ------------------------------------------------------------------- */
-  :root{
-    --bg:var(--ground); --panel:var(--surface); --panel2:var(--surface-2);
-    --txt:var(--ink); --muted:var(--ink-dim);
-    --acc:var(--accent); --acc-dk:var(--accent); --acc2:var(--warn);
-    --blue:var(--s1); --purple:var(--s5);
-    --side:48px;
+  /* Portada: página de lectura (scrollea), a diferencia de los módulos a 100vh.
+     Sólo tokens de tokens.css; lo decorativo es SVG en línea, sin datos inventados. */
+  body{min-height:100vh; display:flex; flex-direction:column}
+  .topbar{position:sticky; top:0; z-index:10}
+  .topbar .entrar{display:none}
+  .ancho{width:100%; max-width:1120px; margin:0 auto; padding:0 16px}
+  main{flex:1}
+  h1,h2,h3{color:var(--ink)}
+  .eyebrow{font-family:var(--mono); font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); margin:0 0 14px}
+
+  /* ── hero ───────────────────────────────────────────────────────── */
+  .hero{position:relative; overflow:hidden; border-bottom:1px solid var(--line)}
+  .hero-grid{display:grid; grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr); gap:40px; align-items:center; padding-top:64px; padding-bottom:56px}
+  .hero h1{font-family:var(--display); font-weight:700; font-size:clamp(34px,5.2vw,58px); line-height:1.04; letter-spacing:-.025em; margin:0 0 18px}
+  .hero h1 em{font-style:italic; font-weight:500; color:var(--accent)}
+  .hero .bajada{font-size:clamp(15px,1.6vw,17.5px); line-height:1.6; color:var(--ink-2); max-width:54ch; margin:0 0 28px}
+  .ctas{display:flex; flex-wrap:wrap; gap:10px}
+  .cta{display:inline-flex; align-items:center; gap:8px; padding:11px 18px; border-radius:var(--r-lg); font-size:14px; font-weight:600; text-decoration:none; border:1px solid var(--line); background:var(--surface); color:var(--ink)}
+  .cta:hover{border-color:var(--ink-faint)}
+  .cta.primaria{background:var(--accent); color:var(--accent-ink); border-color:var(--accent)}
+  .cta.primaria:hover{filter:brightness(1.06)}
+  .cifras{display:flex; flex-wrap:wrap; gap:26px; margin:34px 0 0; padding:0; list-style:none}
+  .cifras li{display:flex; flex-direction:column; gap:2px}
+  .cifras b{font-family:var(--display); font-size:28px; font-weight:700; color:var(--ink); line-height:1}
+  .cifras span{font-size:12px; color:var(--ink-dim)}
+  .cifras[data-cargando] b{color:var(--ink-faint)}
+
+  .pizarron{position:relative; aspect-ratio:1/0.86; border-radius:18px; background:var(--surface);
+    border:1px solid var(--line); box-shadow:var(--shadow); overflow:hidden}
+  .pizarron svg{position:absolute; inset:0; width:100%; height:100%}
+  .tiza{stroke:var(--ink-2); fill:none; stroke-linecap:round; stroke-linejoin:round}
+  .tiza-acento{stroke:var(--accent); fill:none; stroke-linecap:round; stroke-linejoin:round}
+  .tiza-txt{font-family:var(--mono); font-size:10.5px; fill:var(--ink-dim)}
+  .tiza-era{font-family:var(--display); font-style:italic; font-size:13px; fill:var(--ink-2)}
+  .polvo circle{fill:var(--ink-faint); opacity:.35}
+
+  /* ── secciones ──────────────────────────────────────────────────── */
+  .seccion{padding:72px 0}
+  .seccion + .seccion{border-top:1px solid var(--line-soft)}
+  .seccion h2{font-family:var(--display); font-weight:700; font-size:clamp(26px,3.4vw,36px); letter-spacing:-.02em; line-height:1.12; margin:0 0 10px}
+  .seccion .intro{color:var(--ink-2); max-width:62ch; margin:0 0 34px; font-size:15px; line-height:1.6}
+
+  .modulos{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:22px}
+  .modulo{display:flex; flex-direction:column; background:var(--surface); border:1px solid var(--line); border-radius:16px; overflow:hidden}
+  .modulo .vista{background:var(--sunken); border-bottom:1px solid var(--line); aspect-ratio:16/8.4; position:relative}
+  .modulo .vista svg{position:absolute; inset:0; width:100%; height:100%}
+  .wf{fill:var(--surface); stroke:var(--line)}
+  .wf2{fill:var(--surface-2)}
+  .wfl{stroke:var(--line); fill:none}
+  .modulo .cuerpo{padding:22px 24px 24px; display:flex; flex-direction:column; flex:1}
+  .modulo h3{font-family:var(--display); font-size:22px; margin:0 0 4px; display:flex; align-items:center; gap:10px}
+  .modulo .sub{font-size:12.5px; color:var(--ink-dim); margin:0 0 14px; font-family:var(--mono)}
+  .modulo ul{margin:0 0 20px; padding:0; list-style:none; display:flex; flex-direction:column; gap:8px}
+  .modulo li{display:flex; gap:10px; font-size:14px; color:var(--ink-2); line-height:1.5}
+  .modulo li::before{content:""; flex:0 0 6px; height:6px; margin-top:8px; border-radius:50%; background:var(--accent)}
+  .modulo .acciones{margin-top:auto; display:flex; flex-wrap:wrap; gap:8px}
+
+  .pasos{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:18px; counter-reset:paso; margin:0; padding:0; list-style:none}
+  .paso{position:relative; padding:24px 22px 22px; background:var(--surface); border:1px solid var(--line); border-radius:14px}
+  .paso::before{counter-increment:paso; content:counter(paso); font-family:var(--display); font-weight:700; font-size:44px; line-height:1;
+    color:var(--accent); opacity:.9; display:block; margin-bottom:10px}
+  .paso h3{font-size:16.5px; margin:0 0 6px}
+  .paso p{margin:0; font-size:14px; line-height:1.55; color:var(--ink-2)}
+  .paso + .paso::after{content:""; position:absolute; left:-18px; top:44px; width:18px; border-top:1px dashed var(--line)}
+  .guia{margin:22px 0 0; display:flex; flex-wrap:wrap; align-items:center; gap:10px 16px; font-size:14px; color:var(--ink-2)}
+
+  .datos{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:34px; align-items:start}
+  .fuentes{display:flex; flex-wrap:wrap; gap:8px; margin:0 0 18px; padding:0; list-style:none}
+  .fuentes li{font-family:var(--mono); font-size:12.5px; padding:5px 11px; border-radius:100px; background:var(--surface); border:1px solid var(--line); color:var(--ink-2)}
+  .principios{display:flex; flex-direction:column; gap:14px; margin:0; padding:0; list-style:none}
+  .principios li{padding:14px 16px; border-left:3px solid var(--accent-line); background:var(--surface); border-radius:0 var(--r) var(--r) 0}
+  .principios b{display:block; color:var(--ink); margin-bottom:2px; font-size:14px}
+  .principios span{font-size:13.5px; color:var(--ink-2); line-height:1.55}
+  .aviso-legal{font-size:12.5px; color:var(--ink-dim); margin:18px 0 0}
+
+  @media (max-width:880px){
+    .hero-grid{grid-template-columns:1fr; padding-top:40px; gap:30px}
+    .pizarron{aspect-ratio:1/0.62}
+    .modulos, .datos{grid-template-columns:1fr}
+    .pasos{grid-template-columns:1fr}
+    .paso + .paso::after{display:none}
+    .seccion{padding:52px 0}
   }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:var(--sans);background:var(--ground);color:var(--ink);
-    font-size:14px;line-height:1.45;overflow:hidden;display:flex;flex-direction:column;height:100vh}
-  /* la topbar viene de tokens.css (.topbar/.brand/.modswitch/.topright); acá sólo lo propio */
-  .topbar{flex-wrap:wrap; gap:12px}
-  .topbar .topright{gap:7px}
-  header select#proj-select{width:auto;max-width:220px;padding:5px 8px;font-size:12px;
-    background:var(--sunken);border:1px solid var(--line);border-radius:var(--r);color:var(--ink)}
-  .pill{padding:1px 8px;border-radius:999px;border:1px solid var(--line);font-size:11px;white-space:nowrap;color:var(--ink-dim)}
-  .pill.on{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 32%,transparent)}
-  .pill.off{color:var(--warn);border-color:color-mix(in srgb,var(--warn) 32%,transparent)}
-
-  .rbtn{background:var(--surface);color:var(--ink-2);border:1px solid var(--line);border-radius:var(--r);
-    padding:5px 11px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex:none}
-  .rbtn:hover{border-color:var(--ink-faint);color:var(--ink)}
-  .rbtn.activa{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-  .rbtn.mini{font-weight:500;padding:4px 9px;font-size:11.5px}
-
-  /* ── cuerpo: visualizador + rail de herramientas a la derecha ──────── */
-  #body-row{display:flex;flex:1;min-height:0}
-  #sidebar{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 0;
-    width:var(--side);flex:none;background:var(--panel);border-left:1px solid var(--line)}
-  .sbtn{width:36px;height:36px;background:none;color:var(--muted);border:1px solid transparent;
-    border-radius:8px;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center}
-  .sbtn:hover{background:var(--panel2);color:var(--txt)}
-  .sbtn.activa{background:var(--surface-2);color:var(--accent);border-color:var(--line)}
-  .side-sep{width:24px;height:1px;background:var(--line);margin:4px 0;flex:none}
-
-  /* ── vista principal: el visualizador ──────────────────────────────── */
-  #viz-wrap{position:relative;flex:1;min-width:0}
-  #viz-frame{width:100%;height:100%;border:0;display:block;background:var(--ground)}
-  .viz-fallback{max-width:640px;margin:60px auto;text-align:center;color:var(--muted);padding:0 20px}
-  .viz-fallback h2{color:var(--ink);font-family:var(--display);font-size:17px}
-  .viz-fallback code{background:var(--panel2);border:1px solid var(--line);border-radius:5px;padding:1px 6px}
-
-  /* ── drawers (paneles laterales sobre el iframe) ───────────────────── */
-  #overlay{position:fixed;inset:0;background:rgba(0,0,0,.34);z-index:30;display:none}
-  #overlay.on{display:block}
-  .drawer{position:fixed;top:0;right:0;bottom:0;width:420px;max-width:96vw;background:var(--panel);
-    border-left:1px solid var(--line);z-index:40;display:none;flex-direction:column;
-    box-shadow:var(--shadow)}
-  .drawer.on{display:flex}
-  .drawer.ancho{width:740px}
-  .drawer.informe{width:min(880px,94vw)}
-  .drawer .dhead{display:flex;align-items:center;gap:10px;padding:11px 16px;background:var(--panel2);
-    border-bottom:1px solid var(--line);flex:none}
-  .drawer .dhead b{font-size:13.5px}
-  .drawer .dhead button{margin-left:auto;background:none;border:0;color:var(--muted);cursor:pointer;font-size:17px}
-  .drawer .dbody{flex:1;overflow:auto;padding:14px 16px}
-
-  /* selector de series de la investigación: drawer derecho con pestañas de categoría */
-  .cat-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;margin-bottom:2px}
-  .cat-tab{background:none;border:1px solid var(--line);color:var(--muted);border-radius:999px;
-    padding:5px 12px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;flex:none}
-  .cat-tab:hover{color:var(--txt)}
-  .cat-tab.activa{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-
-  label{display:block;font-size:12px;color:var(--muted);margin:10px 0 4px}
-  input,textarea,select{width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);
-    border-radius:7px;padding:8px 10px;font-size:13px;font-family:inherit}
-  textarea{resize:vertical;min-height:54px}
-  .btn{display:block;background:var(--accent);color:var(--accent-ink);border:1px solid var(--accent);border-radius:var(--r);
-    padding:10px 14px;font-size:13px;font-weight:600;cursor:pointer;width:100%;margin-top:14px;text-align:center}
-  .btn:hover{filter:brightness(1.06)}
-  .btn:disabled{opacity:.5;cursor:not-allowed}
-  .btn.sec{background:var(--surface);color:var(--ink-2);border:1px solid var(--line);font-weight:500;margin-top:8px;width:auto}
-  .btn.sec:hover{border-color:var(--ink-faint);color:var(--ink);filter:none}
-  .btn.sm{padding:6px 10px;font-size:12px;margin-top:0;width:auto}
-  .serie-box{border:1px solid var(--line);border-radius:8px;background:var(--panel2);max-height:300px;overflow:auto;margin-top:8px}
-  .serie{display:flex;align-items:center;gap:7px;padding:5px 9px;border-bottom:1px solid var(--line-soft);cursor:pointer;font-size:12px}
-  .serie:hover{background:var(--surface-2)}.serie small{color:var(--muted);margin-left:auto;white-space:nowrap}
-  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-  .chip{display:flex;align-items:center;gap:6px;background:var(--info-soft);
-    border:1px solid color-mix(in srgb,var(--info) 30%,transparent);color:var(--info);
-    padding:3px 8px;border-radius:999px;font-size:11px}
-  .chip b{cursor:pointer;color:var(--muted)}
-  .chip.dep{background:var(--accent-soft);border-color:var(--accent-line);color:var(--accent)}
-  .row2{display:flex;gap:8px}.row2>*{flex:1}
-
-  /* pizarra (feed de la mesa) */
-  .feed{max-width:100%;margin:0}
-  .vacio{color:var(--muted);text-align:center;margin-top:60px}
-  .fase{display:flex;align-items:center;gap:10px;margin:26px 0 8px;color:var(--accent);font-weight:600;font-size:13px}
-  .fase:before,.fase:after{content:"";flex:1;height:1px;background:var(--line)}
-  .msg{display:flex;gap:11px;margin:12px 0;animation:ap .25s ease}
-  @keyframes ap{from{opacity:0;transform:translateY(6px)}to{opacity:1}}
-  .av{width:32px;height:32px;border-radius:8px;flex:none;display:flex;align-items:center;justify-content:center;
-    font-size:16px;background:var(--panel2);border:1px solid var(--line)}
-  .bub{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 13px;flex:1;min-width:0}
-  .bub .quien{font-size:12px;font-weight:600;margin-bottom:3px;display:flex;gap:8px;align-items:center}
-  .bub .quien .a{color:var(--purple);font-weight:500}
-  .bub .cuerpo{white-space:pre-wrap;font-size:13px}
-  .bub .citas{margin-top:6px;font-size:11px;color:var(--muted)}
-  .bub .citas span{background:var(--sunken);border:1px solid var(--line);border-radius:5px;padding:1px 6px;margin-right:5px}
-  .m-orq .bub{background:var(--sunken);border-style:dashed}
-  .m-orq .av{background:var(--sunken)}
-  .m-tool .bub{background:var(--ok-soft);border-color:color-mix(in srgb,var(--ok) 32%,transparent)}
-  .m-tool .cuerpo{font-family:var(--mono);font-size:12px;color:var(--ok)}
-  .hall{background:var(--warn-soft);border:1px solid color-mix(in srgb,var(--warn) 30%,transparent);
-    border-radius:8px;padding:8px 12px;margin:8px 0;font-size:12.5px}
-  .hall b{color:var(--warn)}
-  .typing{color:var(--muted);font-size:12px;margin:10px 0}
-
-  /* notas */
-  .nota{background:var(--surface-2);border:1px solid var(--line-soft);border-radius:var(--r);padding:7px 9px;margin-bottom:6px;font-size:12.5px;white-space:pre-wrap}
-  .nota .ts{color:var(--muted);font-size:10.5px;display:block;margin-top:3px}
-
-  /* informe */
-  .inf-sec{border:1px solid var(--line);border-radius:9px;background:var(--panel2);margin-bottom:14px;overflow:hidden}
-  .inf-sec .inf-head{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--surface-2)}
-  .inf-sec .inf-head b{font-size:13px}
-  .inf-sec .inf-head .sp{margin-left:auto;display:flex;gap:6px}
-  .inf-sec .inf-body{padding:12px 14px}
-  .inf-sec.oculta .inf-body{display:none}
-  .inf-sec textarea{min-height:110px;background:var(--panel)}
-  .inf-icon{background:none;border:1px solid var(--line);border-radius:6px;color:var(--muted);cursor:pointer;
-    font-size:12px;padding:4px 8px}
-  .inf-icon:hover{color:var(--txt)}
-  .inf-lista{list-style:none;margin:0;padding:0;font-size:12.5px}
-  .inf-lista li{padding:5px 0;border-bottom:1px solid var(--line)}
-  .inf-lista li:last-child{border-bottom:0}
-  .agentpick{display:flex;gap:6px;margin-top:8px}
-
-  /* ── FAB: círculo flotante de agentes ──────────────────────────────── */
-  #fab{position:fixed;width:52px;height:52px;border-radius:50%;z-index:70;cursor:grab;
-    background:var(--accent);color:var(--accent-ink);border:1px solid var(--accent-line);
-    display:flex;align-items:center;justify-content:center;font-size:23px;user-select:none;
-    box-shadow:var(--shadow);touch-action:none}
-  #fab:active{cursor:grabbing}
-  #fab-menu{position:fixed;z-index:71;background:var(--panel);border:1px solid var(--line);border-radius:12px;
-    box-shadow:var(--shadow);padding:6px;display:none;flex-direction:column;gap:4px;min-width:170px}
-  #fab-menu.on{display:flex}
-  .fmi{display:flex;align-items:center;gap:9px;background:none;border:0;color:var(--txt);cursor:pointer;
-    padding:8px 10px;font-size:12.5px;border-radius:8px;text-align:left}
-  .fmi:hover{background:var(--panel2)}
-  .fmi span.e{font-size:17px}
-
-  /* panel de chat flotante */
-  #chatpanel{position:fixed;right:18px;bottom:18px;width:380px;height:min(540px,72vh);background:var(--panel);
-    border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);display:none;
-    flex-direction:column;z-index:72;overflow:hidden}
-  #chatpanel.on{display:flex}
-  #chatpanel .chead{display:flex;align-items:center;padding:10px 12px;background:var(--panel2);border-bottom:1px solid var(--line)}
-  #chatpanel .chead b{font-size:13px}
-  #chatpanel .chead button{background:none;border:0;color:var(--muted);cursor:pointer;font-size:16px;margin-left:auto}
-  #chat-msgs{flex:1;overflow:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
-  .cmsg{border-radius:8px;padding:7px 10px;font-size:12.5px;white-space:pre-wrap;max-width:88%}
-  .cmsg.usuario{align-self:flex-end;background:var(--accent-soft);color:var(--ink)}
-  .cmsg.agente{align-self:flex-start;background:var(--panel2);border:1px solid var(--line)}
-  #chat-input-row{display:flex;gap:6px;padding:10px;border-top:1px solid var(--line)}
-  #chat-input-row textarea{min-height:40px}
-  a{color:var(--accent)}
-
-  /* ── modo Vista Rápida / Proyecto ─────────────────────────────────── */
-  #modo-switch{display:flex;background:var(--sunken);border:1px solid var(--line-soft);border-radius:var(--r);padding:2px;flex:none}
-  .modo-btn{background:none;border:0;border-radius:4px;color:var(--ink-dim);font-size:11.5px;font-weight:500;padding:3.5px 10px;cursor:pointer;white-space:nowrap}
-  .modo-btn:hover{color:var(--txt)}
-  .modo-btn.activa{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)}
-  .ctl{display:flex;align-items:center;gap:6px;min-width:0}
-  .pill.efimera{color:var(--warn);background:var(--warn-soft);border-color:color-mix(in srgb,var(--warn) 30%,transparent)}
-  .sbtn.gated{opacity:.28;cursor:not-allowed}
-
-  /* ── modal para nombrar proyectos (crear / renombrar / promover) ───── */
-  #modal-nombre-bg{position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:90;display:none;align-items:center;justify-content:center}
-  #modal-nombre-bg.on{display:flex}
-  #modal-nombre{width:min(440px,92vw);background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:18px 20px;box-shadow:var(--shadow)}
-  #modal-nombre b{font-size:14px}
-  #modal-nombre .hint{color:var(--muted);font-size:11.5px;margin-top:6px;line-height:1.5}
-  #modal-nombre input{margin-top:12px}
-  #modal-nombre .mn-row{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
-  #modal-nombre .mn-row .btn{width:auto;margin-top:0;padding:8px 16px}
+  @media (max-width:600px){
+    .topbar .modswitch{display:none}
+    .topbar .entrar{display:inline-flex}
+    .cifras{gap:18px}
+  }
 </style>
 </head>
 <body>
+
 <header class="topbar">
-  <div class="brand">
+  <a class="brand" href="/" style="text-decoration:none; color:inherit" aria-current="page">
     <svg class="glyph" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path d="M3 21V13.5C3 7.7 7 3.5 12 3.5S21 7.7 21 13.5V21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".38"/>
       <path d="M4.5 21l3.2-5.1 3 3.4 3.4-7.3 2.6 4.6 2.8-3.2" stroke="var(--accent)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
     </svg>
     <div class="brand-name">La Cueva del <em>Economista</em></div>
-  </div>
-
+  </a>
   <nav class="modswitch" aria-label="Módulos">
-    <a href="/tiempo" title="Módulo 1: historia económica argentina, 1880 → hoy">
+    <a href="/tiempo">
       <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1.5 13h13M3 13V9.5M6.2 13V6M9.4 13V3.5M12.6 13V7.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
       Línea de Tiempo
     </a>
-    <a href="/" aria-current="true">
+    <a href="/mesa">
       <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.6" y="2.4" width="12.8" height="11.2" rx="1.8" stroke="currentColor" stroke-width="1.5"/><path d="M1.6 6.2h12.8M6.4 6.2v7.4" stroke="currentColor" stroke-width="1.5"/></svg>
       Mesa de Trabajo
     </a>
   </nav>
-
   <div class="topright">
-    <div id="modo-switch" title="Vista Rápida: espacio efímero para explorar. Proyecto: investigación guardada.">
-      <button class="modo-btn activa" id="modo-rapida" onclick="setModo('rapida')">⚡ Vista Rápida</button>
-      <button class="modo-btn" id="modo-proyecto" onclick="setModo('proyecto')">📁 Proyecto</button>
-    </div>
-    <div id="ctl-rapida" class="ctl">
-      <span class="pill efimera" title="Nada de lo que hagas acá se guarda al cerrar">espacio efímero</span>
-      <button class="rbtn mini" onclick="promoverVR()" title="Convertir lo explorado (series y pasos del Estudio) en un proyecto con nombre">💾 Promover a proyecto…</button>
-    </div>
-    <div id="ctl-proyecto" class="ctl" style="display:none">
-      <select id="proj-select" onchange="seleccionarProyecto(this.value)" title="Proyecto activo"></select>
-      <button class="rbtn mini" onclick="renombrarProyecto()" title="Renombrar el proyecto activo">✎</button>
-      <button class="rbtn mini" onclick="crearProyecto()" title="Crear un proyecto nuevo (con nombre)">＋</button>
-      <button class="rbtn mini" onclick="eliminarProyectoActual()" title="Eliminar el proyecto activo">🗑</button>
-    </div>
-
-    <span class="chip neutral" id="diag-series">— series</span>
-    <span class="chip neutral" id="diag-rag">RAG</span>
-    <span class="chip neutral" id="diag-ia">IA</span>
-
+    <a class="btn sm primary entrar" href="/mesa">Entrar</a>
     <button class="iconbtn" id="tema" title="Cambiar tema" aria-label="Cambiar tema">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="3.4" stroke="currentColor" stroke-width="1.5"/><path d="M8 1v1.6M8 13.4V15M15 8h-1.6M2.6 8H1M12.9 3.1l-1.1 1.1M4.2 11.8l-1.1 1.1M12.9 12.9l-1.1-1.1M4.2 4.2L3.1 3.1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
     </button>
   </div>
 </header>
 
-<div id="body-row">
-  <!-- ── VISTA PRINCIPAL: el explorador de series, siempre de fondo ── -->
-  <div id="viz-wrap">
-    <iframe id="viz-frame" style="display:none"></iframe>
-    <div class="viz-fallback" id="viz-fallback" style="display:none">
-      <div style="font-size:40px">🔎📈</div>
-      <h2>El explorador todavía no está disponible</h2>
-      <p>No encontré la carpeta del <b>Trabajo Final</b> (donde vive <code>notebooks/visualizador.html</code>),
-      o su servidor no pudo levantar. Configurala con la variable de entorno
-      <code>CUEVA_TRABAJO_FINAL</code> o en <code>cueva.local.toml</code>, y reiniciá el servidor.</p>
+<main>
+  <!-- ══ HERO ═══════════════════════════════════════════════════════════ -->
+  <section class="hero">
+    <div class="ancho hero-grid">
+      <div>
+        <p class="eyebrow">Economía argentina · 1880 → hoy</p>
+        <h1>Los datos, la historia y las herramientas, <em>en un solo lugar.</em></h1>
+        <p class="bajada">Series económicas de fuentes públicas que dicen de dónde salen, una línea de tiempo de la historia económica argentina y una mesa de trabajo para analizarlas, con asistentes que te ayudan a investigar.</p>
+        <div class="ctas">
+          <a class="cta primaria" href="/mesa">Entrar a la Mesa de Trabajo <span aria-hidden="true">→</span></a>
+          <a class="cta" href="/tiempo">Recorrer la Línea de Tiempo</a>
+        </div>
+        <ul class="cifras" id="cifras" data-cargando aria-live="polite">
+          <li><b id="c-series">—</b><span>series con procedencia</span></li>
+          <li><b id="c-pres">—</b><span>gobiernos desde 1880</span></li>
+          <li><b id="c-eventos">—</b><span>eventos históricos cargados</span></li>
+        </ul>
+      </div>
+
+      <!-- Decoración: la «cueva» y una regla de épocas. Esquema, no datos. -->
+      <figure class="pizarron" aria-hidden="true" style="margin:0">
+        <svg viewBox="0 0 500 430" preserveAspectRatio="xMidYMid meet">
+          <g class="polvo">
+            <circle cx="62" cy="58" r="1.6"/><circle cx="430" cy="74" r="1.2"/><circle cx="396" cy="40" r="1.8"/>
+            <circle cx="118" cy="120" r="1.1"/><circle cx="452" cy="182" r="1.4"/><circle cx="40" cy="214" r="1.3"/>
+            <circle cx="226" cy="36" r="1.2"/><circle cx="318" cy="98" r="1"/>
+          </g>
+          <!-- la cueva -->
+          <path class="tiza" d="M70 330 V206 C70 116 152 58 250 58 S430 116 430 206 V330" stroke-width="2.2" opacity=".42"/>
+          <path class="tiza" d="M104 330 V214 C104 140 170 92 250 92 S396 140 396 214 V330" stroke-width="1.2" opacity=".22" stroke-dasharray="2 7"/>
+          <!-- el trazo de la marca, grande -->
+          <path class="tiza-acento" d="M112 300 l46 -74 l44 50 l50 -108 l38 68 l42 -48" stroke-width="3.2"/>
+          <!-- regla de épocas -->
+          <line class="tiza" x1="40" y1="364" x2="460" y2="364" stroke-width="1.4" opacity=".7"/>
+          <g class="tiza" stroke-width="1.4" opacity=".7">
+            <line x1="40" y1="358" x2="40" y2="370"/><line x1="69" y1="360" x2="69" y2="368"/>
+            <line x1="181" y1="360" x2="181" y2="368"/><line x1="198" y1="358" x2="198" y2="370"/>
+            <line x1="230" y1="360" x2="230" y2="368"/><line x1="359" y1="360" x2="359" y2="368"/>
+            <line x1="388" y1="360" x2="388" y2="368"/><line x1="460" y1="358" x2="460" y2="370"/>
+          </g>
+          <text class="tiza-txt" x="40" y="390" text-anchor="middle">1880</text>
+          <text class="tiza-txt" x="173" y="390" text-anchor="middle">1929</text>
+          <text class="tiza-txt" x="238" y="390" text-anchor="middle">1946</text>
+          <text class="tiza-txt" x="359" y="390" text-anchor="middle">1991</text>
+          <text class="tiza-txt" x="460" y="390" text-anchor="middle">hoy</text>
+          <text class="tiza-era" x="69" y="350" text-anchor="middle">Baring</text>
+          <text class="tiza-era" x="198" y="350" text-anchor="middle">BCRA</text>
+          <text class="tiza-era" x="388" y="350" text-anchor="middle">2001</text>
+          <rect x="40" y="374" width="158" height="4" rx="2" fill="var(--accent)" opacity=".55"/>
+          <text class="tiza-txt" x="40" y="412" style="font-size:9.5px">— tramo cargado con detalle</text>
+        </svg>
+      </figure>
     </div>
-  </div>
+  </section>
 
-  <!-- ── rail derecho: el flujo de la investigación (estilo panel de TradingView) ── -->
-  <nav id="sidebar">
-    <button class="sbtn" id="rb-series" onclick="abrirPanel('series')" title="🗂️ Series de la investigación (variables X / Y)">🗂️</button>
-    <button class="sbtn" id="rb-definicion" onclick="abrirPanel('definicion')" title="🎯 Objetivos y pregunta">🎯</button>
-    <button class="sbtn" id="rb-biblio" onclick="abrirPanel('biblio')" title="📚 Bibliografía">📚</button>
-    <button class="sbtn" id="rb-notas" onclick="abrirPanel('notas')" title="📝 Notas">📝</button>
-    <div class="side-sep"></div>
-    <button class="sbtn" id="rb-pizarra" onclick="abrirPanel('pizarra')" title="🧠 Pizarra — la mesa de agentes">🧠</button>
-    <button class="sbtn" id="rb-informe" onclick="abrirPanel('informe')" title="📄 Informe">📄</button>
-  </nav>
-</div>
+  <!-- ══ MÓDULOS ════════════════════════════════════════════════════════ -->
+  <section class="seccion" id="modulos">
+    <div class="ancho">
+      <p class="eyebrow">Dos módulos</p>
+      <h2>Para entender el contexto y para hacer el análisis</h2>
+      <p class="intro">Comparten las mismas series y la misma cronología: lo que ves en la historia aparece como franja de gobiernos debajo de cada gráfico.</p>
 
-<div id="overlay" onclick="cerrarPanel()"></div>
+      <div class="modulos">
+        <article class="modulo">
+          <div class="vista" aria-hidden="true">
+            <!-- esquema de la pantalla, no un gráfico real -->
+            <svg viewBox="0 0 320 168" preserveAspectRatio="xMidYMid slice">
+              <rect class="wf" x="12" y="12" width="56" height="144" rx="5"/>
+              <rect class="wf" x="76" y="12" width="168" height="98" rx="5"/>
+              <rect class="wf" x="252" y="12" width="56" height="144" rx="5"/>
+              <rect class="wf" x="76" y="118" width="168" height="38" rx="5"/>
+              <g fill="var(--s4)" opacity=".28"><rect x="86" y="30" width="34" height="9" rx="2"/><rect x="140" y="30" width="52" height="9" rx="2"/></g>
+              <g fill="var(--s3)" opacity=".28"><rect x="122" y="30" width="16" height="9" rx="2"/></g>
+              <rect x="86" y="48" width="70" height="6" rx="3" fill="var(--s2)" opacity=".75"/>
+              <rect x="112" y="60" width="96" height="6" rx="3" fill="var(--s1)" opacity=".6"/>
+              <g fill="var(--accent)"><circle cx="100" cy="82" r="3.4"/><circle cx="148" cy="78" r="3.4"/><circle cx="196" cy="88" r="3.4"/><circle cx="228" cy="80" r="3.4"/></g>
+              <line class="wfl" x1="86" y1="96" x2="236" y2="96"/>
+              <g class="wf2"><rect x="18" y="22" width="44" height="5" rx="2"/><rect x="18" y="34" width="36" height="5" rx="2"/><rect x="18" y="46" width="40" height="5" rx="2"/><rect x="258" y="22" width="44" height="30" rx="3"/><rect x="84" y="128" width="150" height="5" rx="2"/><rect x="84" y="140" width="110" height="5" rx="2"/></g>
+            </svg>
+          </div>
+          <div class="cuerpo">
+            <h3>Línea de Tiempo</h3>
+            <p class="sub">/tiempo · historia económica argentina</p>
+            <ul>
+              <li>Gobiernos, regímenes, episodios e hitos desde 1880, en carriles que se abren al acercarte.</li>
+              <li>Fichas con cifras enlazadas, citas y bibliografía; cada evento tiene su enlace para compartir.</li>
+              <li>Todo marcado como «sin verificar» hasta que se controla contra fuentes oficiales.</li>
+            </ul>
+            <div class="acciones">
+              <a class="btn primary" href="/tiempo">Abrir la Línea de Tiempo</a>
+              <a class="btn" href="/tiempo?recorrido=1">Ver el recorrido guiado</a>
+            </div>
+          </div>
+        </article>
 
-<!-- ── DRAWERS ── -->
-<div class="drawer" id="dw-definicion">
-  <div class="dhead"><b>🎯 Objetivos y pregunta</b><button onclick="cerrarPanel()">✕</button></div>
-  <div class="dbody">
-    <label>Título</label>
-    <input id="titulo" placeholder="Ej.: Determinantes del riesgo país" oninput="guardarCambiosDebounced()">
-    <label>Pregunta de investigación</label>
-    <textarea id="pregunta" placeholder="¿Qué variables explican…?" oninput="guardarCambiosDebounced()"></textarea>
-    <label>Objetivos (uno por línea)</label>
-    <textarea id="objetivos" placeholder="Estimar el efecto de X sobre Y" oninput="guardarCambiosDebounced()"></textarea>
-    <label>Hipótesis (una por línea)</label>
-    <textarea id="hipotesis" placeholder="Existe relación de largo plazo entre X e Y" oninput="guardarCambiosDebounced()"></textarea>
-    <label>Contexto / marco teórico (opcional)</label>
-    <textarea id="contexto" placeholder="Lo que ya sabés, supuestos, antecedentes…" oninput="guardarCambiosDebounced()"></textarea>
-    <label>Frecuencia de trabajo</label>
-    <select id="freq" onchange="guardarCambiosDebounced()">
-      <option value="mensual">Mensual</option>
-      <option value="trimestral">Trimestral</option>
-      <option value="diaria">Diaria</option>
-      <option value="anual">Anual</option>
-    </select>
-  </div>
-</div>
-
-<div class="drawer" id="dw-series">
-  <div class="dhead"><b>🗂️ Elegir series</b><button onclick="cerrarPanel()">✕</button></div>
-  <div class="dbody">
-    <div class="cat-tabs" id="cat-tabs"></div>
-    <input id="buscar" placeholder="Buscar serie…" oninput="buscarSeries()">
-    <div class="serie-box" id="lista-series"></div>
-    <div class="chips" id="chips"></div>
-    <div style="font-size:11px;color:var(--muted);margin-top:6px">
-      Click en ⭐ de un chip para marcarlo como variable dependiente (Y).
-    </div>
-  </div>
-</div>
-
-<div class="drawer" id="dw-biblio">
-  <div class="dhead"><b>📚 Bibliografía propia</b><button onclick="cerrarPanel()">✕</button></div>
-  <div class="dbody">
-    <label>Subir a La Cueva-LM (PDF / md / txt, máx. 30 MB) — los agentes la citan marcando el origen</label>
-    <div class="row2">
-      <input type="file" id="biblio-archivo" accept=".pdf,.md,.txt">
-      <button class="btn sec sm" onclick="subirBiblio()" id="biblio-subir">⬆ Subir e indexar</button>
-    </div>
-    <div id="biblio-subida-estado" style="font-size:11.5px;color:var(--muted);margin-top:6px"></div>
-    <div id="biblio-archivos" style="margin-top:8px"></div>
-
-    <label style="margin-top:18px">Referencias (solo título, sin archivo)</label>
-    <div class="chips" id="biblio-chips"></div>
-    <div class="row2" style="margin-top:10px">
-      <input id="biblio-nueva" placeholder="Título o referencia…">
-      <button class="btn sec sm" onclick="agregarBiblio()">＋ Agregar</button>
-    </div>
-  </div>
-</div>
-
-<div class="drawer" id="dw-notas">
-  <div class="dhead"><b>📝 Notas</b><button onclick="cerrarPanel()">✕</button></div>
-  <div class="dbody">
-    <textarea id="nota-nueva" placeholder="Anotá una idea, un pendiente, un comentario…"></textarea>
-    <button class="btn sec sm" onclick="agregarNota()" style="margin-bottom:12px">＋ Agregar nota</button>
-    <div id="lista-notas"></div>
-  </div>
-</div>
-
-<div class="drawer ancho" id="dw-pizarra">
-  <div class="dhead"><b>🧠 Pizarra — la mesa de agentes</b><button onclick="cerrarPanel()">✕</button></div>
-  <div class="dbody">
-    <button class="btn" id="go" onclick="abrirMesa()" style="margin:0 0 14px">
-      ▶ Abrir la mesa completa (los 4 agentes recorren las 6 fases)
-    </button>
-    <div class="feed" id="feed">
-      <div class="vacio" id="vacio">
-        <div style="font-size:40px">🧭 📖 🔎 🗂️</div>
-        <p>Acá se ve la pizarra: la conversación de la mesa y los hallazgos que va fijando.<br>
-        Definí la investigación y elegí sus series (🎯 y 🗂️ en el rail de la derecha) y abrí la mesa,<br>
-        o consultá a un agente puntual desde el círculo flotante.</p>
+        <article class="modulo">
+          <div class="vista" aria-hidden="true">
+            <svg viewBox="0 0 320 168" preserveAspectRatio="xMidYMid slice">
+              <rect class="wf" x="12" y="12" width="70" height="144" rx="5"/>
+              <rect class="wf" x="90" y="12" width="160" height="18" rx="5"/>
+              <rect class="wf" x="90" y="36" width="160" height="80" rx="5"/>
+              <rect class="wf" x="90" y="122" width="160" height="34" rx="5"/>
+              <rect class="wf" x="258" y="12" width="50" height="144" rx="5"/>
+              <g><rect x="18" y="20" width="58" height="26" rx="3" fill="var(--surface-2)" stroke="var(--s1)" stroke-opacity=".5"/>
+                 <rect x="18" y="52" width="58" height="26" rx="3" fill="var(--surface-2)" stroke="var(--s2)" stroke-opacity=".5"/>
+                 <rect x="18" y="84" width="58" height="26" rx="3" fill="var(--surface-2)" stroke="var(--s3)" stroke-opacity=".5"/></g>
+              <g class="wf2"><rect x="96" y="18" width="30" height="6" rx="3"/><rect x="132" y="18" width="30" height="6" rx="3"/><rect x="168" y="18" width="24" height="6" rx="3"/>
+                 <rect x="264" y="20" width="38" height="5" rx="2"/><rect x="264" y="31" width="30" height="5" rx="2"/><rect x="264" y="42" width="34" height="5" rx="2"/>
+                 <rect x="96" y="130" width="40" height="7" rx="3"/><rect x="140" y="130" width="40" height="7" rx="3"/><rect x="184" y="130" width="40" height="7" rx="3"/></g>
+              <g stroke-width="1.6" fill="none" stroke-linecap="round">
+                <line x1="100" y1="58" x2="240" y2="58" stroke="var(--s1)" stroke-opacity=".7" stroke-dasharray="1 0"/>
+                <line x1="100" y1="76" x2="240" y2="76" stroke="var(--s2)" stroke-opacity=".7"/>
+                <line x1="100" y1="94" x2="240" y2="94" stroke="var(--s3)" stroke-opacity=".7"/></g>
+              <g opacity=".3"><rect x="100" y="104" width="44" height="6" fill="var(--const)"/><rect x="144" y="104" width="22" height="6" fill="var(--facto)"/><rect x="166" y="104" width="74" height="6" fill="var(--const)"/></g>
+              <circle cx="282" cy="140" r="9" fill="var(--accent)"/>
+            </svg>
+          </div>
+          <div class="cuerpo">
+            <h3>Mesa de Trabajo</h3>
+            <p class="sub">/mesa · análisis de series de tiempo</p>
+            <ul>
+              <li>Catálogo de series por familia; cada una con su receta (log, diferencias) y su ficha de procedencia.</li>
+              <li>Paneles, base 100 o estandarizado; frecuencia común, variación interanual y correlaciones.</li>
+              <li>Proyectos con pregunta, bibliografía, notas, informe y agentes que discuten el método con citas.</li>
+            </ul>
+            <div class="acciones">
+              <a class="btn primary" href="/mesa">Abrir la Mesa de Trabajo</a>
+              <a class="btn" href="/mesa?recorrido=1">Ver el recorrido guiado</a>
+            </div>
+          </div>
+        </article>
       </div>
     </div>
-  </div>
-</div>
+  </section>
 
-<div class="drawer informe" id="dw-informe">
-  <div class="dhead"><b>📄 Informe — el documento tomando forma</b><button onclick="cerrarPanel()">✕</button></div>
-  <div class="dbody"><div id="informe-wrap"></div></div>
-</div>
-
-<!-- ── FAB de agentes ── -->
-<div id="fab" title="Consultar a un agente">🧑‍🏫</div>
-<div id="fab-menu">
-  <button class="fmi" onclick="abrirChatDesdeFab('metodologo')"><span class="e">🧭</span> Metodólogo</button>
-  <button class="fmi" onclick="abrirChatDesdeFab('critico')"><span class="e">🔎</span> Crítico</button>
-  <button class="fmi" onclick="abrirChatDesdeFab('interprete')"><span class="e">📖</span> Intérprete</button>
-  <button class="fmi" onclick="abrirChatDesdeFab('bibliografo')"><span class="e">🗂️</span> Bibliógrafo</button>
-</div>
-
-<div id="chatpanel">
-  <div class="chead">
-    <b id="chat-titulo">Agente</b>
-    <button onclick="cerrarChat()">✕</button>
-  </div>
-  <div id="chat-msgs"></div>
-  <div id="chat-input-row">
-    <textarea id="chat-input" placeholder="Escribí tu pregunta…"></textarea>
-    <button class="btn sec sm" onclick="enviarChat()">➤</button>
-  </div>
-</div>
-
-<!-- ── modal: nombrar proyecto (crear / renombrar / promover) ── -->
-<div id="modal-nombre-bg" onclick="if(event.target===this)cerrarModalNombre(null)">
-  <div id="modal-nombre">
-    <b id="mn-titulo">Nuevo proyecto</b>
-    <div class="hint" id="mn-hint"></div>
-    <input id="mn-input" placeholder="Ej.: Determinantes del riesgo país" maxlength="200">
-    <div class="mn-row">
-      <button class="btn sec sm" onclick="cerrarModalNombre(null)">Cancelar</button>
-      <button class="btn sm" id="mn-ok">Crear</button>
+  <!-- ══ CÓMO SE USA ════════════════════════════════════════════════════ -->
+  <section class="seccion" id="como">
+    <div class="ancho">
+      <p class="eyebrow">Cómo se usa</p>
+      <h2>De una pregunta a un análisis, en tres pasos</h2>
+      <p class="intro">No hace falta registrarse ni instalar nada. La Vista Rápida es para explorar sin compromiso; el proyecto, para cuando algo vale la pena.</p>
+      <ol class="pasos">
+        <li class="paso">
+          <h3>Elegí las series</h3>
+          <p>Buscá en el catálogo por familia o por nombre. Cada serie dice de qué organismo sale y qué se le hizo.</p>
+        </li>
+        <li class="paso">
+          <h3>Exploralas</h3>
+          <p>Transformalas, llevalas a una frecuencia común y comparalas con la franja de gobiernos de fondo.</p>
+        </li>
+        <li class="paso">
+          <h3>Armá un proyecto</h3>
+          <p>Promové lo explorado a un proyecto: definí la pregunta, sumá bibliografía y consultá a los agentes.</p>
+        </li>
+      </ol>
+      <p class="guia">
+        <a class="btn primary" href="/mesa?recorrido=1">Hacer el recorrido guiado de la Mesa →</a>
+        <span>Dentro de cada módulo, el botón <b>?</b> de arriba a la derecha lo repite cuando quieras.</span>
+      </p>
     </div>
-  </div>
-</div>
+  </section>
+
+  <!-- ══ DATOS ══════════════════════════════════════════════════════════ -->
+  <section class="seccion" id="datos">
+    <div class="ancho datos">
+      <div>
+        <p class="eyebrow">De dónde salen los datos</p>
+        <h2>Fuentes públicas, con nombre y apellido</h2>
+        <p class="intro" style="margin-bottom:22px">Las series se bajan de los organismos que las publican. Cuando una serie es elaboración propia (un empalme, una estimación), lo dice y nombra sus insumos.</p>
+        <ul class="fuentes" id="fuentes"></ul>
+        <p class="aviso-legal">No es un sitio oficial de esos organismos ni constituye asesoramiento financiero. <a href="/terminos">Términos y condiciones</a>.</p>
+      </div>
+      <ul class="principios">
+        <li><b>Nada inventado</b><span>Si un dato no está, se ve el hueco. Ningún gráfico dibuja una curva que no salga de un archivo.</span></li>
+        <li><b>Procedencia por serie</b><span>Organismo, definición, endpoint y transformaciones, a un clic desde la ficha.</span></li>
+        <li><b>Los supuestos, a la vista</b><span>Cuando hay una decisión metodológica (cómo pasar de diario a mensual, por ejemplo), aparece marcada como supuesto.</span></li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer data-cueva-pie="completo"></footer>
 
 <script>
-const $ = s => document.querySelector(s);
-const AVATAR = {orquestador:"🎛️", herramientas:"🧪", metodologo:"🧭",
-                critico:"🔎", interprete:"📖", bibliografo:"🗂️"};
-const NOMBRE_AGENTE = {metodologo:"🧭 Metodólogo", critico:"🔎 Crítico",
-                       interprete:"📖 Intérprete", bibliografo:"🗂️ Bibliógrafo"};
+document.getElementById('tema').addEventListener('click', () => window.CuevaTema.alternar());
 
-let SERIES = [];        // catálogo cargado
-let SEL = [];           // ids seleccionados
-let DEP = null;         // id dependiente
-let BIBLIO = [];        // referencias bibliográficas del usuario
-
-let PROYECTO_ID = null;
-let PIZ = null;          // último snapshot de la pizarra cargada
-let CHAT_AGENTE = null;
-let PANEL = null;        // drawer abierto
-let MODO = localStorage.getItem('cueva_modo') || 'rapida';   // 'rapida' | 'proyecto'
-
-// ── diagnóstico inicial ───────────────────────────────────────────────
-fetch('/api/v1/diag').then(r=>r.json()).then(d=>{
-  $('#diag-series').textContent = (d.n_series||0) + ' series';
-  const rag=$('#diag-rag'); rag.textContent = d.indice_rag?'RAG ✓':'RAG ✗';
-  rag.className='chip '+(d.indice_rag?'ok':'warn');
-  const ia=$('#diag-ia'); ia.textContent = d.api_key?('IA: '+d.modelo):'IA: offline';
-  ia.className='chip '+(d.api_key?'ok':'warn');
-
-  if(d.visualizador_disponible){
-    const f=$('#viz-frame');
-    f.addEventListener('load', enviarContexto);
-    f.src=d.visualizador_url; f.style.display='block';
-  } else {
-    $('#viz-fallback').style.display='block';
-  }
-});
-
-// ── tema compartido con la Línea de Tiempo (persiste en el navegador) ──
-// OJO: el explorador del iframe todavía tiene su propio tema oscuro fijo; no lo
-// sigue. Se unifica cuando se porte a tokens (MODULO_MESA_DE_TRABAJO §8.2).
-$('#tema').addEventListener('click', () => window.CuevaTema.alternar());
-
-// ── contexto hacia el explorador (iframe propio, mismo origen) ─────────
-function enviarContexto(){
-  const f=$('#viz-frame');
-  if(!f || !f.contentWindow) return;
-  const activo = MODO==='proyecto' && PROYECTO_ID && PIZ;
-  f.contentWindow.postMessage({
-    tipo:'cueva:contexto',
-    modo: activo ? 'proyecto' : 'rapida',
-    proyecto: activo ? {
-      id: PIZ.id, titulo: PIZ.proyecto.titulo, frecuencia: PIZ.proyecto.frecuencia,
-      serie_dependiente: PIZ.proyecto.serie_dependiente, series: PIZ.proyecto.series,
-    } : null,
-    estudios: activo ? (PIZ.estudios||[]) : [],
-  }, '*');
-}
-
-// el explorador avisa cuando corre/borra pasos del Estudio → refrescar la pizarra local
-window.addEventListener('message', async ev=>{
-  const d = ev.data || {};
-  if(d.tipo==='cueva:estudios-cambiaron' && PROYECTO_ID){
-    try{
-      PIZ = await fetch('/api/v1/proyectos/'+PROYECTO_ID).then(r=>r.json());
-      renderInforme();
-    }catch(e){}
-  }
-});
-
-// ── drawers ───────────────────────────────────────────────────────────
-function abrirPanel(nombre){
-  if(MODO!=='proyecto' || !PROYECTO_ID) return;   // el cuaderno es del proyecto, no de la Vista Rápida
-  if(PANEL===nombre){ cerrarPanel(); return; }
-  cerrarPanel();
-  PANEL = nombre;
-  $('#dw-'+nombre).classList.add('on');
-  $('#overlay').classList.add('on');
-  const rb = $('#rb-'+nombre); if(rb) rb.classList.add('activa');
-  if(nombre==='series') _buscar();
-  if(nombre==='informe') renderInforme();
-  if(nombre==='biblio') cargarBiblioArchivos();
-}
-function cerrarPanel(){
-  if(!PANEL) return;
-  $('#dw-'+PANEL).classList.remove('on');
-  $('#overlay').classList.remove('on');
-  const rb = $('#rb-'+PANEL); if(rb) rb.classList.remove('activa');
-  PANEL = null;
-}
-document.addEventListener('keydown', e=>{
-  if(e.key==='Escape'){
-    if($('#modal-nombre-bg').classList.contains('on')) cerrarModalNombre(null);
-    else if($('#fab-menu').classList.contains('on')) $('#fab-menu').classList.remove('on');
-    else if($('#chatpanel').classList.contains('on')) cerrarChat();
-    else cerrarPanel(); }
-});
-
-// ── modo de trabajo: Vista Rápida (efímera) vs Proyecto (guardado) ──────
-async function setModo(m, seleccionar){
-  MODO = m;
-  localStorage.setItem('cueva_modo', m);
-  $('#modo-rapida').classList.toggle('activa', m==='rapida');
-  $('#modo-proyecto').classList.toggle('activa', m==='proyecto');
-  $('#ctl-rapida').style.display = m==='rapida' ? 'flex' : 'none';
-  $('#ctl-proyecto').style.display = m==='proyecto' ? 'flex' : 'none';
-  if(m==='rapida'){
-    PROYECTO_ID = null; PIZ = null;
-    cerrarPanel(); cerrarChat();
-    aplicarGates(); enviarContexto();
-  } else {
-    await cargarProyectos(seleccionar);
-  }
-}
-
-function aplicarGates(){
-  const activo = MODO==='proyecto' && !!PROYECTO_ID;
-  document.querySelectorAll('#sidebar .sbtn').forEach(b=>{
-    if(!b.dataset.t) b.dataset.t = b.title;
-    b.classList.toggle('gated', !activo);
-    b.title = activo ? b.dataset.t : b.dataset.t + '  (disponible dentro de un Proyecto)';
-  });
-  $('#fab').style.display = activo ? 'flex' : 'none';
-}
-
-// ── modal de nombre (crear / renombrar / promover) ──────────────────────
-let _mnResolve = null;
-function pedirNombre(titulo, hint, valor, okLabel){
-  return new Promise(res=>{
-    _mnResolve = res;
-    $('#mn-titulo').textContent = titulo;
-    $('#mn-hint').textContent = hint || '';
-    $('#mn-ok').textContent = okLabel || 'Aceptar';
-    const inp = $('#mn-input'); inp.value = valor || '';
-    $('#modal-nombre-bg').classList.add('on');
-    setTimeout(()=>inp.focus(), 60);
-  });
-}
-function cerrarModalNombre(v){
-  $('#modal-nombre-bg').classList.remove('on');
-  if(_mnResolve){ _mnResolve(v); _mnResolve = null; }
-}
-$('#mn-ok').addEventListener('click', ()=>{
-  const v = $('#mn-input').value.trim();
-  if(!v) { $('#mn-input').focus(); return; }
-  cerrarModalNombre(v);
-});
-$('#mn-input').addEventListener('keydown', e=>{
-  if(e.key==='Enter'){ e.preventDefault(); $('#mn-ok').click(); }
-});
-
-// ── proyectos (investigaciones guardadas) ───────────────────────────────
-async function cargarProyectos(seleccionar){
-  const lista = await fetch('/api/v1/proyectos').then(r=>r.json());
-  const sel = $('#proj-select');
-  if(!lista.length){
-    sel.innerHTML = '<option value="">(sin proyectos — creá uno con ＋)</option>';
-    PROYECTO_ID = null; PIZ = null;
-    cerrarPanel(); aplicarGates(); enviarContexto();
-    return;
-  }
-  sel.innerHTML = lista.map(p=>`<option value="${escapeHtml(p.id)}">${escapeHtml(p.titulo||'(sin título)')}</option>`).join('');
-  const guardado = localStorage.getItem('cueva_proyecto');
-  let id = seleccionar || guardado;
-  if(!id || !lista.some(p=>p.id===id)) id = lista[0].id;
-  sel.value = id;
-  await seleccionarProyecto(id);
-}
-async function crearProyecto(){
-  const nombre = await pedirNombre('＋ Nuevo proyecto',
-    'El proyecto guarda series, estudios, notas, chats con los agentes e informe.',
-    '', 'Crear');
-  if(!nombre) return;
-  const piz = await fetch('/api/v1/proyectos',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({titulo:nombre})}).then(r=>r.json());
-  await cargarProyectos(piz.id);
-}
-async function renombrarProyecto(){
-  if(!PROYECTO_ID || !PIZ) return;
-  const nombre = await pedirNombre('✎ Renombrar proyecto', '', PIZ.proyecto.titulo||'', 'Renombrar');
-  if(!nombre || nombre===PIZ.proyecto.titulo) return;
-  PIZ = await fetch('/api/v1/proyectos/'+PROYECTO_ID,{method:'PATCH',
-    headers:{'Content-Type':'application/json'}, body:JSON.stringify({titulo:nombre})}).then(r=>r.json());
-  const opt = $('#proj-select').querySelector(`option[value="${PROYECTO_ID}"]`);
-  if(opt) opt.textContent = nombre;
-  $('#titulo').value = nombre;
-  renderInforme(); enviarContexto();
-}
-async function eliminarProyectoActual(){
-  if(!PROYECTO_ID) return;
-  if(!confirm('¿Eliminar este proyecto? Se mueve a la papelera.')) return;
-  await fetch('/api/v1/proyectos/'+PROYECTO_ID,{method:'DELETE'});
-  PROYECTO_ID=null; localStorage.removeItem('cueva_proyecto');
-  await cargarProyectos();
-}
-async function seleccionarProyecto(id){
-  if(!id) return;
-  PROYECTO_ID = id;
-  localStorage.setItem('cueva_proyecto', id);
-  PIZ = await fetch('/api/v1/proyectos/'+id).then(r=>r.json());
-  renderProyecto();
-  aplicarGates(); enviarContexto();
-}
-
-// ── promover la Vista Rápida a proyecto (se lleva series y pasos) ───────
-async function promoverVR(){
-  let vr = null;
-  try{ vr = JSON.parse(sessionStorage.getItem('cueva_vr')||'null'); }catch(e){}
-  const nPasos = (vr && vr.estudios && vr.estudios.length) || 0;
-  const nSeries = (vr && vr.series && vr.series.length) || 0;
-  const hint = nPasos || nSeries
-    ? `Se llevan ${nPasos} paso(s) del Estudio y ${nSeries} serie(s) exploradas. La Vista Rápida queda limpia.`
-    : 'La Vista Rápida está vacía: se crea un proyecto nuevo en blanco.';
-  const nombre = await pedirNombre('💾 Promover a proyecto', hint, '', 'Crear proyecto');
-  if(!nombre) return;
-  const cuerpo = { titulo: nombre };
-  if(vr){
-    cuerpo.series = vr.series || [];
-    if(vr.serie_dependiente) cuerpo.serie_dependiente = vr.serie_dependiente;
-    if(vr.frecuencia) cuerpo.frecuencia = vr.frecuencia;
-    cuerpo.estudios = (vr.estudios||[]).map(e=>({
-      herramienta:e.herramienta, args:e.args, resumen:e.resumen||'', resultado:e.resultado||null}));
-  }
-  const r = await fetch('/api/v1/proyectos',{method:'POST',
-    headers:{'Content-Type':'application/json'}, body:JSON.stringify(cuerpo)});
-  const piz = await r.json();
-  if(!r.ok){ alert('No se pudo crear el proyecto: '+(piz.error?.mensaje||r.status)); return; }
-  sessionStorage.removeItem('cueva_vr');
-  const f=$('#viz-frame');
-  if(f && f.contentWindow) f.contentWindow.postMessage({tipo:'cueva:vr-limpiar'},'*');
-  await setModo('proyecto', piz.id);
-}
-
-function renderProyecto(){
-  const p = PIZ.proyecto;
-  $('#titulo').value = p.titulo || '';
-  $('#pregunta').value = p.pregunta || '';
-  $('#objetivos').value = (p.objetivos||[]).join('\n');
-  $('#hipotesis').value = (p.hipotesis||[]).join('\n');
-  $('#contexto').value = p.contexto || '';
-  $('#freq').value = p.frecuencia || 'mensual';
-  SEL = [...(p.series||[])];
-  DEP = p.serie_dependiente || null;
-  BIBLIO = [...(p.bibliografia_usuario||[])];
-  _buscar(); renderChips(); renderBiblio(); renderNotas(); renderInforme();
-
-  $('#feed').querySelectorAll('.msg,.fase,.hall').forEach(e=>e.remove());
-  if(PIZ.mensajes && PIZ.mensajes.length) $('#vacio')?.remove();
-  (PIZ.mensajes||[]).forEach(pintar);
-  $('#go').disabled = false;
-}
-
-// ── autosave de los campos del proyecto ─────────────────────────────────
-let tGuardar;
-function guardarCambiosDebounced(){ clearTimeout(tGuardar); tGuardar=setTimeout(guardarCambios,600); }
-async function guardarCambios(){
-  if(!PROYECTO_ID) return;
-  const cuerpo = {
-    titulo: $('#titulo').value, pregunta: $('#pregunta').value,
-    objetivos: $('#objetivos').value.split('\n').map(x=>x.trim()).filter(Boolean),
-    hipotesis: $('#hipotesis').value.split('\n').map(x=>x.trim()).filter(Boolean),
-    contexto: $('#contexto').value, frecuencia: $('#freq').value,
-    series: SEL, serie_dependiente: DEP, bibliografia_usuario: BIBLIO,
-  };
-  PIZ = await fetch('/api/v1/proyectos/'+PROYECTO_ID,{method:'PATCH',
-    headers:{'Content-Type':'application/json'}, body:JSON.stringify(cuerpo)}).then(r=>r.json());
-  const opt = $('#proj-select').querySelector(`option[value="${PROYECTO_ID}"]`);
-  if(opt) opt.textContent = PIZ.proyecto.titulo || '(sin título)';
-  enviarContexto();
-}
-
-// ── búsqueda de series (pestañas por FAMILIA del catálogo curado) ──────
-let tBuscar;
-let CATEGORIA = '';
-let SERIES_TODAS = null;   // catálogo completo, cacheado
-let GRUPOS = [];
-
-async function cargarSeriesTodas(){
-  if(SERIES_TODAS) return SERIES_TODAS;
-  SERIES_TODAS = await fetch('/api/v1/series?limite=0').then(r=>r.json());
-  GRUPOS = [...new Set(SERIES_TODAS.map(s=>s.grupo).filter(Boolean))].sort();
-  $('#cat-tabs').innerHTML =
-    `<button class="cat-tab activa" onclick="filtrarCategoria(-1)">Todas</button>` +
-    GRUPOS.map((g,i)=>`<button class="cat-tab" onclick="filtrarCategoria(${i})">${escapeHtml(g)}</button>`).join('');
-  return SERIES_TODAS;
-}
-function filtrarCategoria(i){
-  CATEGORIA = i>=0 ? GRUPOS[i] : '';
-  document.querySelectorAll('.cat-tab').forEach((b,j)=>b.classList.toggle('activa', j===i+1));
-  _buscar();
-}
-function buscarSeries(){ clearTimeout(tBuscar); tBuscar=setTimeout(_buscar,200); }
-async function _buscar(){
-  const q=($('#buscar')?.value || '').trim().toLowerCase();
-  const todas = await cargarSeriesTodas();
-  const rows = todas.filter(s=>
-    (!CATEGORIA || s.grupo===CATEGORIA) &&
-    (!q || [s.id,s.nombre,s.grupo,s.subgrupo].some(c=>(c||'').toLowerCase().includes(q)))
-  ).slice(0,90);
-  SERIES=rows;
-  $('#lista-series').innerHTML = rows.map(s=>`
-    <div class="serie" onclick="toggle('${s.id}')">
-      <span>${SEL.includes(s.id)?'☑':'☐'}</span>
-      <span>${escapeHtml(s.nombre)}</span>
-      <small>${escapeHtml(s.subgrupo||s.grupo||s.origen)} · n=${s.n}</small>
-    </div>`).join('') || '<div class="serie">sin resultados</div>';
-  renderChips();
-}
-function toggle(id){
-  if(SEL.includes(id)) SEL=SEL.filter(x=>x!==id);
-  else SEL.push(id);
-  if(DEP && !SEL.includes(DEP)) DEP=null;
-  _buscar(); renderChips(); guardarCambiosDebounced();
-}
-function renderChips(){
-  $('#chips').innerHTML = SEL.map(id=>{
-    const s=(SERIES_TODAS||SERIES).find(x=>x.id===id)||{nombre:id};
-    const esDep=DEP===id;
-    return `<span class="chip ${esDep?'dep':''}">
-      <span onclick="marcarDep('${id}')" title="marcar dependiente" style="cursor:pointer">${esDep?'⭐Y':'☆'}</span>
-      ${escapeHtml(s.nombre.length>26?s.nombre.slice(0,26)+'…':s.nombre)}
-      <b onclick="toggle('${id}')">✕</b></span>`;
-  }).join('');
-}
-function marcarDep(id){ DEP = (DEP===id?null:id); renderChips(); guardarCambiosDebounced(); }
-
-// ── bibliografía propia ─────────────────────────────────────────────────
-function renderBiblio(){
-  $('#biblio-chips').innerHTML = BIBLIO.map((b,i)=>`<span class="chip">
-    ${escapeHtml(b.length>40?b.slice(0,40)+'…':b)}
-    <b onclick="quitarBiblio(${i})">✕</b></span>`).join('') || '<span style="color:var(--muted);font-size:11.5px">Sin referencias cargadas.</span>';
-}
-function agregarBiblio(){
-  const v=$('#biblio-nueva').value.trim();
-  if(!v) return;
-  BIBLIO.push(v); $('#biblio-nueva').value='';
-  renderBiblio(); guardarCambios();
-}
-function quitarBiblio(i){ BIBLIO.splice(i,1); renderBiblio(); guardarCambios(); }
-
-// subida de archivos a La Cueva-LM (colección "usuario", con provenance)
-async function cargarBiblioArchivos(){
-  try{
-    const lista = await fetch('/api/v1/biblioteca').then(r=>r.json());
-    $('#biblio-archivos').innerHTML = (lista||[]).map(a=>`
-      <div class="serie" style="cursor:default"><span>📄</span><span>${escapeHtml(a.archivo)}</span>
-      <small>${a.indexado?`✅ ${a.fragmentos} fragmentos`:'⏳ sin indexar'}</small></div>`).join('')
-      || '<span style="color:var(--muted);font-size:11.5px">Sin archivos subidos.</span>';
-  }catch(e){}
-}
-async function subirBiblio(){
-  const inp=$('#biblio-archivo'); const f=inp.files && inp.files[0];
-  if(!f){ $('#biblio-subida-estado').textContent='Elegí un archivo primero.'; return; }
-  const btn=$('#biblio-subir'); btn.disabled=true;
-  $('#biblio-subida-estado').textContent='⏳ Subiendo e indexando (un libro puede tardar un minuto)…';
-  try{
-    const fd=new FormData(); fd.append('archivo', f);
-    const r=await fetch('/api/v1/biblioteca',{method:'POST',body:fd});
-    const d=await r.json();
-    if(!r.ok) throw new Error(d.error?.mensaje||'error');
-    $('#biblio-subida-estado').textContent=`✅ ${escapeHtml(d.archivo)} indexado (${d.fragmentos} fragmentos).`;
-    if(!BIBLIO.includes(d.titulo)){ BIBLIO.push(d.titulo); renderBiblio(); guardarCambios(); }
-    inp.value=''; cargarBiblioArchivos();
-  }catch(e){
-    $('#biblio-subida-estado').textContent='⚠️ '+e.message;
-  }finally{ btn.disabled=false; }
-}
-
-// ── notas ─────────────────────────────────────────────────────────────
-function renderNotas(){
-  const notas = PIZ.notas || [];
-  $('#lista-notas').innerHTML = notas.slice().reverse().map(n=>`
-    <div class="nota">${escapeHtml(n.texto)}<span class="ts">${new Date(n.ts*1000).toLocaleString('es-AR')}</span></div>
-  `).join('') || '<div style="color:var(--muted);font-size:11.5px">Sin notas todavía.</div>';
-}
-async function agregarNota(){
-  const ta=$('#nota-nueva'); const texto=ta.value.trim();
-  if(!texto || !PROYECTO_ID) return;
-  const nota = await fetch(`/api/v1/proyectos/${PROYECTO_ID}/notas`,{method:'POST',
-    headers:{'Content-Type':'application/json'}, body:JSON.stringify({texto})}).then(r=>r.json());
-  PIZ.notas = PIZ.notas || []; PIZ.notas.push(nota);
-  ta.value=''; renderNotas();
-}
-
-// ── abrir la mesa completa (stream SSE) ─────────────────────────────────
-async function abrirMesa(){
-  if(!PROYECTO_ID) return;
-  await guardarCambios();
-  $('#go').disabled=true; $('#vacio')?.remove();
-  $('#feed').querySelectorAll('.msg,.fase,.hall').forEach(e=>e.remove());
-  const typing=document.createElement('div'); typing.className='typing'; typing.id='typing';
-  typing.textContent='⏳ La mesa está sesionando…'; $('#feed').appendChild(typing);
-
-  const resp = await fetch(`/api/v1/proyectos/${PROYECTO_ID}/investigar`,{method:'POST'});
-  const reader = resp.body.getReader(); const dec=new TextDecoder(); let buf='';
-  while(true){
-    const {value,done}=await reader.read(); if(done) break;
-    buf+=dec.decode(value,{stream:true});
-    let i;
-    while((i=buf.indexOf('\n\n'))>=0){
-      const bloque=buf.slice(0,i); buf=buf.slice(i+2);
-      // SSE tipado: cada bloque trae "event: <nombre>" + "data: <json>"
-      let evento='mensaje', datos=null;
-      for(const linea of bloque.split('\n')){
-        if(linea.startsWith('event:')) evento=linea.slice(6).trim();
-        else if(linea.startsWith('data:')) datos=JSON.parse(linea.slice(5).trim());
-      }
-      if(!datos) continue;
-      if(evento==='fin'){
-        $('#typing')?.remove(); $('#go').disabled=false;
-        if(datos.uso_llm && datos.uso_llm.llamadas!==undefined){
-          const u=datos.uso_llm;
-          const d=document.createElement('div'); d.className='fase';
-          d.textContent=`🔢 Uso de esta mesa: ${u.llamadas} llamadas · ${u.tokens_entrada}+${u.tokens_salida} tokens`;
-          $('#feed').appendChild(d);
-        }
-        break;
-      }
-      if(evento==='error'){
-        $('#typing')?.remove(); $('#go').disabled=false;
-        const d=document.createElement('div'); d.className='fase';
-        d.textContent='⚠️ La mesa se interrumpió: '+(datos.mensaje||'error desconocido');
-        $('#feed').appendChild(d);
-        break;
-      }
-      pintar(datos);
-      const body=$('#dw-pizarra .dbody'); body.scrollTop = body.scrollHeight;
-    }
-  }
-  $('#typing')?.remove(); $('#go').disabled=false;
-}
-
-function pintar(m){
-  const feed=$('#feed'); const typing=$('#typing');
-  if(m.autor==='orquestador' && m.contenido.startsWith('━━━')){
-    const d=document.createElement('div'); d.className='fase';
-    d.textContent=m.contenido.replace(/━/g,'').trim();
-    typing?feed.insertBefore(d,typing):feed.appendChild(d); return;
-  }
-  if(m.autor==='orquestador' && m.contenido.startsWith('📌')){
-    const d=document.createElement('div'); d.className='hall';
-    d.innerHTML='<b>📌 Hallazgo</b> · '+escapeHtml(m.contenido.replace('📌 Hallazgo fijado · ',''));
-    typing?feed.insertBefore(d,typing):feed.appendChild(d); return;
-  }
-  const cls = m.autor==='orquestador'?'m-orq':(m.autor==='herramientas'?'m-tool':'');
-  const div=document.createElement('div'); div.className='msg '+cls;
-  const dest = m.dirigido_a?`<span class="a">→ @${m.dirigido_a}</span>`:'';
-  const citas = (m.citas&&m.citas.length)?
-    `<div class="citas">📚 ${m.citas.map(c=>`<span>${c}</span>`).join('')}</div>`:'';
-  div.innerHTML=`
-    <div class="av">${AVATAR[m.autor]||'🗣️'}</div>
-    <div class="bub">
-      <div class="quien">${m.rol} ${dest}</div>
-      <div class="cuerpo">${escapeHtml(m.contenido)}</div>
-      ${citas}
-    </div>`;
-  typing?feed.insertBefore(div,typing):feed.appendChild(div);
-}
-function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-
-// ── FAB arrastrable con menú de agentes ──────────────────────────────────
-const fab = $('#fab');
-(function initFab(){
-  const pos = JSON.parse(localStorage.getItem('cueva_fab_pos')||'null');
-  if(pos && pos.x!=null){ fab.style.left=pos.x+'px'; fab.style.top=pos.y+'px'; }
-  else { fab.style.right='64px'; fab.style.bottom='24px'; }  /* despejar el rail derecho */
-  clampFab();
+// Fuentes: las mismas que nombra el pie (web/estilo/sitio.js)
+(function () {
+  const ul = document.getElementById('fuentes');
+  const fs = (window.CUEVA_SITIO && window.CUEVA_SITIO.fuentesPrincipales) || [];
+  fs.concat(['y otras']).forEach((f) => { const li = document.createElement('li'); li.textContent = f; ul.appendChild(li); });
 })();
-let fabDrag=null;
-fab.addEventListener('pointerdown', e=>{
-  fab.setPointerCapture(e.pointerId);
-  const r=fab.getBoundingClientRect();
-  fabDrag={x0:e.clientX, y0:e.clientY, left:r.left, top:r.top, moved:false};
-});
-fab.addEventListener('pointermove', e=>{
-  if(!fabDrag) return;
-  const dx=e.clientX-fabDrag.x0, dy=e.clientY-fabDrag.y0;
-  if(Math.abs(dx)>6||Math.abs(dy)>6) fabDrag.moved=true;
-  if(fabDrag.moved){
-    fab.style.right='auto'; fab.style.bottom='auto';
-    fab.style.left=(fabDrag.left+dx)+'px';
-    fab.style.top=(fabDrag.top+dy)+'px';
-    $('#fab-menu').classList.remove('on');
-  }
-});
-fab.addEventListener('pointerup', e=>{
-  if(!fabDrag) return;
-  const fueClick = !fabDrag.moved;
-  fabDrag=null;
-  clampFab();
-  const r=fab.getBoundingClientRect();
-  localStorage.setItem('cueva_fab_pos', JSON.stringify({x:r.left, y:r.top}));
-  if(fueClick) toggleFabMenu();
-});
-function clampFab(){
-  const r=fab.getBoundingClientRect();
-  const x=Math.min(Math.max(r.left,6), window.innerWidth-60);
-  const y=Math.min(Math.max(r.top,6), window.innerHeight-60);
-  fab.style.right='auto'; fab.style.bottom='auto';
-  fab.style.left=x+'px'; fab.style.top=y+'px';
-}
-window.addEventListener('resize', clampFab);
-function toggleFabMenu(){
-  const menu=$('#fab-menu');
-  if(menu.classList.contains('on')){ menu.classList.remove('on'); return; }
-  const r=fab.getBoundingClientRect();
-  // abrir hacia el lado con más espacio
-  const abajo = r.top < window.innerHeight/2;
-  const derecha = r.left < window.innerWidth/2;
-  menu.style.left = derecha ? (r.right+8)+'px' : 'auto';
-  menu.style.right = derecha ? 'auto' : (window.innerWidth-r.left+8)+'px';
-  menu.style.top = abajo ? r.top+'px' : 'auto';
-  menu.style.bottom = abajo ? 'auto' : (window.innerHeight-r.bottom)+'px';
-  menu.classList.add('on');
-}
-document.addEventListener('pointerdown', e=>{
-  if(!$('#fab-menu').contains(e.target) && e.target!==fab && !fab.contains(e.target))
-    $('#fab-menu').classList.remove('on');
-});
 
-// ── chat 1:1 con un agente ───────────────────────────────────────────────
-function abrirChatDesdeFab(agenteId){
-  $('#fab-menu').classList.remove('on');
-  abrirChat(agenteId);
-}
-function abrirChat(agenteId, prefill){
-  CHAT_AGENTE = agenteId;
-  $('#chat-titulo').textContent = NOMBRE_AGENTE[agenteId] || agenteId;
-  if(prefill!==undefined) $('#chat-input').value = prefill;
-  renderChatMsgs();
-  posicionarChat();
-  $('#chatpanel').classList.add('on');
-  $('#chat-input').focus();
-}
-function posicionarChat(){
-  const cp=$('#chatpanel');
-  const r=fab.getBoundingClientRect();
-  const w=380, h=Math.min(540, window.innerHeight*0.72);
-  let x = r.left < window.innerWidth/2 ? r.right+10 : r.left-10-w;
-  let y = r.top < window.innerHeight/2 ? r.top : r.bottom-h;
-  x=Math.min(Math.max(x,8), window.innerWidth-w-8);
-  y=Math.min(Math.max(y,8), window.innerHeight-h-8);
-  cp.style.left=x+'px'; cp.style.top=y+'px'; cp.style.right='auto'; cp.style.bottom='auto';
-}
-function cerrarChat(){ $('#chatpanel').classList.remove('on'); CHAT_AGENTE=null; }
-function renderChatMsgs(){
-  const turnos = (PIZ && PIZ.chats_agentes && PIZ.chats_agentes[CHAT_AGENTE]) || [];
-  const box = $('#chat-msgs');
-  box.innerHTML = turnos.map(t=>`<div class="cmsg ${t.quien==='usuario'?'usuario':'agente'}">${escapeHtml(t.texto)}</div>`).join('')
-    || '<div style="color:var(--muted);font-size:12px">Sin conversación todavía. Preguntale algo.</div>';
-  box.scrollTop = box.scrollHeight;
-}
-async function enviarChat(){
-  const input=$('#chat-input'); const pregunta=input.value.trim();
-  if(!pregunta || !CHAT_AGENTE || !PROYECTO_ID) return;
-  input.value=''; input.disabled=true;
-  PIZ.chats_agentes[CHAT_AGENTE] = PIZ.chats_agentes[CHAT_AGENTE] || [];
-  PIZ.chats_agentes[CHAT_AGENTE].push({quien:'usuario', texto:pregunta});
-  renderChatMsgs();
-  const box=$('#chat-msgs');
-  const espera=document.createElement('div'); espera.className='cmsg agente'; espera.id='chat-espera';
-  espera.textContent='…pensando'; box.appendChild(espera); box.scrollTop=box.scrollHeight;
-  const turno = await fetch(`/api/v1/proyectos/${PROYECTO_ID}/agente/${CHAT_AGENTE}`,{method:'POST',
-    headers:{'Content-Type':'application/json'}, body:JSON.stringify({pregunta})}).then(r=>r.json());
-  PIZ.chats_agentes[CHAT_AGENTE].push(turno);
-  renderChatMsgs();
-  input.disabled=false; input.focus();
-}
-$('#chat-input').addEventListener('keydown', e=>{
-  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); enviarChat(); }
-});
-
-// ── Informe ───────────────────────────────────────────────────────────
-const SECCIONES_TEXTO = [
-  {key:'introduccion', label:'📝 Introducción'},
-  {key:'resumen_bibliografia', label:'📚 Resumen de bibliografía'},
-  {key:'desarrollo', label:'🔧 Desarrollo'},
-  {key:'resultados', label:'📊 Resultados'},
-  {key:'conclusiones', label:'🏁 Conclusiones'},
-  {key:'anexo', label:'📎 Anexo'},
-];
-
-function renderInforme(){
-  if(!PIZ) return;
-  const ocultas = PIZ.secciones_ocultas || [];
-  const p = PIZ.proyecto;
-  const bloques = [];
-
-  bloques.push(seccionInforme('objetivos', '🎯 Objetivos', ocultas, `
-    ${(p.objetivos&&p.objetivos.length) ? '<ul class="inf-lista">'+p.objetivos.map(o=>`<li>${escapeHtml(o)}</li>`).join('')+'</ul>'
-      : '<div style="color:var(--muted);font-size:12.5px">Sin objetivos cargados (se editan en 🎯 Definición).</div>'}
-  `));
-
-  SECCIONES_TEXTO.forEach(s=>{
-    bloques.push(seccionInforme(s.key, s.label, ocultas, `
-      <textarea id="inf-${s.key}" oninput="guardarInformeDebounced('${s.key}')">${escapeHtml(PIZ.informe[s.key]||'')}</textarea>
-      ${agentPicker(s.key)}
-    `));
+// Cifras reales desde la API; si no responde, quedan los guiones (nunca un número inventado).
+(function () {
+  const fmt = (n) => Number(n).toLocaleString('es-AR');
+  const poner = (id, v) => { if (v != null && isFinite(v) && v > 0) document.getElementById(id).textContent = fmt(v); };
+  Promise.allSettled([
+    fetch('/api/v1/diag').then((r) => r.ok ? r.json() : Promise.reject()),
+    fetch('/api/v1/historia').then((r) => r.ok ? r.json() : Promise.reject()),
+  ]).then(([diag, hist]) => {
+    if (diag.status === 'fulfilled') poner('c-series', diag.value.n_series);
+    if (hist.status === 'fulfilled' && hist.value.estado) {
+      poner('c-pres', hist.value.estado.presidencias);
+      poner('c-eventos', hist.value.estado.eventos);
+    }
+    document.getElementById('cifras').removeAttribute('data-cargando');
   });
-
-  const items = [
-    ...(PIZ.estudios||[]).map(e=>`🧪 <b>${escapeHtml(e.herramienta)}</b> — ${escapeHtml(e.resumen)}`),
-    ...(PIZ.hallazgos||[]).map(h=>`📌 ${escapeHtml(h.texto)}`),
-  ];
-  bloques.push(seccionInforme('estudios', '🧪 Estudios realizados', ocultas, `
-    ${items.length ? '<ul class="inf-lista">'+items.map(i=>`<li>${i}</li>`).join('')+'</ul>'
-      : '<div style="color:var(--muted);font-size:12.5px">Todavía no se corrió ninguna herramienta ni se fijó un hallazgo.</div>'}
-  `));
-
-  $('#informe-wrap').innerHTML = `
-    <h2 style="font-size:20px;margin:0 0 2px">${escapeHtml(p.titulo||'Investigación sin título')}</h2>
-    <div style="color:var(--muted);font-size:12.5px;margin-bottom:18px">${escapeHtml(p.pregunta||'')}</div>
-    ${bloques.join('')}
-  `;
-}
-
-function seccionInforme(key, label, ocultas, cuerpoHtml){
-  const oculta = ocultas.includes(key);
-  return `<div class="inf-sec ${oculta?'oculta':''}" id="inf-sec-${key}">
-    <div class="inf-head">
-      <b>${label}</b>
-      <div class="sp">
-        <button class="inf-icon" onclick="toggleSeccionInforme('${key}')">${oculta?'👁 mostrar':'🙈 ocultar'}</button>
-      </div>
-    </div>
-    <div class="inf-body">${cuerpoHtml}</div>
-  </div>`;
-}
-
-function agentPicker(key){
-  return `<div class="agentpick">
-    ${Object.keys(NOMBRE_AGENTE).map(a=>`<button class="btn sec sm" onclick="consultarSobreSeccion('${a}','${key}')" title="Consultar a ${NOMBRE_AGENTE[a]}">${AVATAR[a]}</button>`).join('')}
-  </div>`;
-}
-function consultarSobreSeccion(agenteId, key){
-  const s = SECCIONES_TEXTO.find(x=>x.key===key);
-  const texto = ($('#inf-'+key)?.value || '').trim();
-  const prefill = texto
-    ? `Sobre la sección "${s.label}" del informe:\n"""${texto}"""\n\nPregunta: `
-    : `Sobre la sección "${s.label}" del informe (todavía vacía): `;
-  abrirChat(agenteId, prefill);
-}
-
-async function toggleSeccionInforme(key){
-  if(!PROYECTO_ID) return;
-  const r = await fetch(`/api/v1/proyectos/${PROYECTO_ID}/informe/${key}/toggle`,{method:'POST'}).then(r=>r.json());
-  if(r.oculta){ if(!PIZ.secciones_ocultas.includes(key)) PIZ.secciones_ocultas.push(key); }
-  else { PIZ.secciones_ocultas = PIZ.secciones_ocultas.filter(x=>x!==key); }
-  renderInforme();
-}
-
-let tInforme={};
-function guardarInformeDebounced(key){
-  clearTimeout(tInforme[key]);
-  tInforme[key]=setTimeout(()=>guardarInforme(key),700);
-}
-async function guardarInforme(key){
-  if(!PROYECTO_ID) return;
-  const texto = $('#inf-'+key).value;
-  PIZ.informe[key]=texto;
-  await fetch(`/api/v1/proyectos/${PROYECTO_ID}/informe/${key}`,{method:'PUT',
-    headers:{'Content-Type':'application/json'}, body:JSON.stringify({texto})});
-}
-
-// ── arranque: aplicar el modo guardado (por defecto, Vista Rápida) ──────
-setModo(MODO);
+})();
 </script>
+<script src="/web/estilo/pie.js"></script>
 </body>
 </html>
