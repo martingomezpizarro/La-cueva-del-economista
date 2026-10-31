@@ -5,9 +5,11 @@
   (srcdoc) para que su CSS y su JS no choquen con los de la Mesa.
 
 Los originales no se tocan. Volver a correr cuando cambie cualquiera de los dos.
+También escribe sitio/index.html: la página pública del dominio (ver .github/workflows/pages.yml).
 Uso: python scripts/unificar_mockup.py
 """
 import base64
+import re
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parents[1] / "docs" / "mockup"
@@ -20,6 +22,14 @@ tl = tl.replace("</style>", """
 #mod-mesa{display:none!important}
 .ia-fab,.ia-panel{display:none!important}
 .app{height:100vh}
+@media (max-width:760px){
+  .app{height:auto;min-height:100vh;overflow:visible}
+  .main,.module.on{display:flex;flex-direction:column}
+  .main{overflow:visible}
+  .rail,.rail-r{flex:0 0 auto!important;width:100%!important;max-height:none;border-left:none!important;border-right:none!important;border-bottom:1px solid var(--line)}
+  .rail .scroll,.rail-r .scroll{max-height:300px}
+  .stage{min-height:78vh;order:-1}
+}
 </style>""", 1)
 tl_b64 = base64.b64encode(tl.encode("utf-8")).decode("ascii")
 
@@ -82,9 +92,29 @@ bloque = f"""
 </script>
 """
 mesa = mesa.replace("</body>", bloque + "</body>", 1) if "</body>" in mesa else mesa + bloque
-import re
 mesa = re.sub(r"<title>[^<]*</title>", "<title>La Cueva del Economista</title>", mesa, count=1)
 
 salida = RAIZ / "cueva-unificada.html"
 salida.write_text(mesa, encoding="utf-8")
 print(salida, round(len(mesa.encode("utf-8")) / 1024), "KB")
+
+# --- Sitio público: sitio/index.html es lo que sirve cuevadeleconomista.martingomezpizarro.com.ar ---
+# Se publica SOLO la carpeta sitio/ (workflow .github/workflows/pages.yml), nunca la raíz del repo.
+AVISO = """
+<style>
+.aviso-sitio{position:fixed;left:calc(14px + env(safe-area-inset-left,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:40;max-width:min(460px,calc(100vw - 100px));
+  display:flex;gap:10px;align-items:flex-start;padding:9px 12px;border-radius:10px;background:var(--surface);color:var(--ink-2);border:1px solid var(--line);box-shadow:var(--shadow);font-size:12px;line-height:1.45}
+.aviso-sitio b{color:var(--ink)}
+.aviso-sitio button{all:unset;cursor:pointer;color:var(--ink-dim);font-size:14px;line-height:1;padding:0 2px}
+.aviso-sitio button:focus-visible{outline:2px solid var(--accent)}
+html body.en-tiempo > div#aviso-sitio.aviso-sitio.aviso-sitio{display:flex!important}
+</style>
+<div class="aviso-sitio" id="aviso-sitio" role="note"><span><b>Vista previa de la plataforma, en construcción.</b> Todas las series son datos reales (BCRA, INDEC, FMI, Maddison y otras fuentes académicas); cada una indica su fuente.</span><button type="button" aria-label="Cerrar aviso" onclick="this.parentNode.remove()">✕</button></div>
+"""
+sitio = Path(__file__).resolve().parents[1] / "sitio"
+sitio.mkdir(exist_ok=True)
+pagina = mesa.replace("</body>", AVISO + "</body>", 1) if "</body>" in mesa else mesa + AVISO
+(sitio / "index.html").write_text(pagina, encoding="utf-8")
+(sitio / "CNAME").write_text("cuevadeleconomista.martingomezpizarro.com.ar\n", encoding="utf-8")
+(sitio / ".nojekyll").write_text("", encoding="utf-8")
+print(sitio / "index.html", round(len(pagina.encode("utf-8")) / 1024), "KB")

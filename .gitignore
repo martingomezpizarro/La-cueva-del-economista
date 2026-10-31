@@ -46,6 +46,7 @@ docs/catalogo_series.xlsx
 # Salidas sueltas y papelera local
 Claude outputs/
 docs/_to_delete/
+_sitio/
 
 # Corpus del RAG: los libros/papers en PDF no se suben (derechos y peso); quedan en la máquina local
 RAG/corpus/**/*.pdf

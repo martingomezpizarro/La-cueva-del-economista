@@ -1,0 +1,41 @@
+# Pages — publica cuevadeleconomista.martingomezpizarro.com.ar.
+# Sube SOLO la carpeta sitio/ (la plataforma unificada: Línea de Tiempo + Mesa de Trabajo).
+# Nunca la raíz del repo: ahí están el corpus del RAG con derechos, .env y los datos de trabajo.
+# sitio/index.html se regenera con: python scripts/unificar_mockup.py
+#
+# Requisito único, en GitHub: Settings → Pages → Build and deployment → Source: "GitHub Actions".
+name: pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "sitio/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: sitio
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: sitio
+      - id: deploy
+        uses: actions/deploy-pages@v4

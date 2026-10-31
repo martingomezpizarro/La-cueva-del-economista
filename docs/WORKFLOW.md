@@ -84,7 +84,7 @@ Estructura de carpetas (para ubicar dónde va cada cosa):
 - Una vez resuelto (o si no hace falta aclarar nada), ejecuto la tarea completa sin pedir más
   confirmaciones intermedias tipo "¿arranco?", "¿seguimos?", "¿confirmás?".
 - Solo freno a mitad de tarea si: (a) hay un bloqueo real que necesita una decisión tuya, o
-  (b) la acción es destructiva/irreversible (push, borrar corpus, reescribir el índice sin
+  (b) la acción es destructiva/irreversible (push --force, borrar corpus, reescribir el índice sin
   backup, mover el `.git`).
 - La única confirmación que sigue aplicando siempre es la de commit (ver Git Workflow) —
   nunca comiteo sin que lo pidas explícitamente.
@@ -190,7 +190,7 @@ duda, preguntar una sola vez.
 
 ### Push
 
-- **Nunca hacer push** — el usuario maneja todos los pushes al remoto.
-- No preguntar sobre push, no sugerirlo.
-- Después de comitear: "Cambios comiteados como [hash]. Listo para que hagas push cuando
-  quieras."
+- **El asistente puede empujar a `main`** cuando el usuario aprobó el commit (decidido
+  2026-10-21, como en idoneidad). Antes: `git pull`; nunca `--force`.
+- Después de empujar: "Cambios comiteados y empujados como [hash]." Si el usuario trabaja
+  en su copia local, recordarle hacer `git pull`.
