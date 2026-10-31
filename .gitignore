@@ -9,8 +9,6 @@ __pycache__/
 # Índices generados y datos pesados (se reconstruyen con la ingesta; ver docs/SETUP.md)
 indice/
 rag/_indice/
-knowledge-base/corpus/**/*.pdf
-knowledge-base/corpus/**/*.epub
 
 # Investigaciones guardadas (cuadernos de trabajo de cada usuario) y transcripts
 data/proyectos/
@@ -30,8 +28,6 @@ cueva.local.toml
 
 # Series descargadas: se reponen con los scripts de cueva/fuentes (ver docs/DATOS.md).
 # Solo se versiona el índice de cada organismo, que es lo que permite auditar la descarga.
-data/series/**/*.csv
-!data/series/**/_index.csv
 
 # Cuadro de series: se regenera con `python scripts/cuadro_series.py`
 docs/cuadro_series.html
@@ -46,9 +42,12 @@ docs/cuadro_revision.html
 docs/catalogo_series.xlsx
 
 # Corpus del RAG: los libros/papers en PDF no se suben (derechos y peso); sí fichas, skills y bibliografía
-RAG/corpus/**/*.pdf
-RAG/corpus/**/*.epub
 
 # Salidas sueltas y papelera local
 Claude outputs/
 docs/_to_delete/
+
+# Corpus del RAG: los libros/papers en PDF no se suben (derechos y peso); quedan en la máquina local
+RAG/corpus/**/*.pdf
+RAG/corpus/**/*.epub
+knowledge-base/corpus/**/*.pdf
