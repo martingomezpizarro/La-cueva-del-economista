@@ -13,6 +13,45 @@ visual: `docs/mockup/cueva-mockup.html` (publicado como artifact; el documento m
 
 ## Estado (actualizado 2026-07-14)
 
+**Catálogo de métodos: 90 métodos en 16 familias (sesión 2026-11-04).** Mapa completo,
+pendientes y hoja de ruta en **`docs/INVESTIGACION_METODOS.md`** (leerlo antes de sumar métodos).
+- **`cueva/metodos/`**: cada método se DECLARA con `@metodo(...)` (familia, pregunta, `Param`
+  tipados, supuestos, trampas, deps, costo, referencias) y devuelve un `Resultado` con BLOQUES
+  TIPADOS (`metricas`, `tabla`, `lineas`, `bandas`, `barras`, `mapa_calor`, `dispersion`,
+  `texto`, `veredicto`) + `advertencias`, `series_salida` y `codigo`. La pantalla, la API y los
+  agentes se arman solos desde la declaración: **sumar un método = una función + un caso en
+  `ARGS` de `tests/test_metodos.py`** (si falta el caso, `test_todo_metodo_tiene_caso` falla).
+- Familias: exploratorio · pruebas (batería de raíz unitaria, **Bai-Perron propio cruzado con
+  eventos.csv**, PELT, Chow, CUSUM, BDS, memoria larga) · filtros (HP, Hamilton, BK/CF, STL, BN,
+  UCM) · univariados · volatilidad · regresión · multivariados (VAR+IRF+FEVD, Jordà, Toda-Yamamoto,
+  BVAR) · cointegración (EG, ARDL límites, Johansen, DOLS) · regímenes (Markov, SETAR, LSTAR) ·
+  estado (TVP-Kalman propio, DFM, Chow-Lin/Denton) · causal (ITS, CausalImpact, control
+  sintético, DiD, estudio de eventos) · ml (13 modelos + SHAP + `probabilidad_evento` +
+  selección) · redes (LSTM/GRU/ESN **en numpy puro**, `redes_np.py`, gradiente testeado) · no
+  supervisado (PCA, clusters de series y de PERÍODOS, anomalías) · **finanzas** (Monte Carlo,
+  carteras fuera de muestra, cruce de medias, momentum por régimen, pares, volatilidad,
+  estacionalidad intradía, neutralidad a factores) · evaluación (torneo, curva de especificaciones).
+- **Regla de validación** (`validacion.py`): todo lo predictivo se evalúa con origen móvil
+  expansivo SIN fuga, contra paseo aleatorio y media histórica, con Diebold-Mariano (HLN). Los
+  backtests eligen parámetros en la 1.ª mitad y evalúan en la 2.ª. Los causales declaran su
+  supuesto de identificación y corren placebo.
+- **Mis series** (`cueva/datos/mis_series.py`): CSV propios (detecta `;` y coma decimal) y
+  salidas de métodos guardadas como serie → `<CUEVA_DATA>/series_usuario/` (gitignorado), entran
+  al catálogo con origen «Mis series». Es lo que permite ENCADENAR métodos.
+- API: `GET /api/v1/metodos[/{id}]`; `POST /api/v1/herramienta` corre cualquier método (y lo
+  persiste como paso del Estudio si hay proyecto); `GET|POST /api/v1/mis-series`,
+  `POST /api/v1/mis-series/derivada`, `DELETE /api/v1/mis-series/{archivo}`.
+- Agentes: `herramientas.ejecutar/declaraciones_herramientas` resuelven métodos del catálogo;
+  las listas blancas aceptan comodines `familia:<id>`.
+- Pantalla: `/mesa` tiene ahora **Explorar · Métodos** (`web/mesa/metodos.{js,css}`, SVG propio
+  sobre tokens; `?vista=metodos`). Paso nuevo en el recorrido guiado (`#vistas`).
+- ⚠ `from cueva.metodos import registro` es el SUBMÓDULO: no reexportar la función `registro`
+  en `cueva/metodos/__init__.py` (ya pasó: rompía la API).
+- Dependencias: extra `[ml]` (xgboost, lightgbm, ruptures; el CI lo instala). Sin él, esos
+  métodos aparecen como «falta instalar». `torch` NO se usa (bloqueado en el sandbox y pesado).
+- ⚠ CI: ya venía rojo antes de esta sesión por `ruff format --check .` (35 archivos ajenos) y
+  16 errores de ruff en `scripts/`; los 9 tests rojos de skills siguen igual.
+
 **Portada, pie institucional y recorridos guiados (sesión 2026-10-22).**
 - **Rutas**: `/` es la **portada** (`web/index.html`, página de lectura que scrollea) y la
   **Mesa se mudó a `/mesa`** (`web/mesa/index.html`, mismo código que antes vivía en
