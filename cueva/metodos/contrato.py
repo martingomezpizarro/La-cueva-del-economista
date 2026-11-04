@@ -51,6 +51,7 @@ FAMILIAS: dict[str, dict[str, str]] = {
     "ml": {"nombre": "Aprendizaje automático", "icono": "🌲"},
     "redes": {"nombre": "Redes neuronales", "icono": "🧠"},
     "no_supervisado": {"nombre": "No supervisado y anomalías", "icono": "🧩"},
+    "finanzas": {"nombre": "Finanzas cuantitativas y activos", "icono": "💹"},
     "evaluacion": {"nombre": "Evaluación y combinación de modelos", "icono": "🏆"},
 }
 

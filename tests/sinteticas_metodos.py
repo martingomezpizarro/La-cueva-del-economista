@@ -64,4 +64,41 @@ def generar(carpeta) -> dict[str, np.ndarray]:
     fechas = pd.date_range(INICIO, periods=N, freq="ME")
     for nombre, v in out.items():
         pd.DataFrame({"fecha": fechas, "valor": v}).to_csv(carpeta / f"{nombre}.csv", index=False, encoding="utf-8-sig")
+    out.update(generar_activos(carpeta, rng))
+    return out
+
+
+def generar_activos(carpeta, rng) -> dict[str, np.ndarray]:
+    """Precios DIARIOS (días hábiles) e intradía horarios, para la familia de finanzas:
+    - `mercado`, `accion_a` (β≈1,2 al mercado), `accion_b` (β≈0,5), `neutral` (β≈0, alfa > 0)
+    - `par_a` / `par_b`: cointegrados (diferencial Ornstein-Uhlenbeck con vida media ~10 días)
+    - `intradia`: precio horario con volatilidad alta a la apertura y al cierre
+    """
+    nd = 1500
+    dias = pd.bdate_range("2018-01-01", periods=nd)
+    vol = np.ones(nd) * 0.01
+    for t in range(1, nd):  # volatilidad que se agrupa
+        vol[t] = np.sqrt(0.000002 + 0.08 * (rng.normal() * vol[t - 1]) ** 2 + 0.9 * vol[t - 1] ** 2)
+    m = 0.0003 + vol * rng.normal(size=nd)
+    ra = 0.0001 + 1.2 * m + 0.008 * rng.normal(size=nd)
+    rb = 0.0002 + 0.5 * m + 0.006 * rng.normal(size=nd)
+    rn = 0.0004 + 0.004 * rng.normal(size=nd)
+    out = {
+        "mercado": 100 * np.exp(np.cumsum(m)),
+        "accion_a": 50 * np.exp(np.cumsum(ra)),
+        "accion_b": 30 * np.exp(np.cumsum(rb)),
+        "neutral": 10 * np.exp(np.cumsum(rn)),
+    }
+    comun = np.cumsum(0.01 * rng.normal(size=nd))
+    ou = np.zeros(nd)
+    for t in range(1, nd):
+        ou[t] = 0.93 * ou[t - 1] + 0.01 * rng.normal()
+    out["par_a"] = 40 * np.exp(comun + ou)
+    out["par_b"] = 20 * np.exp(comun)
+    for nombre, v in out.items():
+        pd.DataFrame({"fecha": dias, "valor": v}).to_csv(carpeta / f"{nombre}.csv", index=False, encoding="utf-8-sig")
+    horas = pd.DatetimeIndex([d + pd.Timedelta(hours=h) for d in pd.bdate_range("2024-01-01", periods=120) for h in range(10, 17)])
+    hv = np.array([0.004 if h in (10, 16) else 0.0015 for h in horas.hour])
+    out["intradia"] = 100 * np.exp(np.cumsum(hv * rng.normal(size=len(horas))))
+    pd.DataFrame({"fecha": horas.strftime("%Y-%m-%d %H:%M"), "valor": out["intradia"]}).to_csv(carpeta / "intradia.csv", index=False, encoding="utf-8-sig")
     return out

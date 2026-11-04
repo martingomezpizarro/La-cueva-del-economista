@@ -73,7 +73,7 @@ def serie(sid: str, freq: str = "mensual", transf: str | None = "nivel", desde=N
         raise ErrorMetodo(f"No existe la serie «{sid}» en el catálogo.") from e
     s = s.astype(float)
     s, suf = _transformar(s, transf)
-    s = _recortar(s, desde, hasta).dropna()
+    s = _recortar(s, desde, hasta).replace([np.inf, -np.inf], np.nan).dropna()
     s.name = sid
     if len(s) < minimo:
         raise ErrorMetodo(f"«{sid}{suf}» tiene {len(s)} observaciones; hacen falta al menos {minimo}.")
