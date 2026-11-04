@@ -8,6 +8,7 @@ from cueva.metodos.familias import (  # noqa: F401
     exploratorio,
     filtros,
     finanzas,
+    finanzas_avanzadas,
     ml,
     multivariados,
     no_supervisado,

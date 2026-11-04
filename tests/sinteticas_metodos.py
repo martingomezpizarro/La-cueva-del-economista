@@ -60,6 +60,18 @@ def generar(carpeta) -> dict[str, np.ndarray]:
     for k, carga in enumerate([1.0, 0.8, -0.6, 1.2]):
         out[f"fac{k}"] = carga * f + rng.normal(0, 0.3, N)
     # positiva con tendencia (para log)
+    # burbuja: paseo aleatorio en log con un tramo explosivo (2016-07 a 2018-06) y colapso.
+    # Generador PROPIO: así sumar esta serie no cambia las demás del banco.
+    rb_ = np.random.default_rng(11)
+    lb = np.zeros(N)
+    for i in range(1, N):
+        if 150 <= i < 174:
+            lb[i] = lb[i - 1] + 0.012 + 0.06 * (lb[i - 1] - lb[149]) + rb_.normal(0, 0.01)
+        elif 174 <= i < 180:
+            lb[i] = lb[i - 1] - (lb[173] - lb[149]) / 6 + rb_.normal(0, 0.01)
+        else:
+            lb[i] = lb[i - 1] + rb_.normal(0, 0.02)
+    out["burbuja"] = np.exp(3 + lb)
     out["positiva"] = np.exp(
         4 + 0.004 * t + 0.03 * np.cumsum(rng.normal(0, 0.3, N)) + 0.05 * np.sin(2 * np.pi * t / 12)
     )

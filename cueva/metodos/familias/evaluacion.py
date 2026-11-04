@@ -170,6 +170,18 @@ def torneo_modelos(
         {"realizado": real, **{n: preds[n] for n in top}},
         estilos={n: {"guion": "dot"} for n in top},
     )
+    nombres_mcs = [n for n in preds if n not in ("Paseo aleatorio", "Media histórica")] + [
+        "Paseo aleatorio",
+        "Media histórica",
+    ]
+    perd = np.column_stack([(real - preds[n]) ** 2 for n in nombres_mcs])
+    quedan, fuera = conjunto_confianza(perd, nombres_mcs)
+    r.tabla(
+        "Conjunto de confianza de modelos al 90 % (Hansen-Lunde-Nason): los que no se pueden descartar",
+        ["modelo", "estado", "p de eliminación"],
+        [[n, "en el conjunto", None] for n in quedan] + [[n, "eliminado", p] for n, p in fuera],
+    )
+    r.metrica("Modelos en el conjunto de confianza", len(quedan))
     r.metrica("Ganador", mejor)
     r.metrica("RMSE del ganador", filas[0][1])
     r.metrica("Empatados con el ganador (DM p ≥ 0,1)", len(empatados))
@@ -193,8 +205,41 @@ def torneo_modelos(
         + ", ".join(f"{b[0]} {fmt(b[1])}" for b in bench)
         + f". Empatados estadísticamente con el ganador: {', '.join(empatados[:5]) or 'ninguno'}."
     )
-    r.datos = {"ranking": [[f[0], f[1]] for f in filas]}
+    r.datos = {"ranking": [[f[0], f[1]] for f in filas], "mcs": quedan}
     return r
+
+
+def conjunto_confianza(
+    perdidas: np.ndarray, nombres: list[str], alfa: float = 0.1, reps: int = 500, seed: int = 0
+):
+    """Model Confidence Set (Hansen, Lunde y Nason 2011), estadístico T_max con bootstrap
+    estacionario. Devuelve (modelos que quedan, [(eliminado, p-valor)])."""
+    from cueva.metodos.familias.finanzas_avanzadas import _bootstrap_estacionario
+
+    rng = np.random.default_rng(seed)
+    T = perdidas.shape[0]
+    L = max(3, int(T ** (1 / 3)))
+    idx_boot = [_bootstrap_estacionario(T, L, rng) for _ in range(reps)]
+    vivos = list(range(perdidas.shape[1]))
+    eliminados = []
+    p_acum = 0.0
+    while len(vivos) > 1:
+        X = perdidas[:, vivos]
+        dbar = X.mean(0) - X.mean()
+        boots = np.array([X[ib].mean(0) - X[ib].mean() for ib in idx_boot])
+        var = ((boots - dbar) ** 2).mean(0)
+        var[var <= 0] = 1e-12
+        t = dbar / np.sqrt(var)
+        tmax = t.max()
+        tboot = ((boots - dbar) / np.sqrt(var)).max(1)
+        p = float(np.mean(tboot >= tmax))
+        p_acum = max(p_acum, p)
+        if p_acum >= alfa:
+            break
+        peor = vivos[int(np.argmax(t))]
+        eliminados.append((nombres[peor], p_acum))
+        vivos.remove(peor)
+    return [nombres[i] for i in vivos], eliminados
 
 
 @metodo(
@@ -342,4 +387,82 @@ def curva_especificaciones(dep, interes, controles, freq, transformaciones, reza
         "verde" if robusto else ("amarillo" if max(pos_sig, neg_sig) >= 50 else "rojo"),
     )
     r.resumen = f"Curva de especificaciones del efecto de {interes} sobre {dep}: {len(filas)} especificaciones, mediana {fmt(float(np.median(coefs)))}; {fmt(pos_sig, 3)} % positivas significativas y {fmt(neg_sig, 3)} % negativas significativas. Más influyente: {infl[0][0]}."
+    return r
+
+
+@metodo(
+    "intervalos_conformales",
+    "Intervalos de predicción conformales (cobertura garantizada)",
+    F,
+    "¿Qué rango de valores es creíble para el próximo dato, con una cobertura que se cumpla de verdad fuera de muestra?",
+    params=params_diseno()
+    + [
+        Param("modelo", "opcion", "Modelo base", defecto="ridge", opciones=CANDIDATOS),
+        Param("cobertura", "real", "Cobertura nominal", defecto=0.9, minimo=0.5, maximo=0.99),
+    ],
+    cuando="Cuando importa el rango y no sólo el punto (escenarios, riesgo), con cualquier modelo de ML.",
+    supuestos=[
+        "Conformal por origen móvil: el cuantil de los errores absolutos PASADOS fuera de muestra define el ancho (no usa el futuro)."
+    ],
+    trampas=[
+        "Con quiebres, la cobertura se pierde transitoriamente: el ancho se adapta con los errores recientes."
+    ],
+    deps=["sklearn"],
+    costo="segundos",
+    referencias=[
+        "Vovk, Gammerman y Shafer (2005)",
+        "Angelopoulos y Bates (2023)",
+        "Gibbs y Candès (2021), conformal adaptativo",
+    ],
+    etiquetas=["conformal", "intervalos", "incertidumbre", "cobertura", "predicción"],
+)
+def intervalos_conformales(
+    dep,
+    indeps,
+    freq,
+    transf,
+    transf_x,
+    rezagos_y,
+    rezagos_x,
+    horizonte,
+    estacionales,
+    n_test,
+    modelo,
+    cobertura,
+):
+    d = armar_diseno(dep, indeps, freq, transf, transf_x, rezagos_y, rezagos_x, horizonte, estacionales)
+    nt = n_test or max(40, V.n_test_por_defecto(len(d.X), freq))
+    bt, _ = evaluar(d, fabrica(modelo, {}), nt, nombre=modelo)
+    err = np.abs(bt.real - bt.pred)
+    cal = max(10, len(err) // 3)
+    lo, hi, dentro = [], [], []
+    for i in range(cal, len(err)):
+        q = np.quantile(err[:i], min(1.0, cobertura * (1 + 1 / i)))
+        lo.append(bt.pred[i] - q)
+        hi.append(bt.pred[i] + q)
+        dentro.append(lo[-1] <= bt.real[i] <= hi[-1])
+    cob = float(np.mean(dentro)) if dentro else float("nan")
+    q_final = float(np.quantile(err, min(1.0, cobertura * (1 + 1 / len(err)))))
+    m = fabrica(modelo, {})()
+    m.fit(d.X.values, d.y.values)
+    pred = float(np.ravel(m.predict(d.X_ult.values))[0])
+    r = Resultado()
+    fechas = bt.fechas[cal:]
+    r.lineas(
+        f"Intervalo conformal al {cobertura:.0%} (sólo con errores pasados)",
+        fechas,
+        {"realizado": bt.real[cal:], "pronóstico": bt.pred[cal:], "IC inf.": lo, "IC sup.": hi},
+        estilos={"pronóstico": {"guion": "dash"}},
+    )
+    r.metrica("Cobertura nominal %", cobertura * 100)
+    r.metrica("Cobertura observada %", cob * 100)
+    r.metrica("Ancho medio del intervalo", float(np.mean(np.array(hi) - np.array(lo))) if hi else None)
+    r.metrica(f"Pronóstico {d.fecha_pron.date()}", pred)
+    r.metrica("Intervalo", f"[{fmt(pred - q_final)}, {fmt(pred + q_final)}]")
+    ok = abs(cob - cobertura) <= 0.1
+    r.veredicto(
+        f"Cobertura observada {fmt(cob * 100, 3)} % para una nominal de {cobertura:.0%}: {'calibrado' if ok else 'descalibrado (probablemente un quiebre en el tramo de prueba)'}.",
+        "verde" if ok else "amarillo",
+    )
+    r.resumen = f"Conformal ({NOMBRES.get(modelo, modelo)}) para {d.etiquetas[d.dep]}: cobertura {fmt(cob * 100, 3)} % (nominal {cobertura:.0%}); próximo valor {fmt(pred)} en [{fmt(pred - q_final)}, {fmt(pred + q_final)}]."
     return r

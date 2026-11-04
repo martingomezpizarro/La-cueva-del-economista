@@ -177,6 +177,17 @@ ARGS: dict[str, dict] = {
     "regimenes_volatilidad": dict(sid="mercado", regimenes=2),
     "estacionalidad_calendario": dict(sid="intradia", mapa="hora_x_dia", medida="volatilidad"),
     "neutralidad_factores": dict(sid="accion_a", factores=["mercado"]),
+    # fase M1: activos, eventos y robustez
+    "burbuja_gsadf": dict(sid="burbuja", simulaciones=49),
+    "sobreajuste_backtest": dict(sid="mercado", bloques=6, bootstrap=100),
+    "apuesta_binaria": dict(probabilidad=0.62, precio=0.5, apuestas=50),
+    "triple_barrera": dict(sid="mercado", horizonte=10, modelo="logit"),
+    "eventos_mercado": dict(sid="accion_a", mercado="mercado", fechas="2019-03-01, 2020-03-02, 2021-06-01"),
+    "contagio_diebold_yilmaz": dict(sids=["mercado", "accion_a", "accion_b"], freq="mensual"),
+    "dcc_garch": dict(sids=["mercado", "accion_a"]),
+    "colas_extremas": dict(sid="mercado"),
+    "curva_nelson_siegel": dict(sids=["fac0", "fac1", "fac2", "fac3"], plazos="0.25, 1, 5, 10"),
+    "intervalos_conformales": dict(ML, modelo="svr"),
 }
 
 
@@ -309,6 +320,38 @@ def test_pares_y_neutralidad(banco):
 def test_estacionalidad_intradia_ve_la_apertura_y_el_cierre(banco):
     r = ejecutar("estacionalidad_calendario", ARGS["estacionalidad_calendario"])
     assert r["metricas"]["Kruskal-Wallis por columna (p)"] < 0.01
+
+
+def test_gsadf_detecta_la_burbuja_y_no_el_paseo(banco):
+    si = ejecutar("burbuja_gsadf", dict(sid="burbuja", simulaciones=99))
+    no = ejecutar("burbuja_gsadf", dict(sid="paseo", transf="nivel", simulaciones=99))
+    assert si["metricas"]["GSADF"] > si["metricas"]["Crítico 95 %"]
+    assert si["metricas"]["Episodios"] >= 1
+    assert no["metricas"]["GSADF"] < no["metricas"]["Crítico 95 %"]
+
+
+def test_apuesta_binaria_signo_del_valor_esperado():
+    buena = ejecutar("apuesta_binaria", dict(probabilidad=0.7, precio=0.5, incertidumbre=0.02))
+    mala = ejecutar("apuesta_binaria", dict(probabilidad=0.505, precio=0.5, comision=0.02))
+    assert buena["metricas"]["Valor esperado por contrato"] > 0 and buena["semaforo"] == "verde"
+    assert mala["semaforo"] == "rojo"
+    # p < precio ⇒ conviene el NO
+    assert (
+        ejecutar("apuesta_binaria", dict(probabilidad=0.2, precio=0.5))["metricas"]["Lado conveniente"]
+        == "NO"
+    )
+
+
+def test_sobreajuste_y_conjunto_de_confianza(banco):
+    r = ejecutar("sobreajuste_backtest", ARGS["sobreajuste_backtest"])
+    assert 0 <= r["datos"]["pbo"] <= 1 and 0 <= r["datos"]["dsr"] <= 1
+    t = ejecutar("torneo_modelos", dict(ML, modelos=["ar_lineal", "svr", "knn"]))
+    assert "Paseo aleatorio" not in t["datos"]["mcs"]  # el paseo queda fuera del conjunto
+
+
+def test_conformal_cubre_cerca_de_lo_nominal(banco):
+    r = ejecutar("intervalos_conformales", dict(ML, modelo="svr", n_test=60, cobertura=0.9))
+    assert 75 <= r["metricas"]["Cobertura observada %"] <= 100
 
 
 # ──────────────────────────────────────────────────────────────────────────
