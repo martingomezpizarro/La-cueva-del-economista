@@ -285,7 +285,9 @@ def quiebres_estructurales(sid, freq, transf, modelo, max_quiebres, recorte, cri
         seg = y[a:b]
         if modelo == "media":
             ajuste[a:b] = seg.mean()
-            filas_tramos.append([str(s.index[a].date()), str(s.index[b - 1].date()), b - a, seg.mean(), seg.std(ddof=1)])
+            filas_tramos.append(
+                [str(s.index[a].date()), str(s.index[b - 1].date()), b - a, seg.mean(), seg.std(ddof=1)]
+            )
         else:
             tt = np.arange(a, b)
             pend, ord_ = np.polyfit(tt, seg, 1)
@@ -303,12 +305,24 @@ def quiebres_estructurales(sid, freq, transf, modelo, max_quiebres, recorte, cri
         filas_q.append([str(f.date()), ev["titulo"] if ev else "—", ev["fecha"] if ev else ""])
         marcas.append({"x": str(f.date()), "texto": ev["titulo"] if ev else "quiebre"})
     if filas_q:
-        r.tabla("Quiebres y evento coincidente de la Línea de Tiempo (±6 meses)", ["fecha", "evento", "fecha del evento"], filas_q)
-    r.lineas(f"{et} con ajuste por tramos", s.index, {et: y, "ajuste por tramos": ajuste}, estilos={"ajuste por tramos": {"ancho": 2.5}}, marcas=marcas)
+        r.tabla(
+            "Quiebres y evento coincidente de la Línea de Tiempo (±6 meses)",
+            ["fecha", "evento", "fecha del evento"],
+            filas_q,
+        )
+    r.lineas(
+        f"{et} con ajuste por tramos",
+        s.index,
+        {et: y, "ajuste por tramos": ajuste},
+        estilos={"ajuste por tramos": {"ancho": 2.5}},
+        marcas=marcas,
+    )
     r.serie(f"{sid}_tramos", s.index, ajuste, f"Ajuste por tramos de {et} (Bai-Perron, {m_opt} quiebres)")
     r.metrica("Quiebres elegidos", m_opt)
     if transf in ("nivel", "log"):
-        r.advertir("Serie en niveles: si es I(1), parte de los quiebres pueden ser deriva estocástica. Probá con dif_log.")
+        r.advertir(
+            "Serie en niveles: si es I(1), parte de los quiebres pueden ser deriva estocástica. Probá con dif_log."
+        )
     fechas = ", ".join(f[0] for f in filas_q) or "ninguno"
     coinc = sum(1 for f in filas_q if f[1] != "—")
     r.veredicto(
@@ -329,8 +343,23 @@ def quiebres_estructurales(sid, freq, transf, modelo, max_quiebres, recorte, cri
         P_SERIE(),
         P_FREQ,
         Param("transf", "opcion", "Transformación", defecto="dif_log", opciones=list(P_TRANSF.opciones)),
-        Param("costo", "opcion", "Qué cambia", defecto="normal", opciones=["l2", "normal", "rbf"], ayuda="l2 = media; normal = media y varianza; rbf = cualquier cambio de distribución"),
-        Param("penalidad", "real", "Penalidad (más alta = menos cambios)", defecto=0.0, minimo=0, maximo=1000, ayuda="0 = automática (BIC)"),
+        Param(
+            "costo",
+            "opcion",
+            "Qué cambia",
+            defecto="normal",
+            opciones=["l2", "normal", "rbf"],
+            ayuda="l2 = media; normal = media y varianza; rbf = cualquier cambio de distribución",
+        ),
+        Param(
+            "penalidad",
+            "real",
+            "Penalidad (más alta = menos cambios)",
+            defecto=0.0,
+            minimo=0,
+            maximo=1000,
+            ayuda="0 = automática (BIC)",
+        ),
     ],
     cuando="Para encontrar cambios de volatilidad (ej. regímenes de alta inflación) que Bai-Perron en media no ve.",
     trampas=["La penalidad manda: mostrá el resultado con dos penalidades antes de concluir."],
@@ -352,7 +381,15 @@ def cambio_de_punto(sid, freq, transf, costo, penalidad):
     bordes = [0, *bk, len(y)]
     for a, b in zip(bordes[:-1], bordes[1:], strict=True):
         seg = s.values[a:b]
-        filas.append([str(s.index[a].date()), str(s.index[b - 1].date()), b - a, seg.mean(), seg.std(ddof=1) if b - a > 1 else None])
+        filas.append(
+            [
+                str(s.index[a].date()),
+                str(s.index[b - 1].date()),
+                b - a,
+                seg.mean(),
+                seg.std(ddof=1) if b - a > 1 else None,
+            ]
+        )
     for b in bk:
         ev = evento_cercano(s.index[b])
         marcas.append({"x": str(s.index[b].date()), "texto": ev["titulo"] if ev else "cambio"})
@@ -360,7 +397,9 @@ def cambio_de_punto(sid, freq, transf, costo, penalidad):
     r.lineas(et, s.index, {et: s.values}, marcas=marcas)
     r.metrica("Cambios", len(bk))
     r.metrica("Penalidad usada", pen)
-    r.resumen = f"PELT ({costo}) sobre {et}: {len(bk)} cambios en " + (", ".join(m["x"] for m in marcas) or "—") + "."
+    r.resumen = (
+        f"PELT ({costo}) sobre {et}: {len(bk)} cambios en " + (", ".join(m["x"] for m in marcas) or "—") + "."
+    )
     return r
 
 
@@ -371,7 +410,14 @@ def cambio_de_punto(sid, freq, transf, costo, penalidad):
     "¿La relación entre Y y X cambió en una fecha que elijo (una reforma, una crisis)?",
     params=[
         P_SERIE("dep", "Dependiente (Y)"),
-        P_SERIES("indeps", "Explicativas (X)", minimo=0, maximo=6, requerido=False, ayuda="Vacío = sólo constante (cambio de media)"),
+        P_SERIES(
+            "indeps",
+            "Explicativas (X)",
+            minimo=0,
+            maximo=6,
+            requerido=False,
+            ayuda="Vacío = sólo constante (cambio de media)",
+        ),
         Param("fecha", "fecha", "Fecha del quiebre", requerido=True),
         P_FREQ,
         Param("transf", "opcion", "Transformación", defecto="dif_log", opciones=list(P_TRANSF.opciones)),
@@ -402,11 +448,26 @@ def prueba_chow(dep, indeps, fecha, freq, transf):
     r = Resultado()
     r.metrica("F de Chow", Fst)
     r.metrica("p", p)
-    r.tabla("Tramos", ["tramo", "desde", "hasta", "obs.", "SSR"], [["antes", str(df.index[0].date()), str(df.index[corte - 1].date()), corte, s1], ["después", str(df.index[corte].date()), str(df.index[-1].date()), n - corte, s2]])
+    r.tabla(
+        "Tramos",
+        ["tramo", "desde", "hasta", "obs.", "SSR"],
+        [
+            ["antes", str(df.index[0].date()), str(df.index[corte - 1].date()), corte, s1],
+            ["después", str(df.index[corte].date()), str(df.index[-1].date()), n - corte, s2],
+        ],
+    )
     ev = evento_cercano(df.index[corte])
-    r.lineas(et[dep], df.index, {et[dep]: y}, marcas=[{"x": str(df.index[corte].date()), "texto": ev["titulo"] if ev else fecha}])
+    r.lineas(
+        et[dep],
+        df.index,
+        {et[dep]: y},
+        marcas=[{"x": str(df.index[corte].date()), "texto": ev["titulo"] if ev else fecha}],
+    )
     hay = p < 0.05
-    r.veredicto(f"{'Hay' if hay else 'No hay'} evidencia de cambio estructural en {fecha} (F={fmt(Fst)}, p={fmt(p)}).", "amarillo" if hay else "verde")
+    r.veredicto(
+        f"{'Hay' if hay else 'No hay'} evidencia de cambio estructural en {fecha} (F={fmt(Fst)}, p={fmt(p)}).",
+        "amarillo" if hay else "verde",
+    )
     r.resumen = f"Chow en {fecha} para {et[dep]}: F={fmt(Fst)}, p={fmt(p)}."
     return r
 
@@ -438,19 +499,32 @@ def cusum(dep, indeps, freq, transf):
     rresid, cus, ci = rr[3], rr[5], rr[6]
     k = X.shape[1]
     idx = df.index[k:]
-    cus = np.asarray(cus)[-len(idx):]
-    lo, hi = np.asarray(ci[0])[-len(idx):], np.asarray(ci[1])[-len(idx):]
+    cus = np.asarray(cus)[-len(idx) :]
+    lo, hi = np.asarray(ci[0])[-len(idx) :], np.asarray(ci[1])[-len(idx) :]
     w = np.asarray(rresid)[k:]
     w = w[np.isfinite(w)]
     cs2 = np.cumsum(w**2) / np.sum(w**2)
     sale = bool(np.any(cus > hi) or np.any(cus < lo))
     r = Resultado()
-    r.lineas("CUSUM con bandas al 5 %", idx, {"CUSUM": cus, "banda sup.": hi, "banda inf.": lo}, estilos={"banda sup.": {"guion": "dash"}, "banda inf.": {"guion": "dash"}})
-    r.lineas("CUSUM² (debería seguir la diagonal)", idx[-len(cs2):], {"CUSUM²": cs2, "diagonal": np.linspace(0, 1, len(cs2))}, estilos={"diagonal": {"guion": "dot"}})
+    r.lineas(
+        "CUSUM con bandas al 5 %",
+        idx,
+        {"CUSUM": cus, "banda sup.": hi, "banda inf.": lo},
+        estilos={"banda sup.": {"guion": "dash"}, "banda inf.": {"guion": "dash"}},
+    )
+    r.lineas(
+        "CUSUM² (debería seguir la diagonal)",
+        idx[-len(cs2) :],
+        {"CUSUM²": cs2, "diagonal": np.linspace(0, 1, len(cs2))},
+        estilos={"diagonal": {"guion": "dot"}},
+    )
     r.metrica("¿Sale de las bandas?", "sí" if sale else "no")
     if sale:
         primera = idx[int(np.argmax((cus > hi) | (cus < lo)))]
-        r.veredicto(f"El CUSUM sale de las bandas (primera vez en {primera.date()}): los coeficientes NO son estables.", "rojo")
+        r.veredicto(
+            f"El CUSUM sale de las bandas (primera vez en {primera.date()}): los coeficientes NO son estables.",
+            "rojo",
+        )
     else:
         r.veredicto("El CUSUM queda dentro de las bandas: no hay evidencia de inestabilidad.", "verde")
     r.resumen = f"CUSUM de {et[dep]}: {'inestable' if sale else 'estable'}."
@@ -462,7 +536,11 @@ def cusum(dep, indeps, freq, transf):
     "Pruebas de normalidad",
     F,
     "¿La distribución es normal o tiene colas pesadas / asimetría?",
-    params=[P_SERIE(), P_FREQ, Param("transf", "opcion", "Transformación", defecto="dif_log", opciones=list(P_TRANSF.opciones))],
+    params=[
+        P_SERIE(),
+        P_FREQ,
+        Param("transf", "opcion", "Transformación", defecto="dif_log", opciones=list(P_TRANSF.opciones)),
+    ],
     cuando="Para elegir distribución de errores (normal vs t en un GARCH) o justificar intervalos.",
     trampas=["Con n grande, cualquier desvío mínimo rechaza normalidad: mirá también el QQ."],
     etiquetas=["jarque-bera", "shapiro", "anderson", "qq", "colas pesadas"],
@@ -481,14 +559,22 @@ def normalidad(sid, freq, transf):
     r.tabla(
         "H0: la distribución es normal",
         ["test", "estadístico", "p"],
-        [["Jarque-Bera", jb.statistic, jb.pvalue], ["Shapiro-Wilk", sw.statistic, sw.pvalue], ["D'Agostino K²", dk.statistic, dk.pvalue], ["Anderson-Darling (crítico 5 %: " + fmt(ad.critical_values[2]) + ")", ad.statistic, None]],
+        [
+            ["Jarque-Bera", jb.statistic, jb.pvalue],
+            ["Shapiro-Wilk", sw.statistic, sw.pvalue],
+            ["D'Agostino K²", dk.statistic, dk.pvalue],
+            ["Anderson-Darling (crítico 5 %: " + fmt(ad.critical_values[2]) + ")", ad.statistic, None],
+        ],
         resaltar_p="p",
     )
     z = np.sort((v - v.mean()) / v.std(ddof=1))
     teo = stats.norm.ppf((np.arange(1, len(z) + 1) - 0.5) / len(z))
     r.dispersion("QQ normal", teo, z, "cuantil teórico", "cuantil observado (z)", recta=(1, 0))
     rech = jb.pvalue < 0.05
-    r.veredicto("Se rechaza normalidad: usá errores t o métodos robustos." if rech else "No se rechaza normalidad.", "amarillo" if rech else "verde")
+    r.veredicto(
+        "Se rechaza normalidad: usá errores t o métodos robustos." if rech else "No se rechaza normalidad.",
+        "amarillo" if rech else "verde",
+    )
     r.resumen = f"Normalidad de {et}: JB p={fmt(jb.pvalue)}, Shapiro p={fmt(sw.pvalue)}, curtosis exc. {fmt(stats.kurtosis(v), 2)}."
     return r
 
@@ -498,7 +584,12 @@ def normalidad(sid, freq, transf):
     "Prueba BDS de dependencia no lineal",
     F,
     "Después de sacar la estructura lineal, ¿queda dependencia (no linealidad, regímenes, ARCH)?",
-    params=[P_SERIE(), P_FREQ, Param("transf", "opcion", "Transformación", defecto="dif_log", opciones=list(P_TRANSF.opciones)), Param("rezagos_ar", "entero", "Rezagos del filtro AR", defecto=4, minimo=0, maximo=24)],
+    params=[
+        P_SERIE(),
+        P_FREQ,
+        Param("transf", "opcion", "Transformación", defecto="dif_log", opciones=list(P_TRANSF.opciones)),
+        Param("rezagos_ar", "entero", "Rezagos del filtro AR", defecto=4, minimo=0, maximo=24),
+    ],
     cuando="Antes de saltar a modelos no lineales o redes: si BDS no rechaza, lo lineal alcanza.",
     supuestos=["Se aplica sobre residuos de un AR para no confundir dependencia lineal con no lineal."],
     referencias=["Brock, Dechert, Scheinkman y LeBaron (1996)"],
@@ -513,9 +604,19 @@ def no_linealidad_bds(sid, freq, transf, rezagos_ar):
     e = AutoReg(s.values, lags=rezagos_ar).fit().resid if rezagos_ar else s.values - s.values.mean()
     stat, p = bds(e, max_dim=5)
     r = Resultado()
-    r.tabla("BDS sobre residuos AR (H0: i.i.d.)", ["dimensión", "estadístico", "p"], [[d + 2, st, pv] for d, (st, pv) in enumerate(zip(stat, p, strict=True))], resaltar_p="p")
+    r.tabla(
+        "BDS sobre residuos AR (H0: i.i.d.)",
+        ["dimensión", "estadístico", "p"],
+        [[d + 2, st, pv] for d, (st, pv) in enumerate(zip(stat, p, strict=True))],
+        resaltar_p="p",
+    )
     rech = bool(np.min(p) < 0.05)
-    r.veredicto("Queda dependencia no lineal: tiene sentido probar GARCH, regímenes o modelos no lineales (árboles, redes)." if rech else "No hay evidencia de dependencia no lineal: un modelo lineal es suficiente.", "amarillo" if rech else "verde")
+    r.veredicto(
+        "Queda dependencia no lineal: tiene sentido probar GARCH, regímenes o modelos no lineales (árboles, redes)."
+        if rech
+        else "No hay evidencia de dependencia no lineal: un modelo lineal es suficiente.",
+        "amarillo" if rech else "verde",
+    )
     r.resumen = f"BDS sobre {et} (filtro AR({rezagos_ar})): p mín={fmt(float(np.min(p)))}."
     return r
 
@@ -525,7 +626,11 @@ def no_linealidad_bds(sid, freq, transf, rezagos_ar):
     "Memoria larga (Hurst y GPH)",
     F,
     "¿Los shocks se disipan rápido, nunca, o lentamente (integración fraccional)?",
-    params=[P_SERIE(), P_FREQ, Param("transf", "opcion", "Transformación", defecto="dif_log", opciones=list(P_TRANSF.opciones))],
+    params=[
+        P_SERIE(),
+        P_FREQ,
+        Param("transf", "opcion", "Transformación", defecto="dif_log", opciones=list(P_TRANSF.opciones)),
+    ],
     cuando="Inflación, volatilidad y tasas suelen tener memoria larga: ni I(0) ni I(1).",
     supuestos=["GPH usa las frecuencias bajas del periodograma (ancho de banda n^0,5)."],
     trampas=["Quiebres estructurales imitan memoria larga: corré quiebres antes."],
@@ -581,7 +686,12 @@ def memoria_larga(sid, freq, transf):
     "Heterocedasticidad (Breusch-Pagan, White, ARCH-LM)",
     F,
     "¿La varianza de los errores cambia con las X o en el tiempo?",
-    params=[P_SERIE("dep", "Dependiente (Y)"), P_SERIES("indeps", "Explicativas (X)", minimo=1, maximo=6), P_FREQ, Param("transf", "opcion", "Transformación", defecto="dif_log", opciones=list(P_TRANSF.opciones))],
+    params=[
+        P_SERIE("dep", "Dependiente (Y)"),
+        P_SERIES("indeps", "Explicativas (X)", minimo=1, maximo=6),
+        P_FREQ,
+        Param("transf", "opcion", "Transformación", defecto="dif_log", opciones=list(P_TRANSF.opciones)),
+    ],
     cuando="Después de una regresión: si hay heterocedasticidad, usá errores robustos (HAC) o modelá la varianza.",
     referencias=["Breusch y Pagan (1979)", "White (1980)", "Engle (1982)"],
     etiquetas=["heterocedasticidad", "white", "breusch-pagan", "arch", "errores robustos"],
@@ -601,9 +711,23 @@ def heterocedasticidad(dep, indeps, freq, transf):
         wh = (np.nan, np.nan)
     ar = het_arch(res.resid, nlags=min(12, len(df) // 5))
     r = Resultado()
-    r.tabla("H0: homocedasticidad", ["test", "LM", "p"], [["Breusch-Pagan", bp[0], bp[1]], ["White", wh[0], wh[1]], ["ARCH-LM", ar[0], ar[1]]], resaltar_p="p")
+    r.tabla(
+        "H0: homocedasticidad",
+        ["test", "LM", "p"],
+        [["Breusch-Pagan", bp[0], bp[1]], ["White", wh[0], wh[1]], ["ARCH-LM", ar[0], ar[1]]],
+        resaltar_p="p",
+    )
     r.lineas("Residuos²", df.index, {"residuo²": res.resid.values**2})
     malos = [n for n, p in (("BP", bp[1]), ("White", wh[1]), ("ARCH", ar[1])) if p == p and p < 0.05]
-    r.veredicto(("Heterocedasticidad (" + ", ".join(malos) + "): usá errores HAC/robustos; si es ARCH, modelá la varianza.") if malos else "No se rechaza homocedasticidad.", "amarillo" if malos else "verde")
+    r.veredicto(
+        (
+            "Heterocedasticidad ("
+            + ", ".join(malos)
+            + "): usá errores HAC/robustos; si es ARCH, modelá la varianza."
+        )
+        if malos
+        else "No se rechaza homocedasticidad.",
+        "amarillo" if malos else "verde",
+    )
     r.resumen = f"Heterocedasticidad en {et[dep]} ~ {', '.join(et[i] for i in indeps)}: BP p={fmt(bp[1])}, White p={fmt(wh[1])}, ARCH p={fmt(ar[1])}."
     return r

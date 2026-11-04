@@ -12,6 +12,7 @@ rag/_indice/
 
 # Investigaciones guardadas (cuadernos de trabajo de cada usuario) y transcripts
 data/proyectos/
+data/series_usuario/
 
 # Seguimiento local (no se versiona)
 _logs/

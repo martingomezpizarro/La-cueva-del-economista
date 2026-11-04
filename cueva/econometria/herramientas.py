@@ -478,7 +478,11 @@ def diagnosticos(dep: str, indeps: list[str], freq: str = "mensual", transf=None
         return {"ok": False, "herramienta": "diagnosticos", "resumen": f"No pude cargar las series: {e}"}
     df = df.dropna()
     if df.shape[1] < 2 or len(df) < len(indeps) + 15:
-        return {"ok": False, "herramienta": "diagnosticos", "resumen": "Datos insuficientes para diagnosticar."}
+        return {
+            "ok": False,
+            "herramienta": "diagnosticos",
+            "resumen": "Datos insuficientes para diagnosticar.",
+        }
     y = df[dep]
     X = sm.add_constant(df[list(indeps)])
     m = sm.OLS(y, X).fit()  # los tests clásicos se definen sobre los residuos OLS (sin HAC)
@@ -596,8 +600,12 @@ def correlaciones(sids: list[str], freq: str = "mensual", transf=None) -> dict:
         "n": int(len(df)),
         "matriz": {a: {b: round(float(corr.loc[a, b]), 3) for b in cols} for a in cols},
         "etiquetas": etiquetas,
-        "grafico": {"tipo": "matriz_corr", "titulo": "Matriz de correlaciones", "labels": cols,
-                    "valores": [[round(float(corr.loc[a, b]), 3) for b in cols] for a in cols]},
+        "grafico": {
+            "tipo": "matriz_corr",
+            "titulo": "Matriz de correlaciones",
+            "labels": cols,
+            "valores": [[round(float(corr.loc[a, b]), 3) for b in cols] for a in cols],
+        },
     }
 
 
@@ -880,8 +888,19 @@ def declaraciones_herramientas(nombres: list[str]) -> list[dict]:
     ejecutables (intersección con el REGISTRO = lista blanca efectiva). Lo que se descarta
     se LOGUEA: un skill que promete herramientas inexistentes es un bug de configuración,
     no algo que deba fallar en silencio."""
+    from cueva.metodos import registro as MR
+
     out = []
-    for n in nombres:
+    for n in MR.expandir(nombres):
+        if n not in REGISTRO and n in MR.registro():
+            m = MR.obtener(n)
+            if MR.faltantes(m):
+                log.warning("método %s sin dependencias instaladas (%s): se descarta", n, MR.faltantes(m))
+                continue
+            out.append(
+                {"name": n, "description": f"{m.nombre}. {m.pregunta}", "parameters_json_schema": m.esquema()}
+            )
+            continue
         if n in REGISTRO and n in ESQUEMAS:
             out.append(
                 {
@@ -896,8 +915,13 @@ def declaraciones_herramientas(nombres: list[str]) -> list[dict]:
 
 
 def ejecutar(nombre: str, **kwargs) -> dict:
-    """Ejecuta una herramienta estándar por nombre. Si no existe → modo asesor (híbrido)."""
+    """Ejecuta una herramienta estándar por nombre. Si no está en el REGISTRO clásico la busca
+    en el catálogo de métodos (`cueva.metodos`); si tampoco está → modo asesor (híbrido)."""
     if nombre not in REGISTRO:
+        from cueva.metodos import registro as MR
+
+        if nombre in MR.registro():
+            return MR.ejecutar(nombre, kwargs)
         return {
             "ok": False,
             "herramienta": nombre,

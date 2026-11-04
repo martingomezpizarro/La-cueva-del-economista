@@ -209,15 +209,30 @@ def ejecutar(id: str, args: dict | None = None) -> dict:
     salida = r.a_dict()
     if not salida["resumen"]:
         salida["resumen"] = f"{m.nombre}: listo."
-    return limpiar({
-        **base,
-        "ok": True,
-        "args": limpio,
-        "nombre": m.nombre,
-        "familia": m.familia,
-        **salida,
-        "meta": {"segundos": round(seg, 3), "versiones": _versiones(m.deps)},
-    })
+    return limpiar(
+        {
+            **base,
+            "ok": True,
+            "args": limpio,
+            "nombre": m.nombre,
+            "familia": m.familia,
+            **salida,
+            "meta": {"segundos": round(seg, 3), "versiones": _versiones(m.deps)},
+        }
+    )
+
+
+def expandir(nombres: list[str]) -> list[str]:
+    """Expande comodines de familia en listas blancas: «familia:pruebas» → todos los ids de
+    esa familia. Lo demás pasa tal cual (así un skill puede habilitar una familia entera)."""
+    out: list[str] = []
+    for n in nombres or []:
+        if isinstance(n, str) and n.startswith("familia:"):
+            fam = n.split(":", 1)[1]
+            out.extend(m.id for m in registro().values() if m.familia == fam)
+        else:
+            out.append(n)
+    return list(dict.fromkeys(out))
 
 
 def declaraciones(ids: list[str] | None = None) -> list[dict]:

@@ -13,6 +13,13 @@ Endpoints (todos bajo /api/v1):
     POST   /api/v1/explorador/analisis-basico     → corre el script legacy del TF (puente subprocess)
     GET    /api/v1/herramientas                   → herramientas econométricas disponibles
     POST   /api/v1/herramienta                    → ejecuta una herramienta {nombre, args, proyecto_id?}
+                                                    (también cualquier método del catálogo)
+    GET    /api/v1/metodos                        → catálogo de métodos (familias + declaración de cada uno)
+    GET    /api/v1/metodos/{id}                   → declaración completa de un método
+    GET    /api/v1/mis-series                     → series propias del usuario
+    POST   /api/v1/mis-series                     → sube un CSV propio (precios, bases)
+    POST   /api/v1/mis-series/derivada            → guarda como serie la salida de un método
+    DELETE /api/v1/mis-series/{archivo}           → borra un CSV propio
 
     GET    /api/v1/proyectos                      → lista las investigaciones guardadas
     POST   /api/v1/proyectos                      → crea una investigación (acepta semilla de Vista Rápida)
@@ -68,6 +75,7 @@ from .esquemas import (
     PreguntaAgente,
     ProyectoCrear,
     ProyectoPatch,
+    SerieDerivada,
 )
 
 log = logging.getLogger("cueva.api")
@@ -296,8 +304,13 @@ def crear_app() -> FastAPI:
                 csv_path.name,
             ] + extra
             proc = subprocess.run(
-                cmd, capture_output=True, text=True, encoding="utf-8", errors="replace",
-                cwd=str(tf), timeout=900,
+                cmd,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                cwd=str(tf),
+                timeout=900,
             )
             log_tail = (proc.stdout + "\n" + proc.stderr).splitlines()[-30:]
             return JSONResponse({"ok": proc.returncode == 0, "log_tail": log_tail})
@@ -333,6 +346,65 @@ def crear_app() -> FastAPI:
     @app.get("/api/v1/herramientas")
     def listar_herramientas():
         return JSONResponse(H.catalogo_herramientas())
+
+    # ── catálogo de métodos (econometría, ML, redes, finanzas) ─────────────
+    @app.get("/api/v1/metodos")
+    def listar_metodos():
+        from cueva.metodos import registro as MR
+        from cueva.metodos.contrato import FAMILIAS
+
+        cat = MR.catalogo()
+        familias = [
+            {"id": k, **v, "n": sum(1 for m in cat if m["familia"] == k)} for k, v in FAMILIAS.items()
+        ]
+        return JSONResponse({"familias": familias, "metodos": cat})
+
+    @app.get("/api/v1/metodos/{mid}")
+    def obtener_metodo(mid: str = Path(pattern=r"^[a-z][a-z0-9_]{1,29}$")):
+        from cueva.metodos import registro as MR
+
+        try:
+            m = MR.obtener(mid)
+        except KeyError as e:
+            raise HTTPException(404, f"Método desconocido: {mid}") from e
+        falta = MR.faltantes(m)
+        return JSONResponse(m.a_dict(disponible=not falta, falta=falta))
+
+    # ── series propias del usuario ─────────────────────────────────────────
+    @app.get("/api/v1/mis-series")
+    def api_mis_series():
+        from cueva.datos import mis_series
+
+        return JSONResponse(mis_series.listar())
+
+    @app.post("/api/v1/mis-series")
+    async def api_subir_serie(archivo: UploadFile):
+        from cueva.datos import mis_series
+
+        contenido = await archivo.read()
+        try:
+            return JSONResponse(mis_series.guardar(archivo.filename or "", contenido))
+        except mis_series.ArchivoInvalido as e:
+            raise HTTPException(422, str(e)) from e
+
+    @app.post("/api/v1/mis-series/derivada")
+    def api_serie_derivada(body: SerieDerivada):
+        from cueva.datos import mis_series
+
+        try:
+            return JSONResponse(
+                mis_series.guardar_derivada(body.nombre, body.fechas, body.valores, body.descripcion)
+            )
+        except mis_series.ArchivoInvalido as e:
+            raise HTTPException(422, str(e)) from e
+
+    @app.delete("/api/v1/mis-series/{archivo}")
+    def api_borrar_serie(archivo: str = Path(pattern=r"^mis_[a-z0-9_]{1,60}\.csv$")):
+        from cueva.datos import mis_series
+
+        if not mis_series.borrar(archivo):
+            raise HTTPException(404, "No existe ese archivo.")
+        return JSONResponse({"ok": True})
 
     # ── biblioteca del usuario (bibliografía propia subida) ────────────────
     @app.get("/api/v1/biblioteca")

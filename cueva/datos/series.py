@@ -108,9 +108,22 @@ def _resolver(nombre: str, indice: dict[str, Path], carpeta_tf: Path | None) -> 
 ORIGEN_DATA_SERIES = "data/series"
 
 
+ORIGEN_USUARIO = "Mis series"
+
+
+def carpeta_usuario() -> Path:
+    """Series que sube el usuario (CSV de precios, datos propios). Viven fuera del repo, en
+    `<CUEVA_DATA>/series_usuario/`, y entran al catálogo por el escaneo (origen «Mis series»)."""
+    return config.ruta_datos() / "series_usuario"
+
+
 def _fuentes() -> list[tuple[str, Path]]:
     carpeta = _carpeta_vars()
-    return [("Trabajo Final", carpeta)] if carpeta else []
+    fuentes = [("Trabajo Final", carpeta)] if carpeta else []
+    usuario = carpeta_usuario()
+    if usuario.exists():
+        fuentes.append((ORIGEN_USUARIO, usuario))
+    return fuentes
 
 
 def _firma() -> tuple:

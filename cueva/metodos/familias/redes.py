@@ -54,7 +54,9 @@ def _datos_secuencia(dep, indeps, freq, transf, ventana, horizonte):
     fechas_obj = df.index[fin[ok] + horizonte]
     actual = M[fin[ok], 0]
     if len(Xc) < 50:
-        raise ErrorMetodo(f"Quedan {len(Xc)} ventanas; hacen falta al menos 50. Bajá la ventana o usá más historia.")
+        raise ErrorMetodo(
+            f"Quedan {len(Xc)} ventanas; hacen falta al menos 50. Bajá la ventana o usá más historia."
+        )
     return df, et, Xc, yc, fechas_obj, actual, W[-1:]
 
 
@@ -75,7 +77,14 @@ def _correr_red(nombre, crear, dep, indeps, freq, transf, ventana, horizonte, se
         rws.append(actual[i])
         medias.append(float(y[:fin].mean()))
     tr = actual[: n - nt]
-    bt = V.Backtest(pd.DatetimeIndex(fobj[-nt:]), np.array(reales), np.array(preds), np.array(rws), np.array(medias), float(np.mean(np.abs(tr[horizonte:] - tr[:-horizonte]))))
+    bt = V.Backtest(
+        pd.DatetimeIndex(fobj[-nt:]),
+        np.array(reales),
+        np.array(preds),
+        np.array(rws),
+        np.array(medias),
+        float(np.mean(np.abs(tr[horizonte:] - tr[:-horizonte]))),
+    )
     res = V.resumen_backtest(bt, horizonte)
     r = Resultado()
     from cueva.metodos.familias.ml import reportar
@@ -94,12 +103,23 @@ def _correr_red(nombre, crear, dep, indeps, freq, transf, ventana, horizonte, se
     r.metrica(f"Pronóstico para {fpron.date()}", pred)
     hist = getattr(final.mods[0], "historia", None)
     if hist:
-        r.lineas("Curva de aprendizaje (semilla 1)", list(range(1, len(hist) + 1)), {"error entrenamiento": [h[0] for h in hist], "error validación": [h[1] for h in hist]})
+        r.lineas(
+            "Curva de aprendizaje (semilla 1)",
+            list(range(1, len(hist) + 1)),
+            {"error entrenamiento": [h[0] for h in hist], "error validación": [h[1] for h in hist]},
+        )
         r.metrica("Épocas (con parada temprana)", len(hist))
-    r.serie(f"oos_{nombre.lower()[:6]}_{dep}"[:40], bt.fechas, bt.pred, f"Pronósticos fuera de muestra de {nombre} para {et[dep]}")
+    r.serie(
+        f"oos_{nombre.lower()[:6]}_{dep}"[:40],
+        bt.fechas,
+        bt.pred,
+        f"Pronósticos fuera de muestra de {nombre} para {et[dep]}",
+    )
     r.resumen = f"{nombre} (ventana {ventana}, {semillas} semillas) para {et[dep]} a h={horizonte}: RMSE oos {fmt(res['modelo']['RMSE'])} vs paseo {fmt(res['paseo_aleatorio']['RMSE'])} y media {fmt(res['media_historica']['RMSE'])}; R² oos vs media {fmt(res['r2_oos_vs_media'])}. Pronóstico {fpron.date()}: {fmt(pred)}."
     r.datos = {"rmse": res["modelo"]["RMSE"], "r2_oos_media": res["r2_oos_vs_media"], "pronostico": pred}
-    r.advertir("Las redes necesitan muchos datos: con menos de ~300 ventanas, un Ridge o un bosque suelen empatar o ganar.")
+    r.advertir(
+        "Las redes necesitan muchos datos: con menos de ~300 ventanas, un Ridge o un bosque suelen empatar o ganar."
+    )
     return r
 
 
@@ -129,7 +149,13 @@ TRAMPAS_RED = [
     "Red recurrente LSTM",
     F,
     "¿Una red con memoria de largo plazo captura dinámicas no lineales que los modelos lineales no ven?",
-    params=_params_red([Param("ocultas", "entero", "Unidades ocultas", defecto=16, minimo=2, maximo=128), Param("epocas", "entero", "Épocas máx.", defecto=300, minimo=20, maximo=3000), Param("tasa", "real", "Tasa de aprendizaje", defecto=0.01, minimo=1e-4, maximo=0.5)]),
+    params=_params_red(
+        [
+            Param("ocultas", "entero", "Unidades ocultas", defecto=16, minimo=2, maximo=128),
+            Param("epocas", "entero", "Épocas máx.", defecto=300, minimo=20, maximo=3000),
+            Param("tasa", "real", "Tasa de aprendizaje", defecto=0.01, minimo=1e-4, maximo=0.5),
+        ]
+    ),
     cuando="Series largas (diarias, o mensuales con varias décadas) con no linealidades y memoria.",
     supuestos=["La dinámica cabe en una ventana de L períodos."],
     trampas=TRAMPAS_RED,
@@ -139,7 +165,19 @@ TRAMPAS_RED = [
     nivel="avanzado",
 )
 def red_lstm(dep, indeps, freq, transf, ventana, horizonte, semillas, n_test, ocultas, epocas, tasa):
-    return _correr_red("LSTM", lambda s: RecurrenteNP("lstm", ocultas, epocas, tasa, semilla=s), dep, indeps, freq, transf, ventana, horizonte, semillas, n_test, refit=12)
+    return _correr_red(
+        "LSTM",
+        lambda s: RecurrenteNP("lstm", ocultas, epocas, tasa, semilla=s),
+        dep,
+        indeps,
+        freq,
+        transf,
+        ventana,
+        horizonte,
+        semillas,
+        n_test,
+        refit=12,
+    )
 
 
 @metodo(
@@ -147,7 +185,13 @@ def red_lstm(dep, indeps, freq, transf, ventana, horizonte, semillas, n_test, oc
     "Red recurrente GRU",
     F,
     "Como la LSTM pero con menos parámetros: suele rendir igual con menos datos.",
-    params=_params_red([Param("ocultas", "entero", "Unidades ocultas", defecto=16, minimo=2, maximo=128), Param("epocas", "entero", "Épocas máx.", defecto=300, minimo=20, maximo=3000), Param("tasa", "real", "Tasa de aprendizaje", defecto=0.01, minimo=1e-4, maximo=0.5)]),
+    params=_params_red(
+        [
+            Param("ocultas", "entero", "Unidades ocultas", defecto=16, minimo=2, maximo=128),
+            Param("epocas", "entero", "Épocas máx.", defecto=300, minimo=20, maximo=3000),
+            Param("tasa", "real", "Tasa de aprendizaje", defecto=0.01, minimo=1e-4, maximo=0.5),
+        ]
+    ),
     cuando="Igual que la LSTM, con muestras más cortas.",
     trampas=TRAMPAS_RED,
     costo="minutos",
@@ -156,7 +200,19 @@ def red_lstm(dep, indeps, freq, transf, ventana, horizonte, semillas, n_test, oc
     nivel="avanzado",
 )
 def red_gru(dep, indeps, freq, transf, ventana, horizonte, semillas, n_test, ocultas, epocas, tasa):
-    return _correr_red("GRU", lambda s: RecurrenteNP("gru", ocultas, epocas, tasa, semilla=s), dep, indeps, freq, transf, ventana, horizonte, semillas, n_test, refit=12)
+    return _correr_red(
+        "GRU",
+        lambda s: RecurrenteNP("gru", ocultas, epocas, tasa, semilla=s),
+        dep,
+        indeps,
+        freq,
+        transf,
+        ventana,
+        horizonte,
+        semillas,
+        n_test,
+        refit=12,
+    )
 
 
 @metodo(
@@ -164,7 +220,13 @@ def red_gru(dep, indeps, freq, transf, ventana, horizonte, semillas, n_test, ocu
     "Red de reservorio (Echo State Network)",
     F,
     "Una red recurrente que entrena en milisegundos: sólo se ajusta la lectura lineal.",
-    params=_params_red([Param("unidades", "entero", "Neuronas del reservorio", defecto=200, minimo=20, maximo=2000), Param("radio", "real", "Radio espectral", defecto=0.9, minimo=0.1, maximo=1.5), Param("fuga", "real", "Tasa de fuga", defecto=0.5, minimo=0.05, maximo=1)]),
+    params=_params_red(
+        [
+            Param("unidades", "entero", "Neuronas del reservorio", defecto=200, minimo=20, maximo=2000),
+            Param("radio", "real", "Radio espectral", defecto=0.9, minimo=0.1, maximo=1.5),
+            Param("fuga", "real", "Tasa de fuga", defecto=0.5, minimo=0.05, maximo=1),
+        ]
+    ),
     cuando="Para probar rápido si hay estructura no lineal aprovechable antes de entrenar una LSTM.",
     supuestos=["Propiedad de eco: radio espectral < 1 (el reservorio olvida las condiciones iniciales)."],
     trampas=TRAMPAS_RED,
@@ -174,4 +236,16 @@ def red_gru(dep, indeps, freq, transf, ventana, horizonte, semillas, n_test, ocu
     nivel="avanzado",
 )
 def red_reservorio(dep, indeps, freq, transf, ventana, horizonte, semillas, n_test, unidades, radio, fuga):
-    return _correr_red("Reservorio", lambda s: ReservorioNP(unidades, radio, fuga, semilla=s), dep, indeps, freq, transf, ventana, horizonte, semillas, n_test, refit=1)
+    return _correr_red(
+        "Reservorio",
+        lambda s: ReservorioNP(unidades, radio, fuga, semilla=s),
+        dep,
+        indeps,
+        freq,
+        transf,
+        ventana,
+        horizonte,
+        semillas,
+        n_test,
+        refit=1,
+    )

@@ -27,12 +27,22 @@ P_DIF = Param("transf", "opcion", "Transformación", defecto="dif_log", opciones
         Param("rezagos", "entero", "Rezagos (0 = por criterio)", defecto=0, minimo=0, maximo=24),
         Param("criterio", "opcion", "Criterio", defecto="aic", opciones=["aic", "bic", "hqic", "fpe"]),
         Param("horizonte", "entero", "Horizonte IRF", defecto=24, minimo=4, maximo=60),
-        Param("identificacion", "opcion", "Identificación", defecto="cholesky", opciones=["cholesky", "generalizada"], ayuda="Cholesky depende del orden; la generalizada (Pesaran-Shin) no"),
+        Param(
+            "identificacion",
+            "opcion",
+            "Identificación",
+            defecto="cholesky",
+            opciones=["cholesky", "generalizada"],
+            ayuda="Cholesky depende del orden; la generalizada (Pesaran-Shin) no",
+        ),
         P_DESDE,
         P_HASTA,
     ],
     cuando="Política monetaria y cambiaria: shocks de tasa, tipo de cambio o emisión y su efecto sobre precios y actividad.",
-    supuestos=["Variables estacionarias (o un VECM si cointegran).", "Cholesky: la primera variable no reacciona en el período a las demás."],
+    supuestos=[
+        "Variables estacionarias (o un VECM si cointegran).",
+        "Cholesky: la primera variable no reacciona en el período a las demás.",
+    ],
     trampas=[
         "Con Cholesky el ORDEN es un supuesto económico: escribilo y defendelo.",
         "Demasiadas variables × rezagos agotan los grados de libertad (k²p parámetros).",
@@ -62,7 +72,9 @@ def var_completo(sids, freq, transf, rezagos, criterio, horizonte, identificacio
     r.metrica("Obs.", res.nobs)
     r.metrica("Estable", "sí" if res.is_stable() else "NO")
     if not res.is_stable():
-        r.advertir("El VAR no es estable (raíces fuera del círculo unitario): las IRF no convergen. Diferenciá o bajá rezagos.")
+        r.advertir(
+            "El VAR no es estable (raíces fuera del círculo unitario): las IRF no convergen. Diferenciá o bajá rezagos."
+        )
     # Granger por pares
     filas_g = []
     for i, causa in enumerate(nombres):
@@ -71,7 +83,12 @@ def var_completo(sids, freq, transf, rezagos, criterio, horizonte, identificacio
                 continue
             t = res.test_causality(j, [i], kind="f")
             filas_g.append([causa, efecto, t.test_statistic, t.pvalue])
-    r.tabla("Causalidad de Granger (¿la fila precede a la columna?)", ["causa", "efecto", "F", "p"], filas_g, resaltar_p="p")
+    r.tabla(
+        "Causalidad de Granger (¿la fila precede a la columna?)",
+        ["causa", "efecto", "F", "p"],
+        filas_g,
+        resaltar_p="p",
+    )
     # IRF
     irf = res.irf(horizonte)
     if identificacion == "cholesky":
@@ -101,11 +118,18 @@ def var_completo(sids, freq, transf, rezagos, criterio, horizonte, identificacio
     for h in sorted({1, 4, 12, horizonte} & set(range(1, horizonte + 1))):
         for j, v in enumerate(nombres):
             filas_f.append([h, v, *[fe.decomp[j, h - 1, i] * 100 for i in range(k)]])
-    r.tabla("Descomposición de la varianza del error de pronóstico (%)", ["horizonte", "variable", *[f"por {n}" for n in nombres]], filas_f)
+    r.tabla(
+        "Descomposición de la varianza del error de pronóstico (%)",
+        ["horizonte", "variable", *[f"por {n}" for n in nombres]],
+        filas_f,
+    )
     # todas las IRF como datos (para que el agente las lea)
     r.datos = {"irf": resp.tolist(), "nombres": nombres, "rezagos": p}
     sig = [f"{f[0]}→{f[1]}" for f in filas_g if f[3] < 0.05]
-    r.veredicto(f"VAR({p}) {'estable' if res.is_stable() else 'INESTABLE'}; Granger significativo: {', '.join(sig) or 'ninguno'}.", "verde" if res.is_stable() else "rojo")
+    r.veredicto(
+        f"VAR({p}) {'estable' if res.is_stable() else 'INESTABLE'}; Granger significativo: {', '.join(sig) or 'ninguno'}.",
+        "verde" if res.is_stable() else "rojo",
+    )
     r.resumen = f"VAR({p}) con {', '.join(nombres)} (n={res.nobs}, {identificacion}): Granger significativo en {', '.join(sig) or 'ningún par'}. A {horizonte} períodos, {nombres[shock]} explica {fmt(fe.decomp[-1, -1, 0] * 100, 2)} % de la varianza de {nombres[-1]}."
     r.codigo = f"from statsmodels.tsa.api import VAR\nres = VAR(df).fit({p})\nres.irf({horizonte}).plot(orth=True)\nres.fevd({horizonte}).summary()"
     return r
@@ -128,7 +152,10 @@ def var_completo(sids, freq, transf, rezagos, criterio, horizonte, identificacio
     ],
     cuando="Más robusto a la mala especificación que un VAR; permite no linealidades y estados (Ramey 2016).",
     supuestos=["El impulso es exógeno condicional a los controles (o un shock identificado externamente)."],
-    trampas=["Bandas más anchas que el VAR en horizontes largos: es el precio de la robustez.", "Con el impulso contemporáneo endógeno, es una correlación dinámica, no un efecto causal."],
+    trampas=[
+        "Bandas más anchas que el VAR en horizontes largos: es el precio de la robustez.",
+        "Con el impulso contemporáneo endógeno, es una correlación dinámica, no un efecto causal.",
+    ],
     referencias=["Jordà (2005)", "Plagborg-Møller y Wolf (2021)", "Montiel Olea y Plagborg-Møller (2021)"],
     etiquetas=["local projections", "jordà", "impulso respuesta", "lp", "shock"],
 )
@@ -154,7 +181,9 @@ def proyecciones_locales(dep, impulso, controles, freq, transf, horizonte, rezag
         d = pd.concat([obj.rename("obj"), B], axis=1).dropna()
         if len(d) < 20:
             break
-        res = sm.OLS(d["obj"], sm.add_constant(d.drop(columns="obj"))).fit(cov_type="HAC", cov_kwds={"maxlags": h + 1})
+        res = sm.OLS(d["obj"], sm.add_constant(d.drop(columns="obj"))).fit(
+            cov_type="HAC", cov_kwds={"maxlags": h + 1}
+        )
         b, e = res.params["impulso"], res.bse["impulso"]
         coef.append(b)
         lo.append(b - 1.96 * e)
@@ -164,15 +193,29 @@ def proyecciones_locales(dep, impulso, controles, freq, transf, horizonte, rezag
         raise ErrorMetodo("Muestra demasiado corta para proyectar.")
     hs = list(range(len(coef)))
     r = Resultado()
-    r.lineas(f"Respuesta {'acumulada ' if acumulada else ''}de {et[dep]} a un aumento unitario de {et[impulso]}", hs, {"respuesta": coef, "IC inf.": lo, "IC sup.": hi}, estilos={"IC inf.": {"guion": "dot"}, "IC sup.": {"guion": "dot"}})
-    r.tabla("Coeficientes por horizonte (EE Newey-West)", ["h", "respuesta", "IC inf.", "IC sup.", "obs."], [[h, c, a, b, n] for h, c, a, b, n in zip(hs, coef, lo, hi, ns, strict=True)])
+    r.lineas(
+        f"Respuesta {'acumulada ' if acumulada else ''}de {et[dep]} a un aumento unitario de {et[impulso]}",
+        hs,
+        {"respuesta": coef, "IC inf.": lo, "IC sup.": hi},
+        estilos={"IC inf.": {"guion": "dot"}, "IC sup.": {"guion": "dot"}},
+    )
+    r.tabla(
+        "Coeficientes por horizonte (EE Newey-West)",
+        ["h", "respuesta", "IC inf.", "IC sup.", "obs."],
+        [[h, c, a, b, n] for h, c, a, b, n in zip(hs, coef, lo, hi, ns, strict=True)],
+    )
     pico = int(np.argmax(np.abs(coef)))
     r.metrica("Impacto (h=0)", coef[0])
     r.metrica("Respuesta máxima", coef[pico])
     r.metrica("Horizonte del máximo", pico)
     r.metrica(f"Respuesta a h={hs[-1]}", coef[-1])
     sig = [h for h in hs if lo[h] > 0 or hi[h] < 0]
-    r.veredicto(f"La respuesta es significativa en {len(sig)} de {len(hs)} horizontes." if sig else "La respuesta no es significativa en ningún horizonte.", "verde" if sig else "amarillo")
+    r.veredicto(
+        f"La respuesta es significativa en {len(sig)} de {len(hs)} horizontes."
+        if sig
+        else "La respuesta no es significativa en ningún horizonte.",
+        "verde" if sig else "amarillo",
+    )
     r.resumen = f"Proyecciones locales: {et[dep]} responde a {et[impulso]} con {fmt(coef[0])} en el impacto y {fmt(coef[pico])} como máximo (h={pico}); significativa en {len(sig)} horizontes."
     return r
 
@@ -182,7 +225,13 @@ def proyecciones_locales(dep, impulso, controles, freq, transf, horizonte, rezag
     "Causalidad de Toda-Yamamoto (en niveles, válida con raíces unitarias)",
     F,
     "¿X precede a Y, sin tener que decidir antes si las series son I(0), I(1) o cointegran?",
-    params=[P_SERIE("sid_x", "Causa candidata (X)"), P_SERIE("sid_y", "Efecto (Y)"), P_FREQ, Param("transf", "opcion", "Transformación", defecto="log", opciones=["nivel", "log"]), Param("d_max", "entero", "Orden máximo de integración", defecto=1, minimo=1, maximo=2)],
+    params=[
+        P_SERIE("sid_x", "Causa candidata (X)"),
+        P_SERIE("sid_y", "Efecto (Y)"),
+        P_FREQ,
+        Param("transf", "opcion", "Transformación", defecto="log", opciones=["nivel", "log"]),
+        Param("d_max", "entero", "Orden máximo de integración", defecto=1, minimo=1, maximo=2),
+    ],
     cuando="Cuando los tests de raíz unitaria son ambiguos (típico en Argentina con quiebres).",
     supuestos=["Se agrega d_max rezagos extra que no se testean: eso restaura la distribución χ² del Wald."],
     referencias=["Toda y Yamamoto (1995)"],
@@ -218,8 +267,19 @@ def toda_yamamoto(sid_x, sid_y, freq, transf, d_max):
     r.metrica("Rezagos extra (d_max)", d_max)
     r.tabla("Wald sobre los primeros p rezagos (χ²)", ["causa", "efecto", "Wald", "p"], filas, resaltar_p="p")
     d1, d2 = filas[0][3] < 0.05, filas[1][3] < 0.05
-    txt = "bidireccional" if d1 and d2 else (f"{et[sid_x]} → {et[sid_y]}" if d1 else (f"{et[sid_y]} → {et[sid_x]}" if d2 else "sin precedencia"))
-    r.veredicto(f"Toda-Yamamoto: {txt}. Es precedencia temporal, no causalidad económica.", "verde" if d1 or d2 else "amarillo")
+    txt = (
+        "bidireccional"
+        if d1 and d2
+        else (
+            f"{et[sid_x]} → {et[sid_y]}"
+            if d1
+            else (f"{et[sid_y]} → {et[sid_x]}" if d2 else "sin precedencia")
+        )
+    )
+    r.veredicto(
+        f"Toda-Yamamoto: {txt}. Es precedencia temporal, no causalidad económica.",
+        "verde" if d1 or d2 else "amarillo",
+    )
     r.resumen = f"Toda-Yamamoto (p={p}, d_max={d_max}): {txt} (p={fmt(filas[0][3])} y {fmt(filas[1][3])})."
     return r
 
@@ -229,9 +289,20 @@ def toda_yamamoto(sid_x, sid_y, freq, transf, d_max):
     "VAR bayesiano con prior de Minnesota",
     F,
     "Un VAR con muchas variables o pocos datos, donde el prior evita el sobreajuste.",
-    params=[P_SERIES("sids", "Series del sistema", minimo=2, maximo=8), P_FREQ, P_DIF, Param("rezagos", "entero", "Rezagos", defecto=4, minimo=1, maximo=13), Param("lambda1", "real", "Ajuste general λ₁ (más chico = más prior)", defecto=0.2, minimo=0.01, maximo=5), Param("horizonte", "entero", "Horizonte de pronóstico", defecto=12, minimo=1, maximo=36)],
+    params=[
+        P_SERIES("sids", "Series del sistema", minimo=2, maximo=8),
+        P_FREQ,
+        P_DIF,
+        Param("rezagos", "entero", "Rezagos", defecto=4, minimo=1, maximo=13),
+        Param(
+            "lambda1", "real", "Ajuste general λ₁ (más chico = más prior)", defecto=0.2, minimo=0.01, maximo=5
+        ),
+        Param("horizonte", "entero", "Horizonte de pronóstico", defecto=12, minimo=1, maximo=36),
+    ],
     cuando="Pronóstico macro con 5-8 variables (Litterman 1986; Bańbura, Giannone y Reichlin 2010).",
-    supuestos=["Prior: cada variable es un paseo aleatorio (o ruido, en diferencias) y los rezagos lejanos importan menos."],
+    supuestos=[
+        "Prior: cada variable es un paseo aleatorio (o ruido, en diferencias) y los rezagos lejanos importan menos."
+    ],
     trampas=["El prior manda con pocos datos: mostrá la sensibilidad a λ₁."],
     referencias=["Litterman (1986)", "Bańbura, Giannone y Reichlin (2010)", "Koop y Korobilis (2010)"],
     etiquetas=["bvar", "bayesiano", "minnesota", "litterman", "shrinkage", "pronóstico"],
@@ -286,6 +357,10 @@ def bvar_minnesota(sids, freq, transf, rezagos, lambda1, horizonte):
     r.metrica("Rezagos", p)
     r.metrica("λ₁", lambda1)
     r.metrica("Encogimiento medio vs MCO", enc, "cuánto se movieron los coeficientes hacia el prior")
-    r.tabla("Pronóstico (media posterior)", ["fecha", *[et[s] for s in sids]], [[str(f.date()), *row] for f, row in zip(fut, pron, strict=True)])
+    r.tabla(
+        "Pronóstico (media posterior)",
+        ["fecha", *[et[s] for s in sids]],
+        [[str(f.date()), *row] for f, row in zip(fut, pron, strict=True)],
+    )
     r.resumen = f"BVAR-Minnesota({p}) con {len(sids)} variables, λ₁={lambda1}: los coeficientes se encogen {fmt(enc * 100, 2)} % hacia el prior en promedio."
     return r

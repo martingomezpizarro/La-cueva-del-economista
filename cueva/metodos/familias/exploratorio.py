@@ -370,11 +370,17 @@ def dispersion(sid_x, sid_y, freq, transf, rezago_x):
     b, a = np.polyfit(xv, yv, 1)
     ex = et[sid_x] + (f" (t−{rezago_x})" if rezago_x else "")
     r = Resultado()
-    r.dispersion(f"{et[sid_y]} vs {ex}", xv, yv, ex, et[sid_y], recta=(b, a), textos=[str(f.date()) for f in d.index])
+    r.dispersion(
+        f"{et[sid_y]} vs {ex}", xv, yv, ex, et[sid_y], recta=(b, a), textos=[str(f.date()) for f in d.index]
+    )
     r.tabla(
         "Correlaciones",
         ["medida", "coeficiente", "p"],
-        [["Pearson (lineal)", pe.statistic, pe.pvalue], ["Spearman (rangos)", sp.statistic, sp.pvalue], ["Kendall τ", ke.statistic, ke.pvalue]],
+        [
+            ["Pearson (lineal)", pe.statistic, pe.pvalue],
+            ["Spearman (rangos)", sp.statistic, sp.pvalue],
+            ["Kendall τ", ke.statistic, ke.pvalue],
+        ],
         resaltar_p="p",
     )
     r.metrica("Pendiente MCO", b)
@@ -383,7 +389,9 @@ def dispersion(sid_x, sid_y, freq, transf, rezago_x):
     z = np.abs(stats.zscore(yv - (a + b * xv)))
     outl = d.index[z > 3]
     if len(outl):
-        r.advertir(f"{len(outl)} observaciones con residuo > 3 desvíos: {', '.join(str(f.date()) for f in outl[:6])}.")
+        r.advertir(
+            f"{len(outl)} observaciones con residuo > 3 desvíos: {', '.join(str(f.date()) for f in outl[:6])}."
+        )
     if abs(pe.statistic - sp.statistic) > 0.2:
         r.advertir("Pearson y Spearman difieren mucho: la relación no es lineal o la dominan outliers.")
     r.resumen = (
@@ -439,4 +447,3 @@ def matriz_correlacion(sids, freq, transf, metodo):
     )
     r.datos = {"matriz": c.values, "labels": labels}
     return r
-

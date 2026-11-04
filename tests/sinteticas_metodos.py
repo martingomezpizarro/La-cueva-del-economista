@@ -60,10 +60,14 @@ def generar(carpeta) -> dict[str, np.ndarray]:
     for k, carga in enumerate([1.0, 0.8, -0.6, 1.2]):
         out[f"fac{k}"] = carga * f + rng.normal(0, 0.3, N)
     # positiva con tendencia (para log)
-    out["positiva"] = np.exp(4 + 0.004 * t + 0.03 * np.cumsum(rng.normal(0, 0.3, N)) + 0.05 * np.sin(2 * np.pi * t / 12))
+    out["positiva"] = np.exp(
+        4 + 0.004 * t + 0.03 * np.cumsum(rng.normal(0, 0.3, N)) + 0.05 * np.sin(2 * np.pi * t / 12)
+    )
     fechas = pd.date_range(INICIO, periods=N, freq="ME")
     for nombre, v in out.items():
-        pd.DataFrame({"fecha": fechas, "valor": v}).to_csv(carpeta / f"{nombre}.csv", index=False, encoding="utf-8-sig")
+        pd.DataFrame({"fecha": fechas, "valor": v}).to_csv(
+            carpeta / f"{nombre}.csv", index=False, encoding="utf-8-sig"
+        )
     out.update(generar_activos(carpeta, rng))
     return out
 
@@ -96,9 +100,15 @@ def generar_activos(carpeta, rng) -> dict[str, np.ndarray]:
     out["par_a"] = 40 * np.exp(comun + ou)
     out["par_b"] = 20 * np.exp(comun)
     for nombre, v in out.items():
-        pd.DataFrame({"fecha": dias, "valor": v}).to_csv(carpeta / f"{nombre}.csv", index=False, encoding="utf-8-sig")
-    horas = pd.DatetimeIndex([d + pd.Timedelta(hours=h) for d in pd.bdate_range("2024-01-01", periods=120) for h in range(10, 17)])
+        pd.DataFrame({"fecha": dias, "valor": v}).to_csv(
+            carpeta / f"{nombre}.csv", index=False, encoding="utf-8-sig"
+        )
+    horas = pd.DatetimeIndex(
+        [d + pd.Timedelta(hours=h) for d in pd.bdate_range("2024-01-01", periods=120) for h in range(10, 17)]
+    )
     hv = np.array([0.004 if h in (10, 16) else 0.0015 for h in horas.hour])
     out["intradia"] = 100 * np.exp(np.cumsum(hv * rng.normal(size=len(horas))))
-    pd.DataFrame({"fecha": horas.strftime("%Y-%m-%d %H:%M"), "valor": out["intradia"]}).to_csv(carpeta / "intradia.csv", index=False, encoding="utf-8-sig")
+    pd.DataFrame({"fecha": horas.strftime("%Y-%m-%d %H:%M"), "valor": out["intradia"]}).to_csv(
+        carpeta / "intradia.csv", index=False, encoding="utf-8-sig"
+    )
     return out

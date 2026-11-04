@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="/web/estilo/tokens.css">
 <link rel="stylesheet" href="/web/mesa/explorar.css">
+<link rel="stylesheet" href="/web/mesa/metodos.css">
 <link rel="stylesheet" href="/web/estilo/pie.css">
 <link rel="stylesheet" href="/web/estilo/recorrido.css">
 <script src="/web/estilo/tema.js"></script>
@@ -58,7 +59,15 @@
 
   /* ── vista principal: el visualizador ──────────────────────────────── */
   #viz-wrap{position:relative;flex:1;min-width:0;overflow:hidden}
-  #explorar{position:absolute;inset:0}
+  #vistas{position:absolute;top:0;left:0;right:0;height:36px;display:flex;align-items:center;gap:4px;
+    padding:0 12px;border-bottom:1px solid var(--line);background:var(--surface);z-index:2}
+  #vistas button{border:1px solid transparent;background:none;color:var(--ink-dim);font:inherit;font-size:12.5px;
+    font-weight:600;padding:4px 12px;border-radius:999px;cursor:pointer}
+  #vistas button:hover{color:var(--ink);background:var(--surface-2)}
+  #vistas button.on{color:var(--ink);background:var(--accent-soft);border-color:var(--accent-line)}
+  #vistas .n{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);font-weight:400;margin-left:3px}
+  #explorar,#metodos{position:absolute;top:36px;left:0;right:0;bottom:0}
+  #metodos{display:none}
 
   /* ── drawers (paneles laterales sobre el iframe) ───────────────────── */
   #overlay{position:fixed;inset:0;background:rgba(0,0,0,.34);z-index:30;display:none}
@@ -252,7 +261,14 @@
   <!-- ── VISTA PRINCIPAL: el explorador de series, siempre de fondo ── -->
   <!-- ── VISTA PRINCIPAL: Explorar nativo (web/mesa/explorar.js). El explorador clásico
        del Trabajo Final sigue en /explorador hasta que la Mesa nueva lo cubra. ── -->
-  <div id="viz-wrap"><div id="explorar"></div></div>
+  <div id="viz-wrap">
+    <nav id="vistas" aria-label="Vistas de la Mesa">
+      <button id="v-explorar" class="on" data-vista="explorar" title="Mirar y comparar series">📈 Explorar</button>
+      <button id="v-metodos" data-vista="metodos" title="Pruebas, modelos, aprendizaje automático, redes, finanzas">🧮 Métodos <span class="n" id="v-metodos-n"></span></button>
+    </nav>
+    <div id="explorar"></div>
+    <div id="metodos"></div>
+  </div>
 
   <!-- ── rail derecho: el flujo de la investigación (estilo panel de TradingView) ── -->
   <nav id="sidebar">
@@ -444,6 +460,8 @@ window.CuevaMesa = {
     if(MODO==='proyecto') guardarCambiosDebounced(); else guardarVR();
   },
   pasarAProyecto: () => promoverVR(),
+  proyectoId: () => (MODO==='proyecto' ? PROYECTO_ID : null),
+  estudiosCambiaron: () => window.postMessage({ tipo:'cueva:estudios-cambiaron' }, '*'),
 };
 if(MODO==='rapida'){ const vr = leerVR(); SEL = [...(vr.series||[])]; DEP = vr.serie_dependiente || null; }
 
@@ -1075,8 +1093,25 @@ setModo(MODO);
 </script>
 <script type="module">
   import { montar } from '/web/mesa/explorar.js';
+  import { montar as montarMetodos, refrescar as refrescarMetodos } from '/web/mesa/metodos.js';
   const { series, dep } = window.CuevaMesa.estado();
   montar(document.getElementById('explorar'), { series, dep });
+  // Vistas de la Mesa: Explorar (mirar) · Métodos (probar, modelar, predecir)
+  let metodosMontado = false;
+  function verVista(v){
+    document.querySelectorAll('#vistas button').forEach(b => b.classList.toggle('on', b.dataset.vista === v));
+    document.getElementById('explorar').style.display = v === 'explorar' ? '' : 'none';
+    document.getElementById('metodos').style.display = v === 'metodos' ? 'grid' : 'none';
+    if (v === 'metodos') { if (!metodosMontado) { metodosMontado = true; montarMetodos(document.getElementById('metodos')); } else refrescarMetodos(); }
+    try { sessionStorage.setItem('cueva_vista_mesa', v); } catch (e) {}
+    const u = new URL(location.href); if (v === 'metodos') u.searchParams.set('vista', 'metodos'); else u.searchParams.delete('vista');
+    history.replaceState(null, '', u);
+  }
+  document.querySelectorAll('#vistas button').forEach(b => b.addEventListener('click', () => verVista(b.dataset.vista)));
+  const pedida = new URLSearchParams(location.search).get('vista');
+  let guardada = null; try { guardada = sessionStorage.getItem('cueva_vista_mesa'); } catch (e) {}
+  if ((pedida || guardada) === 'metodos') verVista('metodos');
+  fetch('/api/v1/metodos').then(r => r.json()).then(d => { document.getElementById('v-metodos-n').textContent = (d.metodos || []).length; }).catch(() => {});
 </script>
 <script src="/web/estilo/sitio.js"></script>
 <script src="/web/estilo/pie.js"></script>

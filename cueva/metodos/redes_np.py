@@ -40,7 +40,13 @@ class RecurrenteNP:
         if celda not in ("lstm", "gru"):
             raise ValueError("celda: 'lstm' o 'gru'")
         self.celda, self.H, self.epocas, self.tasa = celda, ocultas, epocas, tasa
-        self.l2, self.lote, self.paciencia, self.semilla, self.validacion = l2, lote, paciencia, semilla, validacion
+        self.l2, self.lote, self.paciencia, self.semilla, self.validacion = (
+            l2,
+            lote,
+            paciencia,
+            semilla,
+            validacion,
+        )
         self.historia: list[tuple[float, float]] = []
 
     # ── parámetros ──
@@ -70,7 +76,12 @@ class RecurrenteNP:
             hx = np.concatenate([h, X[:, t, :]], axis=1)
             if self.celda == "lstm":
                 z = hx @ p["W"].T + p["b"]
-                i, f, o, g = _sig(z[:, :H]), _sig(z[:, H : 2 * H]), _sig(z[:, 2 * H : 3 * H]), np.tanh(z[:, 3 * H :])
+                i, f, o, g = (
+                    _sig(z[:, :H]),
+                    _sig(z[:, H : 2 * H]),
+                    _sig(z[:, 2 * H : 3 * H]),
+                    np.tanh(z[:, 3 * H :]),
+                )
                 c_new = f * c + i * g
                 tc = np.tanh(c_new)
                 h_new = o * tc
@@ -108,7 +119,9 @@ class RecurrenteNP:
                 do = dh * tc
                 dc = dc + dh * o * (1 - tc**2)
                 di, df, dg = dc * gg, dc * c_prev, dc * i
-                dz = np.concatenate([di * i * (1 - i), df * f * (1 - f), do * o * (1 - o), dg * (1 - gg**2)], axis=1)
+                dz = np.concatenate(
+                    [di * i * (1 - i), df * f * (1 - f), do * o * (1 - o), dg * (1 - gg**2)], axis=1
+                )
                 g["W"] += dz.T @ hx
                 g["b"] += dz.sum(0)
                 dhx = dz @ p["W"]
@@ -187,8 +200,23 @@ class ReservorioNP:
     """Echo State Network (Jaeger 2001): reservorio recurrente aleatorio y fijo; sólo se entrena
     la lectura lineal (ridge) sobre el estado final de cada ventana."""
 
-    def __init__(self, unidades: int = 200, radio: float = 0.9, fuga: float = 0.5, ridge: float = 1e-2, semilla: int = 0, densidad: float = 0.1):
-        self.N, self.radio, self.fuga, self.ridge, self.semilla, self.densidad = unidades, radio, fuga, ridge, semilla, densidad
+    def __init__(
+        self,
+        unidades: int = 200,
+        radio: float = 0.9,
+        fuga: float = 0.5,
+        ridge: float = 1e-2,
+        semilla: int = 0,
+        densidad: float = 0.1,
+    ):
+        self.N, self.radio, self.fuga, self.ridge, self.semilla, self.densidad = (
+            unidades,
+            radio,
+            fuga,
+            ridge,
+            semilla,
+            densidad,
+        )
 
     def _estados(self, X):
         B, L, _ = X.shape

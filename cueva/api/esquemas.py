@@ -62,7 +62,16 @@ class PreguntaAgente(BaseModel):
     pregunta: str = Field(min_length=1, max_length=4_000)
 
 
+class SerieDerivada(BaseModel):
+    """Salida de un método que el usuario guarda como serie propia (para encadenar métodos)."""
+
+    nombre: str = Field(min_length=1, max_length=80)
+    fechas: list[str] = Field(max_length=200_000)
+    valores: list[float | None] = Field(max_length=200_000)
+    descripcion: str = Field(default="", max_length=500)
+
+
 class HerramientaEjecutar(BaseModel):
-    nombre: str = Field(pattern=r"^[a-z_]{2,30}$")
+    nombre: str = Field(pattern=r"^[a-z][a-z0-9_]{1,29}$")
     args: dict = Field(default_factory=dict)
     proyecto_id: str | None = Field(default=None, pattern=PID_PATTERN)

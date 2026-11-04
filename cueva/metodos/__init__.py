@@ -15,6 +15,8 @@ Uso:
 Qué NO hace: no persiste (eso es `cueva/sesiones`), no sale a la red (eso es `cueva/fuentes`).
 """
 
-from cueva.metodos.registro import catalogo, declaraciones, ejecutar, obtener, registro
+# OJO: no reexportar la función `registro` acá: taparía al submódulo `cueva.metodos.registro`
+# (`from cueva.metodos import registro` devolvería la función y no el módulo).
+from cueva.metodos.registro import catalogo, declaraciones, ejecutar, obtener
 
-__all__ = ["catalogo", "declaraciones", "ejecutar", "obtener", "registro"]
+__all__ = ["catalogo", "declaraciones", "ejecutar", "obtener"]

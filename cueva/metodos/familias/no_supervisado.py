@@ -29,10 +29,18 @@ FREQS = ["diaria", "mensual", "trimestral", "anual"]
     "Componentes principales (PCA)",
     F,
     "¿Cuántas fuerzas comunes mueven a un grupo de series y cuál es su 'índice' resumen?",
-    params=[P_SERIES("sids", "Series (3 a 40)", minimo=3, maximo=40), Param("freq", "opcion", "Frecuencia", defecto="mensual", opciones=FREQS), P_DLOG, Param("componentes", "entero", "Componentes a mostrar", defecto=3, minimo=1, maximo=10)],
+    params=[
+        P_SERIES("sids", "Series (3 a 40)", minimo=3, maximo=40),
+        Param("freq", "opcion", "Frecuencia", defecto="mensual", opciones=FREQS),
+        P_DLOG,
+        Param("componentes", "entero", "Componentes a mostrar", defecto=3, minimo=1, maximo=10),
+    ],
     cuando="Curva de rendimientos (nivel, pendiente, curvatura), índices de condiciones financieras, reducir 30 predictores a 3.",
     supuestos=["Relaciones lineales; se estandariza cada serie (si no, manda la de mayor varianza)."],
-    trampas=["Los componentes no tienen nombre económico garantizado: interpretalos por las cargas.", "En niveles con tendencia, el primer componente es 'la tendencia' y no dice nada."],
+    trampas=[
+        "Los componentes no tienen nombre económico garantizado: interpretalos por las cargas.",
+        "En niveles con tendencia, el primer componente es 'la tendencia' y no dice nada.",
+    ],
     deps=["sklearn"],
     referencias=["Jolliffe (2002)", "Litterman y Scheinkman (1991)"],
     etiquetas=["pca", "componentes principales", "factores", "reducción de dimensión", "cargas"],
@@ -47,13 +55,28 @@ def componentes_principales(sids, freq, transf, componentes):
     pca = PCA(n_components=min(len(sids), len(df))).fit(z.values)
     var = pca.explained_variance_ratio_
     r = Resultado()
-    r.barras("Varianza explicada por componente", [f"CP{i + 1}" for i in range(len(var))], {"individual %": var * 100, "acumulada %": np.cumsum(var) * 100})
+    r.barras(
+        "Varianza explicada por componente",
+        [f"CP{i + 1}" for i in range(len(var))],
+        {"individual %": var * 100, "acumulada %": np.cumsum(var) * 100},
+    )
     nombres = [et[s] for s in sids]
-    r.mapa_calor("Cargas (cómo pesa cada serie en cada componente)", nombres, [f"CP{i + 1}" for i in range(k)], pca.components_[:k].T, rango=None)
+    r.mapa_calor(
+        "Cargas (cómo pesa cada serie en cada componente)",
+        nombres,
+        [f"CP{i + 1}" for i in range(k)],
+        pca.components_[:k].T,
+        rango=None,
+    )
     sc = pca.transform(z.values)[:, :k]
     r.lineas("Componentes en el tiempo", df.index, {f"CP{i + 1}": sc[:, i] for i in range(k)})
     for i in range(k):
-        r.serie(f"cp{i + 1}_{sids[0]}"[:40], df.index, sc[:, i], f"Componente principal {i + 1} de {len(sids)} series")
+        r.serie(
+            f"cp{i + 1}_{sids[0]}"[:40],
+            df.index,
+            sc[:, i],
+            f"Componente principal {i + 1} de {len(sids)} series",
+        )
     kaiser = int(np.sum(pca.explained_variance_ > 1))
     r.metrica("CP1 explica %", var[0] * 100)
     r.metrica(f"Primeros {k} explican %", float(np.sum(var[:k]) * 100))
@@ -68,10 +91,24 @@ def componentes_principales(sids, freq, transf, componentes):
     "Agrupamiento de series por comportamiento",
     F,
     "¿Qué series se mueven parecido y forman grupos (ej. activos que conviene no tener juntos)?",
-    params=[P_SERIES("sids", "Series (4 a 60)", minimo=4, maximo=60), Param("freq", "opcion", "Frecuencia", defecto="mensual", opciones=FREQS), P_DLOG, Param("grupos", "entero", "Grupos (0 = elegir por silueta)", defecto=0, minimo=0, maximo=12), Param("enlace", "opcion", "Enlace jerárquico", defecto="average", opciones=["average", "complete", "single", "ward"])],
+    params=[
+        P_SERIES("sids", "Series (4 a 60)", minimo=4, maximo=60),
+        Param("freq", "opcion", "Frecuencia", defecto="mensual", opciones=FREQS),
+        P_DLOG,
+        Param("grupos", "entero", "Grupos (0 = elegir por silueta)", defecto=0, minimo=0, maximo=12),
+        Param(
+            "enlace",
+            "opcion",
+            "Enlace jerárquico",
+            defecto="average",
+            opciones=["average", "complete", "single", "ward"],
+        ),
+    ],
     cuando="Diversificación de cartera, armar bloques temáticos, encontrar series redundantes.",
     supuestos=["Distancia de correlación d = √(2(1−ρ)) sobre las series transformadas."],
-    trampas=["La correlación cambia con los regímenes: agrupá por subperíodos para ver si los grupos son estables."],
+    trampas=[
+        "La correlación cambia con los regímenes: agrupá por subperíodos para ver si los grupos son estables."
+    ],
     deps=["sklearn"],
     referencias=["Mantegna (1999)", "López de Prado (2016), HRP"],
     etiquetas=["cluster", "clustering", "jerárquico", "dendrograma", "correlación", "diversificación"],
@@ -101,7 +138,12 @@ def clusters_series(sids, freq, transf, grupos, enlace):
     orden = leaves_list(Z)
     nombres = [et[s] for s in sids]
     r = Resultado()
-    r.mapa_calor("Correlaciones ordenadas por el árbol (los bloques son los grupos)", [nombres[i] for i in orden], [nombres[i] for i in orden], c[np.ix_(orden, orden)])
+    r.mapa_calor(
+        "Correlaciones ordenadas por el árbol (los bloques son los grupos)",
+        [nombres[i] for i in orden],
+        [nombres[i] for i in orden],
+        c[np.ix_(orden, orden)],
+    )
     filas = []
     for g in sorted(set(lab)):
         miembros = [i for i in range(len(sids)) if lab[i] == g]
@@ -124,10 +166,27 @@ def clusters_series(sids, freq, transf, grupos, enlace):
     "Agrupamiento de PERÍODOS (regímenes sin etiqueta)",
     F,
     "¿En qué 'climas' estuvo la economía (o el mercado), y en cuál estamos hoy?",
-    params=[P_SERIES("sids", "Series que describen el clima", minimo=2, maximo=20), Param("freq", "opcion", "Frecuencia", defecto="mensual", opciones=FREQS), P_DLOG, Param("grupos", "entero", "Regímenes (0 = elegir por BIC)", defecto=0, minimo=0, maximo=8), Param("suavizado", "entero", "Media móvil previa (obs.)", defecto=3, minimo=1, maximo=24), Param("algoritmo", "opcion", "Algoritmo", defecto="mezcla_gaussiana", opciones=["mezcla_gaussiana", "kmeans"])],
+    params=[
+        P_SERIES("sids", "Series que describen el clima", minimo=2, maximo=20),
+        Param("freq", "opcion", "Frecuencia", defecto="mensual", opciones=FREQS),
+        P_DLOG,
+        Param("grupos", "entero", "Regímenes (0 = elegir por BIC)", defecto=0, minimo=0, maximo=8),
+        Param("suavizado", "entero", "Media móvil previa (obs.)", defecto=3, minimo=1, maximo=24),
+        Param(
+            "algoritmo",
+            "opcion",
+            "Algoritmo",
+            defecto="mezcla_gaussiana",
+            opciones=["mezcla_gaussiana", "kmeans"],
+        ),
+    ],
     cuando="Para identificar regímenes con varias variables a la vez (inflación + brecha + tasa) sin suponer un modelo dinámico.",
-    supuestos=["Cada régimen es una nube de puntos (gaussiana en el caso de la mezcla) en el espacio de las variables."],
-    trampas=["No usa el orden temporal: los regímenes pueden 'parpadear'. El suavizado previo ayuda; un Markov los modela de verdad."],
+    supuestos=[
+        "Cada régimen es una nube de puntos (gaussiana en el caso de la mezcla) en el espacio de las variables."
+    ],
+    trampas=[
+        "No usa el orden temporal: los regímenes pueden 'parpadear'. El suavizado previo ayuda; un Markov los modela de verdad."
+    ],
     deps=["sklearn"],
     referencias=["Hamilton (2016), regímenes", "Mulvey y Liu (2016)"],
     etiquetas=["regímenes", "clusters", "gmm", "kmeans", "estados", "clima", "períodos", "momentos"],
@@ -143,7 +202,10 @@ def clusters_periodos(sids, freq, transf, grupos, suavizado, algoritmo):
         if grupos:
             k = grupos
         else:
-            bics = {kk: GaussianMixture(kk, covariance_type="full", random_state=0, n_init=3).fit(z).bic(z) for kk in range(1, 7)}
+            bics = {
+                kk: GaussianMixture(kk, covariance_type="full", random_state=0, n_init=3).fit(z).bic(z)
+                for kk in range(1, 7)
+            }
             k = min(bics, key=bics.get)
             k = max(k, 2)
         m = GaussianMixture(k, covariance_type="full", random_state=0, n_init=5).fit(z)
@@ -159,8 +221,19 @@ def clusters_periodos(sids, freq, transf, grupos, suavizado, algoritmo):
     filas = []
     for g in range(k):
         msk = lab == g
-        filas.append([f"R{g + 1}", int(msk.sum()), float(msk.mean() * 100), *[float(df.values[msk, j].mean()) for j in range(len(sids))]])
-    r.tabla("Perfil de cada régimen (promedio de cada variable)", ["régimen", "obs.", "% del tiempo", *nombres], filas)
+        filas.append(
+            [
+                f"R{g + 1}",
+                int(msk.sum()),
+                float(msk.mean() * 100),
+                *[float(df.values[msk, j].mean()) for j in range(len(sids))],
+            ]
+        )
+    r.tabla(
+        "Perfil de cada régimen (promedio de cada variable)",
+        ["régimen", "obs.", "% del tiempo", *nombres],
+        filas,
+    )
     # duración media de los episodios
     cambios = np.r_[True, lab[1:] != lab[:-1]]
     r.metrica("Regímenes", k)
@@ -170,7 +243,13 @@ def clusters_periodos(sids, freq, transf, grupos, suavizado, algoritmo):
     for a, b in zip(lab[:-1], lab[1:], strict=True):
         T[a, b] += 1
     T = T / np.maximum(T.sum(1, keepdims=True), 1)
-    r.mapa_calor("Frecuencia de transición entre regímenes (fila → columna)", [f"R{i + 1}" for i in range(k)], [f"R{i + 1}" for i in range(k)], T, rango=(0, 1))
+    r.mapa_calor(
+        "Frecuencia de transición entre regímenes (fila → columna)",
+        [f"R{i + 1}" for i in range(k)],
+        [f"R{i + 1}" for i in range(k)],
+        T,
+        rango=(0, 1),
+    )
     r.lineas("Régimen asignado a cada período", df.index, {"régimen": lab + 1})
     if prob is not None:
         r.lineas("Probabilidad de cada régimen", df.index, {f"P(R{g + 1})": prob[:, g] for g in range(k)})
@@ -183,11 +262,32 @@ def clusters_periodos(sids, freq, transf, grupos, suavizado, algoritmo):
             j += 1
         if j - i + 1 >= 3:
             evs = eventos_en(df.index[i], df.index[j])
-            filas_e.append([f"R{lab[i] + 1}", str(df.index[i].date()), str(df.index[j].date()), j - i + 1, "; ".join(e["titulo"] for e in evs[:2]) or "—"])
+            filas_e.append(
+                [
+                    f"R{lab[i] + 1}",
+                    str(df.index[i].date()),
+                    str(df.index[j].date()),
+                    j - i + 1,
+                    "; ".join(e["titulo"] for e in evs[:2]) or "—",
+                ]
+            )
         i = j + 1
-    r.tabla("Episodios (≥ 3 períodos) y eventos de la Línea de Tiempo", ["régimen", "desde", "hasta", "obs.", "eventos"], filas_e[-30:])
-    r.serie(f"regimen_{sids[0]}"[:40], df.index, lab + 1, f"Régimen (clusters de períodos) con {', '.join(nombres)}")
-    r.resumen = f"{k} regímenes con {', '.join(nombres)}: hoy en R{lab[-1] + 1} (" + ", ".join(f"{nombres[j]}={fmt(filas[lab[-1]][3 + j])}" for j in range(len(sids))) + f"); {int(cambios.sum())} episodios."
+    r.tabla(
+        "Episodios (≥ 3 períodos) y eventos de la Línea de Tiempo",
+        ["régimen", "desde", "hasta", "obs.", "eventos"],
+        filas_e[-30:],
+    )
+    r.serie(
+        f"regimen_{sids[0]}"[:40],
+        df.index,
+        lab + 1,
+        f"Régimen (clusters de períodos) con {', '.join(nombres)}",
+    )
+    r.resumen = (
+        f"{k} regímenes con {', '.join(nombres)}: hoy en R{lab[-1] + 1} ("
+        + ", ".join(f"{nombres[j]}={fmt(filas[lab[-1]][3 + j])}" for j in range(len(sids)))
+        + f"); {int(cambios.sum())} episodios."
+    )
     return r
 
 
@@ -196,7 +296,13 @@ def clusters_periodos(sids, freq, transf, grupos, suavizado, algoritmo):
     "Detección de anomalías (STL robusto + bosque de aislamiento)",
     F,
     "¿Qué períodos fueron atípicos y coinciden con algún evento histórico?",
-    params=[P_SERIE(), Param("freq", "opcion", "Frecuencia", defecto="mensual", opciones=FREQS), P_DLOG, Param("umbral", "real", "Umbral (desvíos robustos)", defecto=3.5, minimo=2, maximo=10), P_SERIES("contexto", "Series de contexto (para el bosque)", minimo=0, maximo=10, requerido=False)],
+    params=[
+        P_SERIE(),
+        Param("freq", "opcion", "Frecuencia", defecto="mensual", opciones=FREQS),
+        P_DLOG,
+        Param("umbral", "real", "Umbral (desvíos robustos)", defecto=3.5, minimo=2, maximo=10),
+        P_SERIES("contexto", "Series de contexto (para el bosque)", minimo=0, maximo=10, requerido=False),
+    ],
     cuando="Limpiar datos antes de modelar, o encontrar episodios que merecen una ficha en la Línea de Tiempo.",
     trampas=["En Argentina, lo 'anómalo' a veces es el régimen: corré también quiebres y Markov."],
     deps=["sklearn"],
@@ -226,17 +332,33 @@ def anomalias(sid, freq, transf, umbral, contexto):
         sc = -iso.score_samples(df.values)
         r.lineas("Puntaje de aislamiento multivariado (más alto = más raro)", df.index, {"puntaje": sc})
         top = df.index[np.argsort(sc)[::-1][:10]]
-        r.tabla("Períodos más raros (multivariado)", ["fecha", "puntaje", "evento cercano"], [[str(f.date()), float(sc[df.index.get_loc(f)]), (evento_cercano(f) or {}).get("titulo", "—")] for f in top])
+        r.tabla(
+            "Períodos más raros (multivariado)",
+            ["fecha", "puntaje", "evento cercano"],
+            [
+                [str(f.date()), float(sc[df.index.get_loc(f)]), (evento_cercano(f) or {}).get("titulo", "—")]
+                for f in top
+            ],
+        )
     filas = []
     for f in s.index[marca]:
         ev = evento_cercano(f, 3)
         filas.append([str(f.date()), float(s.loc[f]), float(z.loc[f]), ev["titulo"] if ev else "—"])
-    r.tabla(f"Anomalías (|z robusto| > {umbral})", ["fecha", "valor", "z robusto", "evento ±3 meses"], filas[:60])
-    r.lineas(f"{et} con anomalías marcadas", s.index, {et: s.values, "anómalo": np.where(marca, s.values, np.nan)}, marcas=[{"x": f[0], "texto": f[3] if f[3] != "—" else ""} for f in filas[:15]])
+    r.tabla(
+        f"Anomalías (|z robusto| > {umbral})", ["fecha", "valor", "z robusto", "evento ±3 meses"], filas[:60]
+    )
+    r.lineas(
+        f"{et} con anomalías marcadas",
+        s.index,
+        {et: s.values, "anómalo": np.where(marca, s.values, np.nan)},
+        marcas=[{"x": f[0], "texto": f[3] if f[3] != "—" else ""} for f in filas[:15]],
+    )
     r.metrica("Anomalías", int(marca.sum()))
     r.metrica("Con evento coincidente", sum(1 for f in filas if f[3] != "—"))
     if not len(filas):
         r.veredicto("No hay anomalías con ese umbral.", "verde")
-    r.resumen = f"Anomalías en {et}: {int(marca.sum())} períodos con |z| > {umbral}; {sum(1 for f in filas if f[3] != '—')} coinciden con eventos. " + ", ".join(f[0] for f in filas[:8])
+    r.resumen = (
+        f"Anomalías en {et}: {int(marca.sum())} períodos con |z| > {umbral}; {sum(1 for f in filas if f[3] != '—')} coinciden con eventos. "
+        + ", ".join(f[0] for f in filas[:8])
+    )
     return r
-

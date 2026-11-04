@@ -9,7 +9,14 @@ from cueva.metodos.insumos import P_DESDE, P_FREQ, P_HASTA, P_SERIE, P_TRANSF, f
 from cueva.metodos.registro import metodo
 
 F = "volatilidad"
-P_RET = Param("transf", "opcion", "Transformación", defecto="dif_log", opciones=list(P_TRANSF.opciones), ayuda="GARCH se aplica a rendimientos: dif_log (Δlog) es lo usual")
+P_RET = Param(
+    "transf",
+    "opcion",
+    "Transformación",
+    defecto="dif_log",
+    opciones=list(P_TRANSF.opciones),
+    ayuda="GARCH se aplica a rendimientos: dif_log (Δlog) es lo usual",
+)
 
 
 @metodo(
@@ -21,8 +28,20 @@ P_RET = Param("transf", "opcion", "Transformación", defecto="dif_log", opciones
         P_SERIE(),
         P_FREQ,
         P_RET,
-        Param("modelos", "opciones", "Modelos a comparar", defecto=["GARCH", "GJR", "EGARCH"], opciones=["GARCH", "GJR", "EGARCH", "APARCH", "FIGARCH"]),
-        Param("distribucion", "opcion", "Distribución de errores", defecto="t", opciones=["normal", "t", "skewt", "ged"]),
+        Param(
+            "modelos",
+            "opciones",
+            "Modelos a comparar",
+            defecto=["GARCH", "GJR", "EGARCH"],
+            opciones=["GARCH", "GJR", "EGARCH", "APARCH", "FIGARCH"],
+        ),
+        Param(
+            "distribucion",
+            "opcion",
+            "Distribución de errores",
+            defecto="t",
+            opciones=["normal", "t", "skewt", "ged"],
+        ),
         Param("media", "opcion", "Ecuación de media", defecto="AR", opciones=["Constant", "Zero", "AR"]),
         P_DESDE,
         P_HASTA,
@@ -36,7 +55,12 @@ P_RET = Param("transf", "opcion", "Transformación", defecto="dif_log", opciones
     ],
     deps=["arch"],
     costo="segundos",
-    referencias=["Engle (1982)", "Bollerslev (1986)", "Glosten, Jagannathan y Runkle (1993)", "Nelson (1991)"],
+    referencias=[
+        "Engle (1982)",
+        "Bollerslev (1986)",
+        "Glosten, Jagannathan y Runkle (1993)",
+        "Nelson (1991)",
+    ],
     etiquetas=["garch", "egarch", "gjr", "volatilidad", "apalancamiento", "arch"],
 )
 def garch_familia(sid, freq, transf, modelos, distribucion, media, desde, hasta):
@@ -69,9 +93,24 @@ def garch_familia(sid, freq, transf, modelos, distribucion, media, desde, hasta)
     res = ajustes[mejor]
     r = Resultado()
     r.tabla("Comparación (menor BIC = mejor)", ["modelo", "log-veros.", "AIC", "BIC"], filas)
-    r.tabla(f"Parámetros de {mejor}", ["parámetro", "coef", "EE", "p"], [[n, c, e, p] for n, c, e, p in zip(res.params.index, res.params.values, res.std_err.values, res.pvalues.values, strict=True)], resaltar_p="p")
+    r.tabla(
+        f"Parámetros de {mejor}",
+        ["parámetro", "coef", "EE", "p"],
+        [
+            [n, c, e, p]
+            for n, c, e, p in zip(
+                res.params.index, res.params.values, res.std_err.values, res.pvalues.values, strict=True
+            )
+        ],
+        resaltar_p="p",
+    )
     vol = res.conditional_volatility / escala
-    r.lineas(f"Volatilidad condicional de {et} ({mejor})", s.index, {"|rendimiento|": np.abs(s.values), "volatilidad condicional": vol}, estilos={"|rendimiento|": {"guion": "dot"}})
+    r.lineas(
+        f"Volatilidad condicional de {et} ({mejor})",
+        s.index,
+        {"|rendimiento|": np.abs(s.values), "volatilidad condicional": vol},
+        estilos={"|rendimiento|": {"guion": "dot"}},
+    )
     r.serie(f"{sid}_vol_{mejor.lower()}", s.index, vol, f"Volatilidad condicional de {et} ({mejor})")
     pars = res.params
     alpha = sum(v for k, v in pars.items() if k.startswith("alpha"))
@@ -84,9 +123,14 @@ def garch_familia(sid, freq, transf, modelos, distribucion, media, desde, hasta)
         if pers < 1:
             r.metrica("Vida media de un shock (períodos)", np.log(0.5) / np.log(pers) if pers > 0 else None)
         if pers > 0.98:
-            r.advertir("Persistencia ≈ 1 (IGARCH): puede ser un quiebre en la varianza; corré cambio_de_punto con costo 'normal'.")
+            r.advertir(
+                "Persistencia ≈ 1 (IGARCH): puede ser un quiebre en la varianza; corré cambio_de_punto con costo 'normal'."
+            )
     if gamma and "gamma[1]" in res.pvalues and res.pvalues["gamma[1]"] < 0.05:
-        r.veredicto(f"Hay efecto asimétrico (γ={fmt(gamma)}): los shocks {'negativos' if gamma > 0 else 'positivos'} suben más la volatilidad.", "amarillo")
+        r.veredicto(
+            f"Hay efecto asimétrico (γ={fmt(gamma)}): los shocks {'negativos' if gamma > 0 else 'positivos'} suben más la volatilidad.",
+            "amarillo",
+        )
     else:
         r.veredicto(f"{mejor} es el mejor por BIC; no hay asimetría significativa.", "verde")
     try:
@@ -145,10 +189,20 @@ def valor_en_riesgo(sid, freq, transf, nivel, ventana):
         pk = float(stats.chi2.sf(lr, 1))
     else:
         pk = float("nan")
-    r.lineas(f"{et} y VaR móvil histórico ({ventana} obs.)", s.index, {et: y, f"VaR {nivel:.0%}": var_mov}, estilos={f"VaR {nivel:.0%}": {"guion": "dash"}})
+    r.lineas(
+        f"{et} y VaR móvil histórico ({ventana} obs.)",
+        s.index,
+        {et: y, f"VaR {nivel:.0%}": var_mov},
+        estilos={f"VaR {nivel:.0%}": {"guion": "dash"}},
+    )
     r.metrica("Violaciones", x)
     r.metrica("Esperadas", n * a)
     r.metrica("Kupiec p", pk, "H0: la tasa de violaciones es la nominal")
-    r.veredicto("El VaR móvil está bien calibrado (Kupiec no rechaza)." if pk == pk and pk > 0.05 else "El VaR móvil está mal calibrado: hay más (o menos) violaciones que las esperadas.", "verde" if pk == pk and pk > 0.05 else "rojo")
+    r.veredicto(
+        "El VaR móvil está bien calibrado (Kupiec no rechaza)."
+        if pk == pk and pk > 0.05
+        else "El VaR móvil está mal calibrado: hay más (o menos) violaciones que las esperadas.",
+        "verde" if pk == pk and pk > 0.05 else "rojo",
+    )
     r.resumen = f"VaR {nivel:.0%} de {et}: histórico {fmt(var_h)}, ES {fmt(es_h)}; {x} violaciones vs {fmt(n * a)} esperadas (Kupiec p={fmt(pk)})."
     return r

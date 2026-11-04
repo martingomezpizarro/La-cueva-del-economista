@@ -36,7 +36,12 @@ def P_SERIES(nombre="sids", etiqueta="Series", minimo=2, maximo=8, requerido=Tru
 
 
 P_FREQ = Param(
-    "freq", "opcion", "Frecuencia", defecto="mensual", opciones=FRECUENCIAS, ayuda="A qué frecuencia se lleva todo"
+    "freq",
+    "opcion",
+    "Frecuencia",
+    defecto="mensual",
+    opciones=FRECUENCIAS,
+    ayuda="A qué frecuencia se lleva todo",
 )
 P_TRANSF = Param(
     "transf",
@@ -164,9 +169,7 @@ class Diseno:
         # fecha a la que corresponde cada objetivo y_{t+h}
         idx = df.index
         pos = {f: i for i, f in enumerate(idx)}
-        self.fechas_objetivo = pd.DatetimeIndex(
-            [idx[pos[f] + horizonte] for f in self.X.index], name="fecha"
-        )
+        self.fechas_objetivo = pd.DatetimeIndex([idx[pos[f] + horizonte] for f in self.X.index], name="fecha")
         self.fecha_pron = _sumar_periodos(idx[-1], horizonte, freq)
         if len(self.X) < 30:
             raise ErrorMetodo(
@@ -213,7 +216,12 @@ def eventos_en(desde, hasta, categorias: list[str] | None = None) -> list[dict]:
         t = pd.Timestamp(f)
         if d0 <= t <= d1 and (not categorias or getattr(e, "categoria", "") in categorias):
             out.append(
-                {"id": e.id, "titulo": e.titulo, "fecha": str(t.date()), "categoria": getattr(e, "categoria", "")}
+                {
+                    "id": e.id,
+                    "titulo": e.titulo,
+                    "fecha": str(t.date()),
+                    "categoria": getattr(e, "categoria", ""),
+                }
             )
     return out
 
@@ -221,7 +229,9 @@ def eventos_en(desde, hasta, categorias: list[str] | None = None) -> list[dict]:
 def evento_cercano(fecha, ventana_meses: int = 6, categorias=None) -> dict | None:
     """El evento de la Línea de Tiempo más cercano a una fecha (± ventana)."""
     t = pd.Timestamp(fecha)
-    evs = eventos_en(t - pd.DateOffset(months=ventana_meses), t + pd.DateOffset(months=ventana_meses), categorias)
+    evs = eventos_en(
+        t - pd.DateOffset(months=ventana_meses), t + pd.DateOffset(months=ventana_meses), categorias
+    )
     if not evs:
         return None
     return min(evs, key=lambda e: abs(pd.Timestamp(e["fecha"]) - t))

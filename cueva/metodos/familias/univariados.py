@@ -69,29 +69,57 @@ def _backtest_fijo(y: pd.Series, h: int, n_test: int, ajustar, pronosticar):
         fechas.append(_a_fecha(y.index[o + h - 1]))
     tr = y.values[:corte]
     esc = float(np.mean(np.abs(tr[h:] - tr[:-h])))
-    return V.Backtest(pd.DatetimeIndex(fechas), np.array(reales), np.array(preds), np.array(rws), np.full(len(reales), tr.mean()), esc)
+    return V.Backtest(
+        pd.DatetimeIndex(fechas),
+        np.array(reales),
+        np.array(preds),
+        np.array(rws),
+        np.full(len(reales), tr.mean()),
+        esc,
+    )
 
 
 def _reportar_backtest(r: Resultado, bt: V.Backtest, h: int, nombre: str):
     res = V.resumen_backtest(bt, h)
     filas = []
-    for etiqueta, clave in ((nombre, "modelo"), ("paseo aleatorio", "paseo_aleatorio"), ("media histórica", "media_historica")):
+    for etiqueta, clave in (
+        (nombre, "modelo"),
+        ("paseo aleatorio", "paseo_aleatorio"),
+        ("media histórica", "media_historica"),
+    ):
         m = res[clave]
         filas.append([etiqueta, m["RMSE"], m["MAE"], m.get("MASE"), m.get("MAPE %")])
-    r.tabla(f"Evaluación fuera de muestra (origen móvil, h={h}, {len(bt.real)} pronósticos)", ["modelo", "RMSE", "MAE", "MASE", "MAPE %"], filas)
+    r.tabla(
+        f"Evaluación fuera de muestra (origen móvil, h={h}, {len(bt.real)} pronósticos)",
+        ["modelo", "RMSE", "MAE", "MASE", "MAPE %"],
+        filas,
+    )
     dm, p = res["dm_vs_rw"]
     r.metrica("RMSE fuera de muestra", res["modelo"]["RMSE"])
     r.metrica("R² fuera de muestra vs paseo", res["r2_oos_vs_rw"], "> 0: le gana al paseo aleatorio")
     r.metrica("Diebold-Mariano vs paseo (p)", p)
-    r.lineas("Pronósticos fuera de muestra vs realizados", bt.fechas, {"realizado": bt.real, nombre: bt.pred, "paseo aleatorio": bt.rw}, estilos={"paseo aleatorio": {"guion": "dot"}})
+    r.lineas(
+        "Pronósticos fuera de muestra vs realizados",
+        bt.fechas,
+        {"realizado": bt.real, nombre: bt.pred, "paseo aleatorio": bt.rw},
+        estilos={"paseo aleatorio": {"guion": "dot"}},
+    )
     gana = res["r2_oos_vs_rw"] > 0
     sig = p == p and p < 0.1
     if gana and sig:
-        r.veredicto(f"{nombre} le gana al paseo aleatorio y la diferencia es significativa (DM p={fmt(p)}).", "verde")
+        r.veredicto(
+            f"{nombre} le gana al paseo aleatorio y la diferencia es significativa (DM p={fmt(p)}).", "verde"
+        )
     elif gana:
-        r.veredicto(f"{nombre} le gana al paseo aleatorio, pero la diferencia NO es significativa (DM p={fmt(p)}).", "amarillo")
+        r.veredicto(
+            f"{nombre} le gana al paseo aleatorio, pero la diferencia NO es significativa (DM p={fmt(p)}).",
+            "amarillo",
+        )
     else:
-        r.veredicto(f"{nombre} NO le gana al paseo aleatorio fuera de muestra (R² oos = {fmt(res['r2_oos_vs_rw'])}).", "rojo")
+        r.veredicto(
+            f"{nombre} NO le gana al paseo aleatorio fuera de muestra (R² oos = {fmt(res['r2_oos_vs_rw'])}).",
+            "rojo",
+        )
     return res
 
 
@@ -99,7 +127,20 @@ def _cerrar_pronostico(r, s, et, freq, media, inf, sup, nombre):
     fut = fechas_futuras(s.index[-1], len(media), freq)
     hc = _historia_corta(s, freq)
     r.bandas(f"Pronóstico {nombre} de {et}", hc.index, hc.values, fut, media, inf, sup)
-    r.tabla("Pronóstico", ["fecha", "media", "IC inf.", "IC sup."], [[str(f.date()), m, a, b] for f, m, a, b in zip(fut, media, inf if inf is not None else [None] * len(media), sup if sup is not None else [None] * len(media), strict=True)])
+    r.tabla(
+        "Pronóstico",
+        ["fecha", "media", "IC inf.", "IC sup."],
+        [
+            [str(f.date()), m, a, b]
+            for f, m, a, b in zip(
+                fut,
+                media,
+                inf if inf is not None else [None] * len(media),
+                sup if sup is not None else [None] * len(media),
+                strict=True,
+            )
+        ],
+    )
     r.serie(f"pron_{nombre.lower().replace(' ', '_')[:12]}", fut, media, f"Pronóstico {nombre} de {et}")
 
 
@@ -143,7 +184,14 @@ def benchmarks(sid, freq, transf, horizonte, n_test):
     r.tabla(f"Error fuera de muestra a h={h} ({nt} orígenes)", ["benchmark", "RMSE", "MAE", "sesgo"], filas)
     fut = fechas_futuras(s.index[-1], h, freq)
     hc = _historia_corta(s, freq)
-    r.bandas(f"Benchmarks para {et}", hc.index, hc.values, fut, res_pron[filas[0][0]], extra={k: (fut, v) for k, v in res_pron.items() if k != filas[0][0]})
+    r.bandas(
+        f"Benchmarks para {et}",
+        hc.index,
+        hc.values,
+        fut,
+        res_pron[filas[0][0]],
+        extra={k: (fut, v) for k, v in res_pron.items() if k != filas[0][0]},
+    )
     r.metrica("Mejor benchmark", filas[0][0])
     r.metrica("RMSE del mejor", filas[0][1])
     r.resumen = f"Benchmarks para {et} (h={h}): el mejor es «{filas[0][0]}» con RMSE {fmt(filas[0][1])}. Cualquier modelo tiene que bajar ese error."
@@ -156,7 +204,14 @@ def _sarimax(y, orden, est, tendencia, maxiter=200):
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        return SARIMAX(y, order=orden, seasonal_order=est, trend=tendencia, enforce_stationarity=False, enforce_invertibility=False).fit(disp=False, maxiter=maxiter)
+        return SARIMAX(
+            y,
+            order=orden,
+            seasonal_order=est,
+            trend=tendencia,
+            enforce_stationarity=False,
+            enforce_invertibility=False,
+        ).fit(disp=False, maxiter=maxiter)
 
 
 @metodo(
@@ -229,25 +284,43 @@ def sarima(sid, freq, transf, automatico, p, d, q, P, D, Q, horizonte, n_test, d
     r.metrica("Modelo", nombre)
     r.metrica("AIC", res.aic)
     r.metrica("BIC", res.bic)
-    r.tabla("Coeficientes", ["parámetro", "coef", "EE", "p"], [[nm, c, e, pv] for nm, c, e, pv in zip(res.model.param_names, res.params, res.bse, res.pvalues, strict=True)], resaltar_p="p")
-    lb = acorr_ljungbox(res.resid[orden[1] + est_orden[1] * per :], lags=[min(12, len(y) // 5)], return_df=True)
+    r.tabla(
+        "Coeficientes",
+        ["parámetro", "coef", "EE", "p"],
+        [
+            [nm, c, e, pv]
+            for nm, c, e, pv in zip(res.model.param_names, res.params, res.bse, res.pvalues, strict=True)
+        ],
+        resaltar_p="p",
+    )
+    lb = acorr_ljungbox(
+        res.resid[orden[1] + est_orden[1] * per :], lags=[min(12, len(y) // 5)], return_df=True
+    )
     lbp = float(lb["lb_pvalue"].iloc[0])
     r.metrica("Ljung-Box residuos (p)", lbp)
     if lbp < 0.05:
         r.advertir("Los residuos tienen autocorrelación: el modelo deja dinámica sin capturar.")
     if automatico:
-        r.tabla("Mejores 5 por AIC", ["orden", "estacional", "AIC"], [[str(o), str(e), a] for a, o, e in mejores[:5]])
+        r.tabla(
+            "Mejores 5 por AIC",
+            ["orden", "estacional", "AIC"],
+            [[str(o), str(e), a] for a, o, e in mejores[:5]],
+        )
     nt = n_test or V.n_test_por_defecto(len(y), freq)
     try:
         bt = _backtest_fijo(
-            y, horizonte if horizonte <= 12 else 1, nt,
+            y,
+            horizonte if horizonte <= 12 else 1,
+            nt,
             lambda yt: _sarimax(yt.values, orden, est_orden, tend),
             lambda rr, yh: rr.apply(yh.values).forecast(horizonte if horizonte <= 12 else 1),
         )
         _reportar_backtest(r, bt, horizonte if horizonte <= 12 else 1, nombre)
     except ErrorMetodo as e:
         r.advertir(f"Sin evaluación fuera de muestra: {e}")
-    _cerrar_pronostico(r, s, et, freq, np.asarray(media), np.asarray(ic)[:, 0], np.asarray(ic)[:, 1], "SARIMA")
+    _cerrar_pronostico(
+        r, s, et, freq, np.asarray(media), np.asarray(ic)[:, 0], np.asarray(ic)[:, 1], "SARIMA"
+    )
     r.resumen = f"{nombre} para {et}: AIC {fmt(res.aic)}, Ljung-Box p={fmt(lbp)}. Pronóstico a {horizonte}: {fmt(float(np.asarray(media)[-1]))} (IC {fmt(float(np.asarray(ic)[-1, 0]))} a {fmt(float(np.asarray(ic)[-1, 1]))})."
     r.codigo = f"from statsmodels.tsa.statespace.sarimax import SARIMAX\nres = SARIMAX(s, order={orden}, seasonal_order={est_orden}).fit()\nres.get_forecast({horizonte}).summary_frame()"
     return r
@@ -258,9 +331,33 @@ def sarima(sid, freq, transf, automatico, p, d, q, P, D, Q, horizonte, n_test, d
     "Suavizado exponencial (ETS)",
     F,
     "Pronóstico ponderando más lo reciente, con tendencia y estacionalidad opcionales.",
-    params=[P_SERIE(), P_FREQ, P_TRANSF, Param("automatico", "bool", "Elegir la forma por AIC", defecto=True), Param("tendencia", "opcion", "Tendencia", defecto="ninguna", opciones=["ninguna", "aditiva", "amortiguada"]), Param("estacional", "opcion", "Estacionalidad", defecto="ninguna", opciones=["ninguna", "aditiva", "multiplicativa"]), P_HORIZONTE(12), P_TEST],
+    params=[
+        P_SERIE(),
+        P_FREQ,
+        P_TRANSF,
+        Param("automatico", "bool", "Elegir la forma por AIC", defecto=True),
+        Param(
+            "tendencia",
+            "opcion",
+            "Tendencia",
+            defecto="ninguna",
+            opciones=["ninguna", "aditiva", "amortiguada"],
+        ),
+        Param(
+            "estacional",
+            "opcion",
+            "Estacionalidad",
+            defecto="ninguna",
+            opciones=["ninguna", "aditiva", "multiplicativa"],
+        ),
+        P_HORIZONTE(12),
+        P_TEST,
+    ],
     cuando="Series con tendencia/estacionalidad cambiantes; muy competitivo en pronóstico de corto plazo (M3, M4).",
-    trampas=["Estacionalidad multiplicativa exige valores positivos.", "La tendencia sin amortiguar extrapola sin freno."],
+    trampas=[
+        "Estacionalidad multiplicativa exige valores positivos.",
+        "La tendencia sin amortiguar extrapola sin freno.",
+    ],
     costo="segundos",
     referencias=["Hyndman, Koehler, Ord y Snyder (2008)", "Gardner (1985)"],
     etiquetas=["ets", "holt", "holt-winters", "suavizado", "exponencial"],
@@ -276,12 +373,16 @@ def suavizado_exponencial(sid, freq, transf, automatico, tendencia, estacional, 
     def ajustar(yy, tr, da, es):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            return ETSModel(yy, error="add", trend=tr, damped_trend=da, seasonal=es, seasonal_periods=per if es else None).fit(disp=False, maxiter=500)
+            return ETSModel(
+                yy, error="add", trend=tr, damped_trend=da, seasonal=es, seasonal_periods=per if es else None
+            ).fit(disp=False, maxiter=500)
 
     if automatico:
         combos = []
         for tr, da in ((None, False), ("add", False), ("add", True)):
-            for es in [None] + (["add"] + (["mul"] if (y > 0).all() else []) if per > 1 and len(y) >= 3 * per else []):
+            for es in [None] + (
+                ["add"] + (["mul"] if (y > 0).all() else []) if per > 1 and len(y) >= 3 * per else []
+            ):
                 try:
                     rr = ajustar(y, tr, da, es)
                     combos.append((rr.aic, tr, da, es))
@@ -298,18 +399,28 @@ def suavizado_exponencial(sid, freq, transf, automatico, tendencia, estacional, 
         if es and per == 1:
             es = None
     res = ajustar(y, tr, da, es)
-    nombre = f"ETS(A,{'N' if not tr else ('Ad' if da else 'A')},{ {None: 'N', 'add': 'A', 'mul': 'M'}[es]})"
+    nombre = f"ETS(A,{'N' if not tr else ('Ad' if da else 'A')},{ {None: 'N', 'add': 'A', 'mul': 'M'}[es] })"
     pr = res.get_prediction(start=len(y), end=len(y) + horizonte - 1).summary_frame(alpha=0.05)
     r = Resultado()
     r.metrica("Modelo", nombre)
     r.metrica("AIC", res.aic)
-    r.tabla("Parámetros", ["parámetro", "valor"], [[n, v] for n, v in zip(res.model.param_names, res.params, strict=True)])
+    r.tabla(
+        "Parámetros",
+        ["parámetro", "valor"],
+        [[n, v] for n, v in zip(res.model.param_names, res.params, strict=True)],
+    )
     if automatico:
-        r.tabla("Formas probadas", ["tendencia", "amortiguada", "estacional", "AIC"], [[str(t), str(d), str(e), a] for a, t, d, e in combos])
+        r.tabla(
+            "Formas probadas",
+            ["tendencia", "amortiguada", "estacional", "AIC"],
+            [[str(t), str(d), str(e), a] for a, t, d, e in combos],
+        )
     nt = n_test or V.n_test_por_defecto(len(y), freq)
     try:
         hh = min(horizonte, 12)
-        bt = _backtest_fijo(y, hh, nt, lambda yt: ajustar(yt, tr, da, es), lambda rr, yh: _ets_refiltrar(rr, yh, hh))
+        bt = _backtest_fijo(
+            y, hh, nt, lambda yt: ajustar(yt, tr, da, es), lambda rr, yh: _ets_refiltrar(rr, yh, hh)
+        )
         _reportar_backtest(r, bt, hh, nombre)
     except ErrorMetodo as e:
         r.advertir(f"Sin evaluación fuera de muestra: {e}")
@@ -323,7 +434,14 @@ def _ets_refiltrar(res, yh, h):
     from statsmodels.tsa.exponential_smoothing.ets import ETSModel
 
     m = res.model
-    nuevo = ETSModel(yh, error=m.error, trend=m.trend, damped_trend=m.damped_trend, seasonal=m.seasonal, seasonal_periods=m.seasonal_periods)
+    nuevo = ETSModel(
+        yh,
+        error=m.error,
+        trend=m.trend,
+        damped_trend=m.damped_trend,
+        seasonal=m.seasonal,
+        seasonal_periods=m.seasonal_periods,
+    )
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         rr = nuevo.smooth(res.params)
