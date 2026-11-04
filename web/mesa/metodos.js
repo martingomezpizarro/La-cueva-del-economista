@@ -79,7 +79,11 @@ export async function montar(raiz) {
     ]);
     st.familias = cat.familias || [];
     st.clases = cat.clases || [];
-    st.metodos = cat.metodos || [];
+    // Las operaciones de recetas (transformar, combinar, descomponer) entran al MISMO listado
+    // que los métodos: mismo formulario, y su resultado se guarda como serie CON su receta.
+    const ops = (cat.operaciones || []).map(comoMetodo);
+    st.metodos = [...ops, ...(cat.metodos || [])];
+    if (ops.length) st.familias = [{ id: 'recetas', nombre: 'Recetas (series derivadas)', icono: '🧪', n: ops.length }, ...st.familias];
     st.series = Array.isArray(ser) ? ser : ser.series || [];
   } catch (e) {
     $('#mt-ficha').innerHTML = `<div class="note warn">No pude cargar el catálogo de métodos: ${esc(e.message)}. Esta pantalla necesita el servidor de Python.</div>`;
@@ -102,6 +106,22 @@ function llenarDatalist() {
 }
 
 /* ───────────────────────── catálogo ───────────────────────── */
+function comoMetodo(o) {
+  const clase = st.clases.find((c) => c.id === o.clase) || { nombre: o.clase, flujo: '' };
+  const params = [{ nombre: 'a', tipo: 'serie', etiqueta: o.aridad === 2 ? 'Serie A' : 'Serie', requerido: true }];
+  if (o.aridad === 2) params.push({ nombre: 'b', tipo: 'serie', etiqueta: 'Serie B', requerido: true });
+  Object.entries(o.params || {}).forEach(([k, v]) => params.push(v.tipo === 'opcion'
+    ? { nombre: k, tipo: 'opcion', etiqueta: k, defecto: v.defecto, opciones: v.min }
+    : { nombre: k, tipo: v.tipo, etiqueta: k, defecto: v.defecto === '' ? null : v.defecto, minimo: v.min, maximo: v.max }));
+  params.push({ nombre: 'freq', tipo: 'opcion', etiqueta: 'Frecuencia', defecto: 'mensual', opciones: ['mensual', 'trimestral', 'anual'] });
+  return {
+    id: 'op_' + o.id, _op: o.id, _aridad: o.aridad, nombre: o.nombre, clase: o.clase, clase_nombre: clase.nombre,
+    familia: 'recetas', familia_nombre: 'Recetas', pregunta: o.ayuda || `${clase.nombre}: ${clase.flujo}. Crea una serie derivada.`,
+    cuando: 'El resultado es una serie con su receta: se puede guardar en Mis series y usar como insumo de cualquier método, y se recalcula si cambian los datos.',
+    supuestos: [], trampas: [], referencias: [], etiquetas: [o.id, 'receta', 'serie derivada'], nivel: 'basico', costo: 'instantaneo', disponible: true, falta: [], params,
+  };
+}
+
 // Dos ejes sobre el mismo catálogo: el VERBO (qué le hace a lo que hay en la mesa) y el TEMA
 function pintarFamilias() {
   const total = st.metodos.length;
@@ -262,6 +282,24 @@ function leerArgs(m) {
   return args;
 }
 
+async function correrReceta(m, args) {
+  const p = {};
+  m.params.forEach((q) => { if (!['a', 'b', 'freq'].includes(q.nombre) && args[q.nombre] != null) p[q.nombre] = args[q.nombre]; });
+  const receta = { op: m._op, de: m._aridad === 2 ? [args.a, args.b] : [args.a] };
+  if (Object.keys(p).length) receta.p = p;
+  const t0 = performance.now();
+  const r = await fetch('/api/v1/recetas/evaluar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ receta, freq: args.freq || 'mensual' }) });
+  const d = await r.json();
+  if (!r.ok) return { ok: false, metodo: 'receta', args, resumen: d.error?.mensaje || 'No se pudo evaluar la receta.' };
+  return {
+    ok: true, metodo: 'receta', args, nombre: m.nombre,
+    resumen: `${d.texto} · ${d.valores.length} obs. · depende de ${d.hojas.join(', ')} · huella ${d.huella}`,
+    bloques: [{ tipo: 'lineas', titulo: d.texto, x: d.fechas, series: { [d.texto]: d.valores }, estilos: {}, marcas: [], y2: [] }],
+    series_salida: [{ nombre: d.texto, descripcion: `Receta ${d.texto}`, fechas: d.fechas, valores: d.valores, receta }],
+    meta: { segundos: (performance.now() - t0) / 1000 },
+  };
+}
+
 async function correr(m) {
   if (st.corriendo) return;
   const args = leerArgs(m);
@@ -272,8 +310,13 @@ async function correr(m) {
   $('#mt-run').disabled = true;
   $('#mt-estado').textContent = m.costo === 'minutos' ? '⏳ Corriendo (puede tardar un par de minutos)…' : '⏳ Corriendo en el servidor…';
   try {
-    const r = await fetch('/api/v1/herramienta', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-    const res = await r.json();
+    let res;
+    if (m._op) {
+      res = await correrReceta(m, args);
+    } else {
+      const r = await fetch('/api/v1/herramienta', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      res = await r.json();
+    }
     if (res.error) throw new Error(res.error.mensaje || 'error de la API');
     res._id = res.estudio_id || `r${Date.now().toString(36)}`;
     res._nombre = m.nombre;
@@ -338,7 +381,7 @@ async function guardarSalida(btn) {
   btn.disabled = true; btn.textContent = 'Guardando…';
   try {
     const r = await fetch('/api/v1/mis-series/derivada', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nombre: s.nombre, fechas: s.fechas, valores: s.valores, descripcion: `${s.descripcion || s.nombre} · sale de ${origen}`.slice(0, 500) }) });
+      body: JSON.stringify({ nombre: s.nombre, fechas: s.fechas, valores: s.valores, descripcion: `${s.descripcion || s.nombre} · sale de ${origen}`.slice(0, 500), receta: s.receta || null }) });
     const d = await r.json();
     if (!r.ok) throw new Error(d.error?.mensaje || 'no se pudo guardar');
     btn.textContent = `✓ guardada como ${d.id}`;
