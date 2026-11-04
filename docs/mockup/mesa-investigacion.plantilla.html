@@ -1,0 +1,1019 @@
+<title>Mesa de investigación</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,650&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Mockup de la Mesa de investigación — La Cueva del Economista.
+   Layout: tres espacios (Mesa · Proyecto · Documento). La Mesa = lienzo central (gráfico,
+   fichas, resultados, código, linaje) + caja de herramientas a la derecha ordenada por VERBO.
+   Tokens: los de web/estilo/tokens.css («pizarrón y tiza»), copiados tal cual. */
+:root{
+  --ground:#EEF1EC; --surface:#FAFBF8; --surface-2:#F1F4EF;
+  --sunken:#E4E9E2; --line:#D5DDD4; --line-soft:#E3E9E1;
+  --ink:#14201C; --ink-2:#3D4B44; --ink-dim:#697A71; --ink-faint:#93A198;
+  --accent:#8A6410; --accent-ink:#FFFFFF; --accent-soft:#F0E5C8; --accent-line:#C9A64E;
+  --ok:#2F7D52; --ok-soft:#DCEDE2; --warn:#9E5518; --warn-soft:#F6E4D4;
+  --crit:#A32F4C; --crit-soft:#F6DCE2; --info:#26607F; --info-soft:#D8E8F0;
+  --s1:#26607F; --s2:#8A6410; --s3:#A32F4C; --s4:#2F7D52; --s5:#6A4A94; --s6:#3F7F7A;
+  --shadow:0 1px 2px rgba(20,32,28,.06), 0 8px 24px -12px rgba(20,32,28,.18);
+  --r:6px; --r-lg:10px;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --sans:"IBM Plex Sans",-apple-system,"Segoe UI",Roboto,sans-serif;
+  --display:"Fraunces",Georgia,serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#101715; --surface:#18211E; --surface-2:#1F2A26; --sunken:#0C1211; --line:#2C3833; --line-soft:#232E2A;
+  --ink:#E7EDE9; --ink-2:#C2CEC8; --ink-dim:#8B9A93; --ink-faint:#66766E;
+  --accent:#E9C46A; --accent-ink:#151E1B; --accent-soft:rgba(233,196,106,.14); --accent-line:rgba(233,196,106,.45);
+  --ok:#7BC49A; --ok-soft:rgba(123,196,154,.14); --warn:#E08A4C; --warn-soft:rgba(224,138,76,.14);
+  --crit:#E0708A; --crit-soft:rgba(224,112,138,.14); --info:#7FB3D0; --info-soft:rgba(127,179,208,.14);
+  --s1:#7FB3D0; --s2:#E9C46A; --s3:#E0708A; --s4:#7BC49A; --s5:#B79BE0; --s6:#7FCFC4;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 32px -16px rgba(0,0,0,.7); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --ground:#101715; --surface:#18211E; --surface-2:#1F2A26; --sunken:#0C1211; --line:#2C3833; --line-soft:#232E2A;
+  --ink:#E7EDE9; --ink-2:#C2CEC8; --ink-dim:#8B9A93; --ink-faint:#66766E;
+  --accent:#E9C46A; --accent-ink:#151E1B; --accent-soft:rgba(233,196,106,.14); --accent-line:rgba(233,196,106,.45);
+  --ok:#7BC49A; --ok-soft:rgba(123,196,154,.14); --warn:#E08A4C; --warn-soft:rgba(224,138,76,.14);
+  --crit:#E0708A; --crit-soft:rgba(224,112,138,.14); --info:#7FB3D0; --info-soft:rgba(127,179,208,.14);
+  --s1:#7FB3D0; --s2:#E9C46A; --s3:#E0708A; --s4:#7BC49A; --s5:#B79BE0; --s6:#7FCFC4;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 32px -16px rgba(0,0,0,.7); color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:13px;line-height:1.45}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0;padding:0}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);font-weight:650;letter-spacing:-.01em;text-wrap:balance;margin:0}
+
+/* topbar */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  padding-block:9px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  background:var(--surface);border-bottom:1px solid var(--line)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--surface)}
+.marca{font-family:var(--display);font-size:17px;font-weight:650;white-space:nowrap}
+.marca em{font-style:normal;color:var(--accent)}
+.espacios{display:flex;gap:2px;background:var(--sunken);border:1px solid var(--line-soft);border-radius:var(--r);padding:2px}
+.espacios a{padding:5px 12px;border-radius:4px;font-size:12.5px;font-weight:500;color:var(--ink-dim);text-decoration:none;white-space:nowrap}
+.espacios a[aria-current="page"]{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.espacios a .n{font-family:var(--mono);font-size:10.5px;color:var(--ink-faint);margin-left:3px}
+.top .der{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:2px 8px;border-radius:100px;font-size:11px;font-weight:500;border:1px solid var(--line);background:var(--sunken);color:var(--ink-dim);white-space:nowrap}
+.chip.ok{background:var(--ok-soft);color:var(--ok);border-color:color-mix(in srgb,var(--ok) 32%,transparent)}
+.chip.warn{background:var(--warn-soft);color:var(--warn);border-color:color-mix(in srgb,var(--warn) 32%,transparent)}
+.chip.info{background:var(--info-soft);color:var(--info);border-color:color-mix(in srgb,var(--info) 32%,transparent)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:var(--r);border:1px solid var(--line);background:var(--surface);font-size:12px;font-weight:500;color:var(--ink-2);white-space:nowrap}
+.btn:hover{border-color:var(--ink-faint);color:var(--ink)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.btn.sm{padding:3px 8px;font-size:11.5px}
+.btn[disabled]{opacity:.45;cursor:default}
+.seg{display:inline-flex;flex-wrap:wrap;background:var(--sunken);border:1px solid var(--line-soft);border-radius:var(--r);padding:2px;gap:1px}
+.seg button{padding:3px 9px;border-radius:4px;font-size:11.5px;font-weight:500;color:var(--ink-dim)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.lbl{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-faint);font-weight:600}
+.note{display:flex;gap:8px;padding:8px 10px;border-radius:var(--r);font-size:12px;line-height:1.5;background:var(--info-soft);border:1px solid color-mix(in srgb,var(--info) 28%,transparent);color:var(--ink-2)}
+.note.warn{background:var(--warn-soft);border-color:color-mix(in srgb,var(--warn) 28%,transparent)}
+.mono{font-family:var(--mono)}
+input[type=text],input[type=search],select,textarea{background:var(--surface-2);border:1px solid var(--line);border-radius:var(--r);padding:5px 8px;font-size:12.5px;min-width:0}
+textarea{resize:vertical}
+
+.vista{padding-block:14px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);min-width:0}
+.card-hd{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 12px;border-bottom:1px solid var(--line-soft)}
+.card-hd h3{font-size:14.5px}
+.card-hd .sp{flex:1}
+.card-bd{padding:10px 12px}
+
+/* ── Mesa ── */
+.mesa{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;align-items:start}
+.centro{display:grid;gap:14px;min-width:0}
+.barra{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.barra .buscar{display:flex;gap:6px;flex:1;min-width:220px}
+.barra .buscar input{flex:1}
+.graf-wrap{position:relative}
+svg.g{width:100%;height:auto;display:block;overflow:visible;touch-action:none}
+svg.g text{fill:var(--ink-dim);font-family:var(--mono);font-size:10px}
+svg.g .grid{stroke:var(--line-soft)}
+svg.g .cero{stroke:var(--ink-faint)}
+svg.g .eje{stroke:var(--line)}
+svg.g .brush{fill:color-mix(in srgb,var(--accent) 16%,transparent);stroke:var(--accent);stroke-dasharray:4 3}
+svg.g .cursor{stroke:var(--ink-faint)}
+.flot{position:absolute;display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:6px 8px;background:var(--surface);border:1px solid var(--accent-line);border-radius:var(--r);box-shadow:var(--shadow);font-size:11.5px;z-index:3;max-width:calc(100% - 16px)}
+.tip{position:absolute;pointer-events:none;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:5px 8px;font-size:11px;z-index:4;max-width:260px}
+.tip i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+.ley{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11.5px;color:var(--ink-2);padding:0 12px 10px}
+.ley i{display:inline-block;width:12px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle}
+
+/* fichas */
+.fichas{display:grid;grid-template-columns:repeat(auto-fill,minmax(228px,1fr));gap:10px}
+.ficha{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:9px 10px 8px;display:grid;gap:5px;min-width:0;transition:border-color .12s, box-shadow .12s}
+.ficha.sel{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.ficha.drop{border-color:var(--accent);background:var(--accent-soft)}
+.ficha .cab{display:flex;align-items:center;gap:7px;min-width:0}
+.ficha .punto{width:10px;height:10px;border-radius:50%;flex:0 0 auto;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--line)}
+.ficha .nom{font-weight:600;font-size:12.5px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ficha .tipo{font-family:var(--mono);font-size:9.5px;padding:1px 5px;border-radius:4px;background:var(--sunken);color:var(--ink-dim);text-transform:uppercase;letter-spacing:.04em}
+.ficha .tipo.derivada{background:var(--info-soft);color:var(--info)}
+.ficha .tipo.resultado{background:var(--accent-soft);color:var(--accent)}
+.ficha .tipo.recorte{background:var(--warn-soft);color:var(--warn)}
+.ficha .receta{font-family:var(--mono);font-size:10.5px;color:var(--ink-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ficha .meta{display:flex;gap:10px;font-size:10.5px;color:var(--ink-faint);font-family:var(--mono);flex-wrap:wrap}
+.ficha .sellos{display:flex;gap:4px;flex-wrap:wrap}
+.ficha .sello{font-size:10px;padding:1px 6px;border-radius:100px;background:var(--ok-soft);color:var(--ok)}
+.ficha .sello.w{background:var(--warn-soft);color:var(--warn)}
+.ficha .acc{display:flex;gap:4px;flex-wrap:wrap}
+.ficha .acc button{font-size:10.5px;padding:1px 6px;border-radius:4px;border:1px solid var(--line-soft);color:var(--ink-dim)}
+.ficha .acc button:hover{color:var(--ink);border-color:var(--ink-faint)}
+.ficha .acc button[aria-pressed="true"]{background:var(--sunken);color:var(--ink)}
+.ficha svg{width:100%;height:28px;display:block}
+.alias{font-family:var(--mono);font-size:10.5px;color:var(--accent)}
+
+/* resultados */
+.res-ctrl{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.res-ctrl label{display:flex;gap:5px;align-items:center;font-size:11.5px;color:var(--ink-2)}
+.tabla{overflow:auto;max-height:340px;border:1px solid var(--line-soft);border-radius:var(--r)}
+.tabla table{border-collapse:collapse;width:100%;font-size:11.5px}
+.tabla th{position:sticky;top:0;background:var(--surface-2);text-align:left;color:var(--ink-dim);padding:5px 8px;border-bottom:1px solid var(--line);font-weight:600}
+.tabla td{padding:4px 8px;border-bottom:1px solid var(--line-soft)}
+.tabla td.n{font-family:var(--mono);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+
+/* código */
+.codigo{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.codigo input{flex:1;min-width:240px;font-family:var(--mono)}
+.codigo small{flex-basis:100%;color:var(--ink-faint);font-size:11px}
+
+/* herramientas */
+.herr{position:sticky;top:calc(env(safe-area-inset-top,0px) + 58px);max-height:calc(100vh - 80px);display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden}
+.herr .hd{padding:10px 12px 8px;border-bottom:1px solid var(--line-soft);display:grid;gap:7px}
+.herr .hd p{margin:0;font-size:11.5px;color:var(--ink-dim)}
+.herr .lista{overflow:auto;padding:4px 0 10px;scrollbar-width:thin}
+.clase{border-bottom:1px solid var(--line-soft)}
+.clase>button{display:flex;align-items:baseline;gap:8px;width:100%;padding:8px 12px;text-align:left}
+.clase>button b{font-size:12.5px}
+.clase>button .q{font-size:10.5px;color:var(--ink-faint);flex:1;text-align:right;font-family:var(--mono)}
+.clase>button .num{font-family:var(--mono);font-size:10.5px;color:var(--accent);width:16px}
+.clase .desc{padding:0 12px 6px 36px;font-size:11px;color:var(--ink-dim);margin-top:-4px}
+.tools{display:grid;gap:3px;padding:0 10px 9px 30px}
+.tool{display:flex;align-items:center;gap:7px;padding:5px 8px;border:1px solid var(--line-soft);border-radius:var(--r);background:var(--surface-2);font-size:12px;cursor:grab;user-select:none}
+.tool:hover{border-color:var(--accent-line)}
+.tool .ar{font-family:var(--mono);font-size:10px;color:var(--ink-faint);margin-left:auto}
+.tool.plat{opacity:.62;cursor:help;border-style:dashed;background:none}
+.tool.plat .ar{color:var(--ink-faint)}
+
+/* linaje */
+svg.lin{width:100%;height:auto;display:block}
+svg.lin .arista{stroke:var(--ink-faint);fill:none}
+svg.lin .nodo rect{fill:var(--surface-2);stroke:var(--line)}
+svg.lin .nodo.sel rect{stroke:var(--accent);stroke-width:2}
+svg.lin .nodo text{fill:var(--ink);font-family:var(--sans);font-size:11px}
+svg.lin .nodo .t2{fill:var(--ink-faint);font-family:var(--mono);font-size:9.5px}
+svg.lin .op{fill:var(--accent);font-family:var(--mono);font-size:9.5px}
+svg.lin .nodo{cursor:pointer}
+
+/* proyecto */
+.tablero{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:14px}
+.pin .card-hd .origen{display:flex;gap:4px;align-items:center;font-size:10.5px;color:var(--ink-faint);font-family:var(--mono)}
+.pin .receta{font-family:var(--mono);font-size:10.5px;color:var(--ink-dim);padding:0 12px 10px;line-height:1.5}
+.pin .bolita{width:12px;height:12px;border-radius:50%;flex:0 0 auto}
+.vacio{padding:26px;text-align:center;color:var(--ink-dim);border:1px dashed var(--line);border-radius:var(--r-lg)}
+
+/* documento */
+.docu{display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:18px;align-items:start}
+.hoja{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:var(--shadow);padding:34px clamp(18px,5vw,56px) 48px;min-width:0}
+.hoja h1{font-size:28px;line-height:1.15}
+.hoja .autor{color:var(--ink-dim);margin:6px 0 20px;font-size:12.5px}
+.hoja [contenteditable]{outline:none;max-width:66ch;font-size:14.5px;line-height:1.65;color:var(--ink-2)}
+.hoja h2{font-size:18px;margin:22px 0 6px}
+.hoja figure{margin:18px 0;border:1px solid var(--line-soft);border-radius:var(--r);padding:10px;max-width:760px}
+.hoja figcaption{font-size:12px;color:var(--ink-dim);margin-top:6px;line-height:1.5}
+.hoja figcaption b{color:var(--ink)}
+.pines{position:sticky;top:calc(env(safe-area-inset-top,0px) + 58px);display:grid;gap:8px}
+.pines,#doc-pines{min-width:0}
+.pines .p{display:flex;gap:8px;align-items:center;padding:7px 9px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);font-size:12px;min-width:0}
+.pines .p .tx{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pines .p .bo{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--surface);padding:8px 14px;border-radius:var(--r);font-size:12.5px;z-index:50;box-shadow:var(--shadow)}
+
+@media (max-width:980px){
+  .mesa{grid-template-columns:1fr}
+  .herr{position:static;max-height:none}
+  .docu{grid-template-columns:1fr}
+  .pines{position:static}
+  .tablero{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="top">
+  <span class="marca">La Cueva <em>del</em> Economista</span>
+  <nav class="espacios" aria-label="Espacios">
+    <a href="#mesa" data-v="mesa">Mesa de investigación</a>
+    <a href="#proyecto" data-v="proyecto">Proyecto <span class="n" id="n-pines">0</span></a>
+    <a href="#documento" data-v="documento">Documento</a>
+  </nav>
+  <div class="der">
+    <span class="chip info" title="Panel de replicación del Trabajo Final">Datos: TF riesgo país · 219 meses · 17 series</span>
+    <span class="chip warn">Mockup</span>
+    <button class="btn sm" id="tema" type="button">Tema</button>
+  </div>
+</header>
+
+<main>
+<!-- ═════════════════════════ MESA ═════════════════════════ -->
+<section class="vista" id="v-mesa">
+  <div class="mesa">
+    <div class="centro">
+      <div class="barra">
+        <div class="buscar">
+          <input type="search" id="buscar" list="dl-panel" placeholder="Traer serie del panel: reservas, brecha, VIX, ITCRM…" aria-label="Buscar serie">
+          <datalist id="dl-panel"></datalist>
+          <button class="btn" id="traer" type="button">Traer</button>
+        </div>
+        <div class="seg" id="seg-vista" role="group" aria-label="Cómo mirar las series graficadas"></div>
+        <button class="btn" id="pin-graf" type="button" title="Llevar este gráfico al Proyecto">📌 Al proyecto</button>
+      </div>
+
+      <div class="card">
+        <div class="card-hd"><h3 id="graf-tit">Gráfico</h3><span class="sp"></span><span class="lbl" id="graf-ayuda">Arrastrá sobre el gráfico para recortar un tramo</span></div>
+        <div class="graf-wrap" id="graf-wrap"><svg class="g" id="graf" viewBox="0 0 900 330" role="img" aria-label="Series graficadas"></svg></div>
+        <div class="ley" id="graf-ley"></div>
+      </div>
+
+      <div>
+        <div class="barra" style="margin-bottom:8px">
+          <span class="lbl" style="flex:1">Fichas · tocá para seleccionar (las herramientas se aplican a las seleccionadas)</span>
+          <span class="chip" id="n-sel">0 seleccionadas</span>
+        </div>
+        <div class="fichas" id="fichas"></div>
+      </div>
+
+      <div class="card" id="res-card">
+        <div class="card-hd">
+          <h3 id="res-tit">Resultados de modelos</h3><span class="sp"></span>
+          <button class="btn sm" id="res-serie" type="button" title="Lo que ves acá también son números: se vuelven una ficha">→ Como serie</button>
+          <button class="btn sm" id="res-pin" type="button">📌 Al proyecto</button>
+        </div>
+        <div class="card-bd" style="display:grid;gap:10px">
+          <div class="res-ctrl">
+            <div class="seg" id="seg-res" role="group" aria-label="Vista de resultados"></div>
+          </div>
+          <div class="res-ctrl">
+            <label id="lab-var">Variable <select id="res-var"></select></label>
+            <label><input type="checkbox" id="res-filtro" checked> Sólo modelos con residuos limpios (Ljung-Box p &gt; 0,05)</label>
+            <label>α <select id="res-alpha"><option>0.01</option><option selected>0.05</option><option>0.10</option></select></label>
+          </div>
+          <div class="graf-wrap" id="res-wrap"><svg class="g" id="res-svg" viewBox="0 0 900 360" role="img" aria-label="Resultados de modelos"></svg></div>
+          <div class="ley" id="res-ley" style="padding:0"></div>
+          <div id="res-extra"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd"><h3>Código</h3><span class="sp"></span><span class="lbl">expresión → serie nueva con receta</span></div>
+        <div class="card-bd codigo">
+          <input type="text" id="expr" value="(deuda - reservas) / 100" aria-label="Expresión">
+          <input type="text" id="expr-nom" value="Deuda neta de reservas" aria-label="Nombre de la serie" style="flex:0 1 200px">
+          <button class="btn primary" id="expr-ok" type="button">Crear serie</button>
+          <small>Usá los alias de las fichas (en dorado). Funciones: log, exp, abs, dif(x), dif(x,12), lag(x,k), mm(x,k), z(x). Operadores + − × ÷ ^ y paréntesis. En la plataforma, la receta queda guardada y se recalcula sola cuando llegan datos nuevos.</small>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd"><h3>Linaje</h3><span class="sp"></span><span class="lbl">de dónde sale cada serie y cada resultado</span></div>
+        <div class="card-bd" style="overflow-x:auto"><svg class="lin" id="lin" role="img" aria-label="Linaje de series"></svg></div>
+      </div>
+    </div>
+
+    <aside class="herr" aria-label="Herramientas">
+      <div class="hd">
+        <span class="lbl">Herramientas · ordenadas por lo que hacen</span>
+        <input type="search" id="herr-q" placeholder="Buscar: hp, granger, ardl, outliers…" aria-label="Buscar herramienta">
+        <p>Arrastrá una herramienta a una ficha o al gráfico, o tocala para aplicarla a las fichas seleccionadas. Las punteadas existen en la plataforma (catálogo de 100 métodos) y no en este mockup.</p>
+      </div>
+      <div class="lista" id="herr-lista"></div>
+    </aside>
+  </div>
+</section>
+
+<!-- ═════════════════════════ PROYECTO ═════════════════════════ -->
+<section class="vista" id="v-proyecto" hidden>
+  <div class="barra" style="margin-bottom:12px">
+    <h2 style="font-size:22px;flex:1">Tablero del proyecto</h2>
+    <span class="lbl">cada figura sabe de qué receta salió · tocá el punto para volver a la Mesa</span>
+  </div>
+  <div class="tablero" id="tablero"></div>
+</section>
+
+<!-- ═════════════════════════ DOCUMENTO ═════════════════════════ -->
+<section class="vista" id="v-documento" hidden>
+  <div class="docu">
+    <article class="hoja" id="hoja">
+      <h1 contenteditable="true" id="doc-tit"></h1>
+      <div class="autor">Martín Gómez Pizarro · Lic. en Economía, FCE-UNC · borrador armado en la Cueva</div>
+      <div id="doc-cuerpo"></div>
+    </article>
+    <aside class="pines" aria-label="Figuras del proyecto">
+      <span class="lbl">Figuras del proyecto</span>
+      <div id="doc-pines" style="display:grid;gap:8px"></div>
+      <div class="note">Al insertar, la figura lleva su número y una leyenda con la receta completa: el anexo de datos se escribe solo.</div>
+    </aside>
+  </div>
+</section>
+</main>
+
+<script>
+/*__DATOS__*/
+</script>
+<script>
+"use strict";
+const D = DATOS_TF;
+const FECHAS = D.fechas;
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const COLS = ["--s1", "--s2", "--s3", "--s4", "--s5", "--s6"];
+const MOD_COL = { ARDL: "--s1", VAR: "--s2", VECM: "--s3" };
+const $ = (s) => document.querySelector(s);
+const num = (v, d) => {
+  if (v == null || !isFinite(v)) return "—";
+  const a = Math.abs(v);
+  if (d == null) d = a >= 1000 ? 0 : a >= 100 ? 1 : a >= 1 ? 2 : 3;
+  if (a !== 0 && a < 1e-3) return v.toExponential(1).replace(".", ",");
+  return v.toLocaleString("es-AR", { minimumFractionDigits: 0, maximumFractionDigits: d });
+};
+function toast(t) {
+  const el = document.createElement("div");
+  el.className = "toast"; el.textContent = t; document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2600);
+}
+
+/* ═════════════ estado ═════════════ */
+const st = { series: [], sel: new Set(), vista: "lineas", rango: null, res: null, pines: [], doc: [], cuenta: 0, colorSig: 0, nodosRes: [] };
+
+function nuevaSerie(o) {
+  const id = "s" + (++st.cuenta);
+  const s = { id, graf: false, sellos: [], color: COLS[st.colorSig++ % COLS.length], ...o };
+  if (!s.alias) s.alias = slug(s.nombre) + (st.series.some((x) => x.alias === slug(s.nombre)) ? st.cuenta : "");
+  st.series.push(s);
+  return s;
+}
+function slug(t) {
+  return t.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "").split("_").slice(0, 2).join("_") || "x";
+}
+const byId = (id) => st.series.find((s) => s.id === id);
+function delPanel(col) {
+  const y = D.panel[col];
+  return nuevaSerie({ nombre: D.cortos[col], col, tipo: "catalogo", x: FECHAS.slice(), y: y.slice(), unidad: D.unidades[col] || "", receta: { op: "panel", insumos: [], texto: "panel de replicación · " + col }, orden: D.orden[col] || "" });
+}
+
+/* ═════════════ cálculos ═════════════ */
+function alinear(a, b) {
+  const m = new Map(b.x.map((f, i) => [f, b.y[i]]));
+  const x = [], ya = [], yb = [];
+  a.x.forEach((f, i) => { if (m.has(f) && a.y[i] != null && m.get(f) != null) { x.push(f); ya.push(a.y[i]); yb.push(m.get(f)); } });
+  return { x, ya, yb };
+}
+const media = (v) => v.reduce((s, x) => s + x, 0) / v.length;
+const desvio = (v) => { const m = media(v); return Math.sqrt(v.reduce((s, x) => s + (x - m) ** 2, 0) / (v.length - 1)); };
+function quantil(v, q) { const o = v.slice().sort((a, b) => a - b); const p = (o.length - 1) * q; const i = Math.floor(p); return o[i] + (o[Math.min(i + 1, o.length - 1)] - o[i]) * (p - i); }
+function limpio(x, y) { const X = [], Y = []; y.forEach((v, i) => { if (v != null && isFinite(v)) { X.push(x[i]); Y.push(v); } }); return { x: X, y: Y }; }
+
+function hp(y, lam) {
+  // HP por sistema pentadiagonal (I + λ K'K) τ = y, eliminación gaussiana sin pivoteo
+  const n = y.length;
+  if (n < 5) return y.slice();
+  const A = Array.from({ length: n }, () => new Float64Array(5)); // bandas -2..+2
+  for (let i = 0; i < n; i++) A[i][2] = 1;
+  for (let t = 0; t < n - 2; t++) {
+    const c = [1, -2, 1];
+    for (let a = 0; a < 3; a++) for (let b = 0; b < 3; b++) A[t + a][2 + b - a] += lam * c[a] * c[b];
+  }
+  const B = y.slice();
+  for (let i = 0; i < n; i++) {
+    for (let k = 1; k <= 2 && i + k < n; k++) {
+      const f = A[i + k][2 - k] / A[i][2];
+      for (let j = 0; j <= 2; j++) if (2 - k + j <= 4 && j + 2 <= 4) A[i + k][2 - k + j] -= f * A[i][2 + j];
+      B[i + k] -= f * B[i];
+    }
+  }
+  const x = new Array(n);
+  for (let i = n - 1; i >= 0; i--) {
+    let s = B[i];
+    for (let j = 1; j <= 2 && i + j < n; j++) s -= A[i][2 + j] * x[i + j];
+    x[i] = s / A[i][2];
+  }
+  return x;
+}
+function acf(v, k) { const m = media(v); const d = v.reduce((s, x) => s + (x - m) ** 2, 0); let s = 0; for (let i = k; i < v.length; i++) s += (v[i] - m) * (v[i - k] - m); return s / d; }
+function ols(y, X) {
+  // y: n, X: n×k (con constante) → coef, resid, r2
+  const n = y.length, k = X[0].length;
+  const XtX = Array.from({ length: k }, () => new Array(k).fill(0)), Xty = new Array(k).fill(0);
+  for (let i = 0; i < n; i++) for (let a = 0; a < k; a++) { Xty[a] += X[i][a] * y[i]; for (let b = 0; b < k; b++) XtX[a][b] += X[i][a] * X[i][b]; }
+  const M = XtX.map((r, i) => [...r, Xty[i]]);
+  for (let c = 0; c < k; c++) {
+    let p = c; for (let r = c + 1; r < k; r++) if (Math.abs(M[r][c]) > Math.abs(M[p][c])) p = r;
+    [M[c], M[p]] = [M[p], M[c]];
+    for (let r = 0; r < k; r++) if (r !== c) { const f = M[r][c] / M[c][c]; for (let j = c; j <= k; j++) M[r][j] -= f * M[c][j]; }
+  }
+  const b = M.map((r, i) => r[k] / r[i]);
+  const fit = X.map((r) => r.reduce((s, v, i) => s + v * b[i], 0));
+  const res = y.map((v, i) => v - fit[i]);
+  const my = media(y);
+  const r2 = 1 - res.reduce((s, e) => s + e * e, 0) / y.reduce((s, v) => s + (v - my) ** 2, 0);
+  return { b, fit, res, r2 };
+}
+
+/* ═════════════ herramientas (ordenadas por VERBO) ═════════════ */
+const CLASES = [
+  { id: "traer", nombre: "Traer", q: "nada → serie", desc: "Entran series a la mesa." },
+  { id: "transformar", nombre: "Transformar", q: "1 serie → 1 serie", desc: "Sin estimar nada: cambian la escala o la forma." },
+  { id: "combinar", nombre: "Combinar", q: "series → serie", desc: "La hija tiene varios padres." },
+  { id: "descomponer", nombre: "Descomponer", q: "serie → componentes", desc: "Separan tendencia, ciclo, ruido." },
+  { id: "diagnosticar", nombre: "Diagnosticar", q: "serie → veredicto", desc: "Pegan un sello en la ficha; no crean series." },
+  { id: "mirar", nombre: "Mirar", q: "series → vista", desc: "Cambian el gráfico, nunca los datos." },
+  { id: "modelar", nombre: "Modelar", q: "series → modelo + series", desc: "Ficha de parámetros, resultados y series de salida." },
+  { id: "simular", nombre: "Simular", q: "→ muchas series", desc: "Escenarios y abanicos." },
+  { id: "evaluar", nombre: "Evaluar", q: "modelos → comparación", desc: "Ponen los resultados a competir." },
+];
+const T = (clase, id, nombre, aridad, fn, desc) => ({ clase, id, nombre, aridad, fn, desc });
+const P = (clase, nombre, metodo) => ({ clase, id: "p_" + slug(nombre), nombre, plat: metodo });
+
+function hija(padres, nombre, op, texto, x, y, extra = {}) {
+  const s = nuevaSerie({ nombre, tipo: "derivada", x, y, unidad: extra.unidad ?? padres[0].unidad, receta: { op, insumos: padres.map((p) => p.id), texto }, ...extra });
+  s.graf = true;
+  return s;
+}
+const HERR = [
+  T("traer", "recorte", "Recortar un tramo", "graf", null, "Arrastrá sobre el gráfico"),
+  P("traer", "Catálogo (719 series)", "series del catálogo"), P("traer", "Subir CSV propio", "Mis series"),
+  T("transformar", "log", "Logaritmo", 1, (s) => hija([s], "log " + s.nombre, "log", `log(${s.alias})`, s.x, s.y.map((v) => (v > 0 ? Math.log(v) : null)), { unidad: "log" })),
+  T("transformar", "dif", "Diferencia Δ", 1, (s) => hija([s], "Δ " + s.nombre, "Δ", `dif(${s.alias})`, s.x.slice(1), s.y.slice(1).map((v, i) => v - s.y[i]))),
+  T("transformar", "ia", "Variación interanual %", 1, (s) => hija([s], s.nombre + " i.a.", "i.a.", `100·(${s.alias}/lag(${s.alias},12) − 1)`, s.x.slice(12), s.y.slice(12).map((v, i) => (s.y[i] ? (v / s.y[i] - 1) * 100 : null)), { unidad: "% i.a." })),
+  T("transformar", "base100", "Base 100", 1, (s) => hija([s], s.nombre + " (base 100)", "base 100", `100·${s.alias}/${s.alias}[${s.x[0]}]`, s.x, s.y.map((v) => (v / s.y[0]) * 100), { unidad: "índice" })),
+  T("transformar", "mm", "Media móvil 12", 1, (s) => hija([s], s.nombre + " mm12", "mm12", `mm(${s.alias},12)`, s.x.slice(11), s.y.slice(11).map((_, i) => media(s.y.slice(i, i + 12))))),
+  T("transformar", "z", "Estandarizar (z)", 1, (s) => { const m = media(s.y), d = desvio(s.y); return hija([s], s.nombre + " (z)", "z", `z(${s.alias})`, s.x, s.y.map((v) => (v - m) / d), { unidad: "desvíos" }); }),
+  T("transformar", "outliers", "Sacar outliers (1 % colas)", 1, (s) => { const lo = quantil(s.y, 0.01), hi = quantil(s.y, 0.99); return hija([s], s.nombre + " sin outliers", "winsor", `winsor(${s.alias}, 1 %)`, s.x, s.y.map((v) => Math.min(hi, Math.max(lo, v)))); }),
+  T("transformar", "lag", "Rezagar 1 período", 1, (s) => hija([s], s.nombre + " (t−1)", "rezago", `lag(${s.alias},1)`, s.x.slice(1), s.y.slice(0, -1))),
+  P("transformar", "Cambiar frecuencia", "insumos.panel"), P("transformar", "Deflactar por otra serie", "explorar"),
+  T("combinar", "resta", "A − B (spread)", 2, (a, b) => { const z = alinear(a, b); return hija([a, b], `${a.nombre} − ${b.nombre}`, "A−B", `${a.alias} − ${b.alias}`, z.x, z.ya.map((v, i) => v - z.yb[i])); }),
+  T("combinar", "cociente", "A ÷ B (ratio)", 2, (a, b) => { const z = alinear(a, b); return hija([a, b], `${a.nombre} / ${b.nombre}`, "A÷B", `${a.alias} / ${b.alias}`, z.x, z.ya.map((v, i) => (z.yb[i] ? v / z.yb[i] : null)), { unidad: "ratio" }); }),
+  T("combinar", "suma", "A + B", 2, (a, b) => { const z = alinear(a, b); return hija([a, b], `${a.nombre} + ${b.nombre}`, "A+B", `${a.alias} + ${b.alias}`, z.x, z.ya.map((v, i) => v + z.yb[i])); }),
+  T("combinar", "residuo", "Residuo de A sobre B", 2, (a, b) => { const z = alinear(a, b); const r = ols(z.ya, z.yb.map((v) => [1, v])); return hija([a, b], `${a.nombre} | sin ${b.nombre}`, "residuo", `resid(${a.alias} ~ ${b.alias}) · β=${num(r.b[1])}`, z.x, r.res); }),
+  P("combinar", "Empalmar dos tramos", "empalme"), P("combinar", "Índice ponderado", "explorar"),
+  T("descomponer", "hp", "Filtro HP (tendencia + ciclo)", 1, (s) => { const t = hp(s.y, 129600); hija([s], s.nombre + " · tendencia HP", "HP tend.", `hp(${s.alias}, λ=129600).tendencia`, s.x, t); return hija([s], s.nombre + " · ciclo HP", "HP ciclo", `hp(${s.alias}, λ=129600).ciclo`, s.x, s.y.map((v, i) => v - t[i])); }),
+  T("descomponer", "detrend", "Quitar tendencia lineal", 1, (s) => { const r = ols(s.y, s.y.map((_, i) => [1, i])); return hija([s], s.nombre + " sin tendencia", "detrend", `${s.alias} − tendencia lineal`, s.x, r.res); }),
+  P("descomponer", "Filtro de Hamilton", "filtro_hamilton"), P("descomponer", "STL (estacionalidad)", "descomposicion_stl"), P("descomponer", "Kalman / componentes no observados", "componentes_no_observados"), P("descomponer", "Chow-Lin (mensualizar)", "desagregacion_temporal"),
+  T("diagnosticar", "orden", "Orden de integración", 1, (s) => { const o = s.orden || (acf(s.y, 1) > 0.95 ? "probable I(1)" : "probable I(0)"); s.sellos.push({ t: o, w: /1/.test(o) }); }),
+  T("diagnosticar", "acf", "Persistencia (ACF)", 1, (s) => { const a1 = acf(s.y, 1), a12 = acf(s.y, 12); s.sellos.push({ t: `ACF(1)=${num(a1, 2)} · ACF(12)=${num(a12, 2)}`, w: a12 > 0.5 }); }),
+  T("diagnosticar", "quiebre", "Quiebre de media (1)", 1, (s) => { const y = s.y, n = y.length; let mejor = [Infinity, 0]; for (let k = 12; k < n - 12; k++) { const a = y.slice(0, k), b = y.slice(k); const ssr = a.reduce((t, v) => t + (v - media(a)) ** 2, 0) + b.reduce((t, v) => t + (v - media(b)) ** 2, 0); if (ssr < mejor[0]) mejor = [ssr, k]; } s.sellos.push({ t: `quiebre ${s.x[mejor[1]].slice(0, 7)}`, w: true }); }),
+  T("diagnosticar", "normal", "Colas (asimetría y curtosis)", 1, (s) => { const m = media(s.y), d = desvio(s.y); const sk = media(s.y.map((v) => ((v - m) / d) ** 3)), ku = media(s.y.map((v) => ((v - m) / d) ** 4)) - 3; s.sellos.push({ t: `asim. ${num(sk, 2)} · curt. ${num(ku, 2)}`, w: Math.abs(ku) > 1 }); }),
+  P("diagnosticar", "Batería ADF/PP/KPSS/ZA", "raiz_unitaria"), P("diagnosticar", "Bai-Perron × Línea de Tiempo", "quiebres_estructurales"), P("diagnosticar", "Burbuja (GSADF)", "burbuja_gsadf"),
+  T("mirar", "v_lineas", "Líneas", "vista", "lineas"), T("mirar", "v_base", "Base 100", "vista", "base"), T("mirar", "v_z", "Estandarizado", "vista", "z"),
+  T("mirar", "v_disp", "Dispersión (2 series)", "vista", "dispersion"), T("mirar", "v_hist", "Histograma", "vista", "hist"), T("mirar", "v_box", "Caja (box plot)", "vista", "box"),
+  P("mirar", "Superficie 3D", "vista 3D"), P("mirar", "Mapa de calendario", "estacionalidad_calendario"),
+  T("modelar", "iterar", "Iterar ARDL · VAR · VECM", "todo", null, "Combinaciones de 1-3 explicativas"),
+  T("modelar", "mco", "Regresión MCO (dep = 1.ª sel.)", "n", null, ""),
+  P("modelar", "Familia GARCH", "garch_familia"), P("modelar", "Markov (regímenes)", "markov_switching"), P("modelar", "Kalman TVP", "tvp_kalman"), P("modelar", "Control sintético", "control_sintetico"), P("modelar", "XGBoost + SHAP", "ml_shap"), P("modelar", "LSTM / GRU", "red_lstm"),
+  P("simular", "Monte Carlo de umbral", "montecarlo_umbral"), P("simular", "Bootstrap por bloques", "montecarlo_cartera"),
+  T("evaluar", "granger", "Granger N × N", "todo", null, ""),
+  P("evaluar", "Torneo de modelos", "torneo_modelos"), P("evaluar", "Curva de especificaciones", "curva_especificaciones"), P("evaluar", "¿Es suerte? (PBO)", "sobreajuste_backtest"),
+];
+
+function aplicar(t, destino) {
+  if (t.plat) { toast(`En la plataforma: método «${t.plat}». En este mockup, sólo de muestra.`); return; }
+  if (t.aridad === "vista") { st.vista = t.fn; render(); return; }
+  if (t.id === "recorte") { toast("Arrastrá sobre el gráfico para elegir el tramo."); return; }
+  if (t.id === "iterar") { correrUniverso(); return; }
+  if (t.id === "granger") { correrUniverso(); st.resVista = "granger"; render(); $("#res-card").scrollIntoView({ behavior: "smooth", block: "start" }); return; }
+  let objetivo = destino ? [destino, ...[...st.sel].map(byId).filter((s) => s && s !== destino)] : [...st.sel].map(byId).filter(Boolean);
+  objetivo = objetivo.filter((s) => s.x);
+  if (t.id === "mco") { modeloMCO(objetivo); return; }
+  if (t.aridad === 1) {
+    if (!objetivo.length) { toast("Seleccioná una ficha (o soltá la herramienta sobre ella)."); return; }
+    objetivo.forEach((s) => t.fn(s));
+  } else if (t.aridad === 2) {
+    if (objetivo.length < 2) { toast("Hacen falta dos fichas: soltá la herramienta sobre A con B seleccionada."); return; }
+    t.fn(objetivo[0], objetivo[1]);
+  }
+  render();
+}
+
+function modeloMCO(fs) {
+  if (fs.length < 2) { toast("MCO: seleccioná la dependiente primero y después las explicativas."); return; }
+  const [y, ...xs] = fs;
+  let x = y.x.slice(), Y = y.y.slice(); let cols = [];
+  xs.forEach((s) => { const m = new Map(s.x.map((f, i) => [f, s.y[i]])); const keep = x.map((f) => m.has(f)); x = x.filter((_, i) => keep[i]); Y = Y.filter((_, i) => keep[i]); cols = cols.map((c) => c.filter((_, i) => keep[i])); cols.push(x.map((f) => m.get(f))); });
+  const r = ols(Y, x.map((_, i) => [1, ...cols.map((c) => c[i])]));
+  const insumos = [y, ...xs];
+  const nombre = `MCO ${y.alias} ~ ${xs.map((s) => s.alias).join(" + ")}`;
+  const texto = `${y.alias} = ${num(r.b[0])} ${xs.map((s, i) => `${r.b[i + 1] >= 0 ? "+" : "−"} ${num(Math.abs(r.b[i + 1]))}·${s.alias}`).join(" ")} · R²=${num(r.r2, 2)}`;
+  hija(insumos, nombre + " · ajustado", "MCO ajustado", texto, x, r.fit, { tipo: "resultado" });
+  hija(insumos, nombre + " · residuo", "MCO residuo", texto, x, r.res, { tipo: "resultado" });
+  toast("MCO: el ajuste y el residuo quedaron como fichas.");
+  render();
+}
+
+/* ═════════════ universo de modelos (precalculado con los datos del TF) ═════════════ */
+const MODS = D.modelos; // [tipo, vars, spec, r2, aic, bic, nobs, lb_p, pasa]
+const EFS = D.efectos; // [modelo, var, coef_lp, p]
+function correrUniverso() {
+  if (!st.res) {
+    st.res = { n: MODS.length };
+    const dep = st.series.find((s) => s.col === D.dep) || delPanel(D.dep);
+    st.res.nodo = { id: "res1", nombre: `Universo · ${MODS.length.toLocaleString("es-AR")} modelos`, insumos: [dep.id], texto: "ARDL p,q∈{1,2} · VAR k por AIC (Δ) · VECM r≥1 · 16 explicativas en combinaciones de 1 a 3" };
+    toast(`Universo listo: ${MODS.length.toLocaleString("es-AR")} modelos (ARDL ${cuenta("ARDL")}, VAR ${cuenta("VAR")}, VECM ${cuenta("VECM")}).`);
+  }
+  render();
+}
+const cuenta = (t) => MODS.filter((m) => m[0] === t).length.toLocaleString("es-AR");
+function efectosDe(v, filtro) {
+  return EFS.filter((e) => e[1] === v && (!filtro || MODS[e[0]][8]));
+}
+function pctSig(alpha, filtro) {
+  const out = D.vars.map((_, v) => ({ v, ARDL: [0, 0], VAR: [0, 0], VECM: [0, 0] }));
+  EFS.forEach(([m, v, c, p]) => { const mo = MODS[m]; if (filtro && !mo[8]) return; const o = out[v][mo[0]]; o[0]++; if (p < alpha) o[1]++; });
+  const pc = (a) => (a[0] ? (100 * a[1]) / a[0] : null);
+  return out.map((o) => ({ v: o.v, nombre: D.cortos[D.vars[o.v]], ARDL: pc(o.ARDL), VAR: pc(o.VAR), VECM: pc(o.VECM), nARDL: o.ARDL[0], nVAR: o.VAR[0], nVECM: o.VECM[0], n: o.ARDL[0] + o.VAR[0] + o.VECM[0] }));
+}
+
+/* ═════════════ motor de gráficos (un solo motor para Mesa, Proyecto y Documento) ═════════════ */
+const W = 900, M = { l: 58, r: 20, t: 14, b: 30 };
+function ticks(lo, hi, n = 5) { if (!(hi > lo)) return [lo]; const paso = Math.pow(10, Math.floor(Math.log10((hi - lo) / n))); const m = [1, 2, 2.5, 5, 10].find((k) => (hi - lo) / (k * paso) <= n) * paso; const o = []; for (let v = Math.ceil(lo / m) * m; v <= hi + 1e-12; v += m) o.push(+v.toFixed(10)); return o; }
+function ext(arrs, cero) { let lo = Infinity, hi = -Infinity; arrs.forEach((a) => a.forEach((v) => { if (v != null && isFinite(v)) { lo = Math.min(lo, v); hi = Math.max(hi, v); } })); if (!isFinite(lo)) return [0, 1]; if (cero) { lo = Math.min(lo, 0); hi = Math.max(hi, 0); } if (lo === hi) { lo -= 1; hi += 1; } const p = (hi - lo) * 0.05; return [lo - p, hi + p]; }
+function ejeY(sy, y0, y1, H, ancho = W) { let g = ""; ticks(y0, y1).forEach((v) => { g += `<line class="grid" x1="${M.l}" x2="${ancho - M.r}" y1="${sy(v)}" y2="${sy(v)}"/><text x="${M.l - 6}" y="${sy(v) + 3}" text-anchor="end">${num(v)}</text>`; }); if (y0 < 0 && y1 > 0) g += `<line class="cero" x1="${M.l}" x2="${ancho - M.r}" y1="${sy(0)}" y2="${sy(0)}"/>`; return g; }
+const tms = (f) => Date.parse(f);
+
+function dibujar(svg, spec, ley) {
+  const H = spec.alto || 330;
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  const f = { lineas: gLineas, base: gLineas, z: gLineas, dispersion: gDisp2, hist: gHist, box: gBox, r_disp: rDisp, r_barras: rBarras, r_hist: rHist, r_signo: rSigno, r_granger: rGranger, r_ranking: rRanking }[spec.vista];
+  const o = f ? f(spec, H) : { svg: "", ley: "" };
+  svg.innerHTML = o.svg;
+  if (ley) ley.innerHTML = o.ley || "";
+  return o;
+}
+function seriesDe(spec) { return spec.ids.map(byId).filter(Boolean); }
+function gLineas(spec, H) {
+  let ss = seriesDe(spec).filter((s) => s.x);
+  if (!ss.length) return { svg: `<text x="${W / 2}" y="${H / 2}" text-anchor="middle">Prendé el ojo de alguna ficha para graficarla</text>` };
+  const tr = (s) => { const v = s.y; if (spec.vista === "base") { const b = v.find((x) => x != null && x !== 0); return v.map((x) => (x / b) * 100); } if (spec.vista === "z") { const m = media(v), d = desvio(v); return v.map((x) => (x - m) / d); } return v; };
+  const ys = ss.map(tr);
+  let x0 = Infinity, x1 = -Infinity;
+  ss.forEach((s) => { x0 = Math.min(x0, tms(s.x[0])); x1 = Math.max(x1, tms(s.x[s.x.length - 1])); });
+  if (spec.rango) { x0 = tms(spec.rango[0]); x1 = tms(spec.rango[1]); }
+  const dentro = (s, i) => { const t = tms(s.x[i]); return t >= x0 && t <= x1; };
+  const [y0, y1] = ext(ys.map((y, k) => y.filter((_, i) => dentro(ss[k], i))));
+  const sx = (t) => M.l + ((t - x0) / (x1 - x0 || 1)) * (W - M.l - M.r);
+  const sy = (v) => H - M.b - ((v - y0) / (y1 - y0)) * (H - M.t - M.b);
+  let g = ejeY(sy, y0, y1, H);
+  const a0 = new Date(x0).getUTCFullYear(), a1 = new Date(x1).getUTCFullYear();
+  const paso = Math.max(1, Math.ceil((a1 - a0 + 1) / 10));
+  for (let a = a0; a <= a1; a += paso) { const t = Date.UTC(a, 0, 1); if (t >= x0 && t <= x1) g += `<line class="grid" x1="${sx(t)}" x2="${sx(t)}" y1="${M.t}" y2="${H - M.b}" stroke-dasharray="2 4"/><text x="${sx(t)}" y="${H - 9}" text-anchor="middle">${a}</text>`; }
+  ss.forEach((s, k) => {
+    let d = "", pl = false;
+    s.x.forEach((f, i) => { const v = ys[k][i]; if (v == null || !isFinite(v) || !dentro(s, i)) { pl = false; return; } d += `${pl ? "L" : "M"}${sx(tms(f)).toFixed(1)},${sy(v).toFixed(1)}`; pl = true; });
+    g += `<path d="${d}" fill="none" stroke="var(${s.color})" stroke-width="1.7"/>`;
+  });
+  return { svg: g, ley: ss.map((s) => `<span><i style="background:var(${s.color})"></i>${esc(s.nombre)}</span>`).join(""), x0, x1, sx, ss };
+}
+function gDisp2(spec, H) {
+  const ss = seriesDe(spec).filter((s) => s.x).slice(0, 2);
+  if (ss.length < 2) return { svg: `<text x="${W / 2}" y="${H / 2}" text-anchor="middle">La dispersión necesita dos series graficadas</text>` };
+  const z = alinear(ss[0], ss[1]);
+  return nube(z.yb, z.ya, ss[1].nombre, ss[0].nombre, H, z.x, true);
+}
+function nube(xs, ys, ex, ey, H, etq, recta) {
+  const [x0, x1] = ext([xs]), [y0, y1] = ext([ys]);
+  const sx = (v) => M.l + ((v - x0) / (x1 - x0)) * (W - M.l - M.r), sy = (v) => H - M.b - ((v - y0) / (y1 - y0)) * (H - M.t - M.b);
+  let g = ejeY(sy, y0, y1, H);
+  ticks(x0, x1, 7).forEach((v) => { g += `<text x="${sx(v)}" y="${H - 9}" text-anchor="middle">${num(v)}</text>`; });
+  xs.forEach((v, i) => { g += `<circle cx="${sx(v).toFixed(1)}" cy="${sy(ys[i]).toFixed(1)}" r="2.8" fill="var(--s1)" opacity=".6"><title>${esc(etq ? etq[i] : "")} (${num(v)}, ${num(ys[i])})</title></circle>`; });
+  if (recta) { const r = ols(ys, xs.map((v) => [1, v])); g += `<line x1="${sx(x0)}" y1="${sy(r.b[0] + r.b[1] * x0)}" x2="${sx(x1)}" y2="${sy(r.b[0] + r.b[1] * x1)}" stroke="var(--s2)" stroke-width="1.6" stroke-dasharray="6 4"/>`; }
+  return { svg: g, ley: `<span>x: ${esc(ex)}</span><span>y: ${esc(ey)}</span>` };
+}
+function histograma(grupos, H, etqX) {
+  const todos = grupos.flatMap((g) => g.v);
+  if (!todos.length) return { svg: `<text x="${W / 2}" y="${H / 2}" text-anchor="middle">Sin datos</text>` };
+  const lo = quantil(todos, 0.01), hi = quantil(todos, 0.99);
+  const nb = 30, w = (hi - lo) / nb || 1;
+  const cuentas = grupos.map((g) => { const c = new Array(nb).fill(0); g.v.forEach((v) => { const k = Math.min(nb - 1, Math.max(0, Math.floor((v - lo) / w))); c[k]++; }); return c.map((x) => (x / g.v.length) * 100); });
+  const [, y1] = ext(cuentas, true);
+  const sx = (v) => M.l + ((v - lo) / (hi - lo || 1)) * (W - M.l - M.r), sy = (v) => H - M.b - (v / y1) * (H - M.t - M.b);
+  let g = ejeY(sy, 0, y1, H);
+  ticks(lo, hi, 7).forEach((v) => { g += `<text x="${sx(v)}" y="${H - 9}" text-anchor="middle">${num(v)}</text>`; });
+  const bw = (W - M.l - M.r) / nb / grupos.length;
+  cuentas.forEach((c, k) => c.forEach((v, i) => { g += `<rect x="${sx(lo + i * w) + k * bw}" y="${sy(v)}" width="${Math.max(1, bw - 1)}" height="${H - M.b - sy(v)}" fill="var(${grupos[k].color})" opacity=".85"><title>${num(lo + i * w)} a ${num(lo + (i + 1) * w)}: ${num(v, 1)} %</title></rect>`; }));
+  if (lo < 0 && hi > 0) g += `<line class="cero" x1="${sx(0)}" x2="${sx(0)}" y1="${M.t}" y2="${H - M.b}"/>`;
+  g += `<text x="${M.l}" y="${M.t - 2}">% de casos</text>`;
+  return { svg: g, ley: grupos.map((gg) => `<span><i style="background:var(${gg.color})"></i>${esc(gg.nombre)} (n=${gg.v.length})</span>`).join("") + (etqX ? `<span>x: ${esc(etqX)}</span>` : "") };
+}
+function cajas(grupos, H, etqY) {
+  const gs = grupos.filter((g) => g.v.length >= 3);
+  if (!gs.length) return { svg: `<text x="${W / 2}" y="${H / 2}" text-anchor="middle">Sin datos suficientes</text>` };
+  const q = gs.map((g) => { const v = g.v; const q1 = quantil(v, 0.25), q3 = quantil(v, 0.75), iqr = q3 - q1; return { q1, q2: quantil(v, 0.5), q3, lo: Math.max(Math.min(...v), q1 - 1.5 * iqr), hi: Math.min(Math.max(...v), q3 + 1.5 * iqr) }; });
+  const [y0, y1] = ext([q.flatMap((o) => [o.lo, o.hi])]);
+  const sy = (v) => H - M.b - ((v - y0) / (y1 - y0)) * (H - M.t - M.b);
+  const ancho = (W - M.l - M.r) / gs.length;
+  let g = ejeY(sy, y0, y1, H);
+  gs.forEach((gg, i) => { const o = q[i], cx = M.l + ancho * (i + 0.5), bw = Math.min(70, ancho * 0.45); g += `<line x1="${cx}" x2="${cx}" y1="${sy(o.lo)}" y2="${sy(o.hi)}" stroke="var(--ink-faint)"/><rect x="${cx - bw / 2}" y="${sy(o.q3)}" width="${bw}" height="${Math.max(1, sy(o.q1) - sy(o.q3))}" fill="color-mix(in srgb, var(${gg.color}) 30%, transparent)" stroke="var(${gg.color})"/><line x1="${cx - bw / 2}" x2="${cx + bw / 2}" y1="${sy(o.q2)}" y2="${sy(o.q2)}" stroke="var(${gg.color})" stroke-width="2.5"/><text x="${cx}" y="${H - 9}" text-anchor="middle">${esc(gg.nombre.length > 22 ? gg.nombre.slice(0, 21) + "…" : gg.nombre)}</text>`; });
+  return { svg: g, ley: etqY ? `<span>${esc(etqY)} · bigotes 1,5×IQR</span>` : "" };
+}
+function gHist(spec, H) { return histograma(seriesDe(spec).map((s) => ({ nombre: s.nombre, color: s.color, v: s.y.filter((v) => v != null && isFinite(v)) })), H); }
+function gBox(spec, H) { return cajas(seriesDe(spec).map((s) => ({ nombre: s.nombre, color: s.color, v: s.y.filter((v) => v != null && isFinite(v)) })), H); }
+
+/* resultados */
+function rDisp(spec, H) {
+  const ef = efectosDe(spec.v, spec.filtro);
+  if (!ef.length) return { svg: `<text x="${W / 2}" y="${H / 2}" text-anchor="middle">Sin modelos con esta variable y este filtro</text>` };
+  const cs = ef.map((e) => e[2]);
+  const q1 = quantil(cs, 0.25), q3 = quantil(cs, 0.75), iqr = q3 - q1;
+  const lo = q1 - 3 * iqr, hi = q3 + 3 * iqr;
+  const dentro = ef.filter((e) => e[2] >= lo && e[2] <= hi);
+  const [x0, x1] = ext([dentro.map((e) => e[2])], true);
+  const sx = (v) => M.l + ((v - x0) / (x1 - x0)) * (W - M.l - M.r), sy = (p) => H - M.b - p * (H - M.t - M.b);
+  let g = ejeY(sy, 0, 1, H);
+  ticks(x0, x1, 7).forEach((v) => { g += `<text x="${sx(v)}" y="${H - 9}" text-anchor="middle">${num(v)}</text>`; });
+  g += `<line x1="${M.l}" x2="${W - M.r}" y1="${sy(spec.alpha)}" y2="${sy(spec.alpha)}" stroke="var(--crit)" stroke-dasharray="5 4"/><text x="${W - M.r}" y="${sy(spec.alpha) - 4}" text-anchor="end" style="fill:var(--crit)">α = ${spec.alpha}</text>`;
+  if (x0 < 0 && x1 > 0) g += `<line class="cero" x1="${sx(0)}" x2="${sx(0)}" y1="${M.t}" y2="${H - M.b}"/>`;
+  dentro.forEach((e) => {
+    const mo = MODS[e[0]], col = `var(${MOD_COL[mo[0]]})`, x = sx(e[2]).toFixed(1), y = sy(e[3]).toFixed(1);
+    const tit = `<title>${mo[0]} ${mo[2]} · ${mo[1].map((i) => D.cortos[D.vars[i]]).join(", ")} · coef ${num(e[2])} · p ${num(e[3], 3)}</title>`;
+    g += e[3] < spec.alpha ? `<circle cx="${x}" cy="${y}" r="3.4" fill="${col}" opacity=".75">${tit}</circle>` : `<path d="M${x - 3},${y - 3}L${+x + 3},${+y + 3}M${x - 3},${+y + 3}L${+x + 3},${y - 3}" stroke="${col}" stroke-width="1.3" opacity=".6">${tit}</path>`;
+  });
+  g += `<text x="${M.l}" y="${M.t - 2}">p-valor</text>`;
+  const fuera = ef.length - dentro.length;
+  return { svg: g, ley: ["ARDL", "VAR", "VECM"].map((m) => `<span><i style="background:var(${MOD_COL[m]})"></i>${m} (${ef.filter((e) => MODS[e[0]][0] === m).length})</span>`).join("") + `<span>● significativo · ✕ no</span><span>x: coeficiente de largo plazo</span>${fuera ? `<span>${fuera} fuera de rango (Tukey 3·IQR)</span>` : ""}` };
+}
+function rBarras(spec, H) {
+  const datos = pctSig(spec.alpha, spec.filtro).sort((a, b) => (b.ARDL ?? 0) + (b.VAR ?? 0) - ((a.ARDL ?? 0) + (a.VAR ?? 0)));
+  const ml = 170, alto = Math.max(H, datos.length * 26 + 40);
+  const sx = (v) => ml + (v / 100) * (W - ml - M.r);
+  let g = "";
+  [0, 25, 50, 75, 100].forEach((v) => { g += `<line class="grid" x1="${sx(v)}" x2="${sx(v)}" y1="4" y2="${alto - 24}"/><text x="${sx(v)}" y="${alto - 8}" text-anchor="middle">${v} %</text>`; });
+  datos.forEach((d, i) => {
+    const y = 8 + i * 26;
+    g += `<text x="${ml - 8}" y="${y + 13}" text-anchor="end" style="fill:var(--ink-2);font-family:var(--sans);font-size:11px">${esc(d.nombre)}</text>`;
+    ["ARDL", "VAR", "VECM"].forEach((m, k) => { const v = d[m], nn = d["n" + m]; if (v == null) return; const poco = nn < 10; g += `<rect x="${ml}" y="${y + k * 7}" width="${Math.max(1, sx(v) - ml)}" height="6" fill="var(${MOD_COL[m]})" opacity="${poco ? 0.22 : 1}"><title>${m}: ${num(v, 1)} % significativos en ${nn} modelos${poco ? " (muy pocos: no concluyente)" : ""}</title></rect>`; if (poco) g += `<text x="${Math.max(ml, sx(v)) + 4}" y="${y + k * 7 + 6}" style="font-size:8.5px">n=${nn}</text>`; });
+  });
+  g += `<line x1="${sx(spec.alpha * 100)}" x2="${sx(spec.alpha * 100)}" y1="4" y2="${alto - 24}" stroke="var(--crit)" stroke-dasharray="4 3"><title>lo que daría el azar</title></line>`;
+  return { svg: g, alto, ley: ["ARDL", "VAR", "VECM"].map((m) => `<span><i style="background:var(${MOD_COL[m]})"></i>${m}</span>`).join("") + `<span style="color:var(--crit)">┆ ${spec.alpha * 100} % = lo esperable por azar</span><span>barras tenues: menos de 10 modelos, no concluyente</span>` };
+}
+function rHist(spec, H) {
+  const ef = efectosDe(spec.v, spec.filtro);
+  return histograma(["ARDL", "VAR", "VECM"].map((m) => ({ nombre: m, color: MOD_COL[m], v: ef.filter((e) => MODS[e[0]][0] === m).map((e) => e[2]) })).filter((g) => g.v.length), H, "coeficiente de largo plazo de " + D.cortos[D.vars[spec.v]]);
+}
+function rSigno(spec, H) {
+  const ef = efectosDe(spec.v, spec.filtro);
+  return cajas(["ARDL", "VAR", "VECM"].map((m) => ({ nombre: m, color: MOD_COL[m], v: ef.filter((e) => MODS[e[0]][0] === m && e[3] < spec.alpha).map((e) => e[2]) })), H, "coeficiente de " + D.cortos[D.vars[spec.v]] + " entre los modelos significativos");
+}
+function rGranger(spec, H) {
+  const ss = D.granger.series, n = ss.length, P = D.granger.p;
+  const ml = 160, mt = 110, cel = Math.min(34, (W - ml - 10) / n), alto = mt + n * cel + 16;
+  let g = "";
+  ss.forEach((s, j) => { g += `<text transform="translate(${ml + j * cel + cel / 2},${mt - 6}) rotate(-50)" style="font-family:var(--sans);font-size:10.5px;fill:var(--ink-2)">${esc(D.cortos[s])}</text>`; });
+  ss.forEach((s, i) => {
+    g += `<text x="${ml - 6}" y="${mt + i * cel + cel / 2 + 4}" text-anchor="end" style="font-family:var(--sans);font-size:10.5px;fill:var(--ink-2)">${esc(D.cortos[s])}</text>`;
+    ss.forEach((s2, j) => {
+      const p = P[i][j];
+      let fill = "var(--sunken)";
+      if (p != null) { const f = Math.min(1, -Math.log10(Math.max(p, 1e-6)) / 4); fill = p < spec.alpha ? `color-mix(in srgb, var(--s3) ${Math.round(25 + f * 70)}%, var(--surface))` : `color-mix(in srgb, var(--s1) ${Math.round(f * 30)}%, var(--surface))`; }
+      g += `<rect x="${ml + j * cel}" y="${mt + i * cel}" width="${cel - 1.5}" height="${cel - 1.5}" rx="2" fill="${fill}"><title>${esc(D.cortos[s])} → ${esc(D.cortos[s2])}: p = ${p == null ? "—" : num(p, 4)}${p != null ? " (rezagos " + D.granger.lag[i][j] + ")" : ""}</title></rect>`;
+      if (p != null && p < spec.alpha && cel >= 26) g += `<text x="${ml + j * cel + cel / 2}" y="${mt + i * cel + cel / 2 + 3.5}" text-anchor="middle" style="font-size:9px;fill:var(--ink)">${p < 0.001 ? "***" : p < 0.01 ? "**" : "*"}</text>`;
+    });
+  });
+  const nsig = P.flat().filter((p) => p != null && p < spec.alpha).length;
+  return { svg: g, alto, ley: `<span>fila → columna: «la fila precede a la columna» (Granger sobre series estacionarias, rezago por AIC ≤ 6)</span><span style="color:var(--crit)">■ p &lt; ${spec.alpha}: ${nsig} de ${n * (n - 1)} pares</span>` };
+}
+function rRanking(spec, H) {
+  const filas = MODS.map((m, i) => [i, ...m]).filter((m) => m[1] === "ARDL" && (!spec.filtro || m[9])).sort((a, b) => a[6] - b[6]).slice(0, 12);
+  const html = `<div class="tabla"><table><thead><tr><th>#</th><th>modelo</th><th>explicativas</th><th>R²</th><th>AIC</th><th>BIC</th><th>Ljung-Box p</th></tr></thead><tbody>${filas.map((m, k) => `<tr><td class="n">${k + 1}</td><td>${m[1]} ${m[3]}</td><td>${esc(m[2].map((i) => D.cortos[D.vars[i]]).join(", "))}</td><td class="n">${num(m[4], 3)}</td><td class="n">${num(m[5])}</td><td class="n">${num(m[6])}</td><td class="n">${num(m[8], 3)}</td></tr>`).join("")}</tbody></table></div>`;
+  return { svg: "", html, ley: "" };
+}
+
+/* ═════════════ render ═════════════ */
+const VISTAS = [["lineas", "Líneas"], ["base", "Base 100"], ["z", "Estandarizado"], ["dispersion", "Dispersión"], ["hist", "Histograma"], ["box", "Caja"]];
+const RVISTAS = [["r_barras", "% significativos"], ["r_disp", "Coef. vs p-valor"], ["r_hist", "Distribución"], ["r_signo", "Caja por modelo"], ["r_ranking", "Ranking BIC"], ["r_granger", "Granger N×N"]];
+st.resVista = "r_barras";
+
+function specGraf() { return { vista: st.vista, ids: st.series.filter((s) => s.graf).map((s) => s.id), rango: st.rango }; }
+function specRes() { return { vista: st.resVista, v: +$("#res-var").value, filtro: $("#res-filtro").checked, alpha: +$("#res-alpha").value }; }
+
+function render() {
+  // segmentos
+  $("#seg-vista").innerHTML = VISTAS.map(([k, t]) => `<button type="button" data-v="${k}" aria-pressed="${st.vista === k}">${t}</button>`).join("");
+  // gráfico principal
+  const sg = specGraf();
+  const o = dibujar($("#graf"), sg, $("#graf-ley"));
+  st._graf = o;
+  $("#graf-tit").textContent = st.rango ? `Gráfico · tramo ${st.rango[0].slice(0, 7)} a ${st.rango[1].slice(0, 7)}` : "Gráfico";
+  // fichas
+  $("#fichas").innerHTML = st.series.map(htmlFicha).join("");
+  $("#n-sel").textContent = `${st.sel.size} seleccionada${st.sel.size === 1 ? "" : "s"}`;
+  // resultados
+  $("#res-card").hidden = !st.res;
+  if (st.res) {
+    $("#seg-res").innerHTML = RVISTAS.map(([k, t]) => `<button type="button" data-v="${k}" aria-pressed="${st.resVista === k}">${t}</button>`).join("");
+    $("#res-tit").textContent = `Resultados · universo de ${MODS.length.toLocaleString("es-AR")} modelos (ARDL ${cuenta("ARDL")} · VAR ${cuenta("VAR")} · VECM ${cuenta("VECM")})`;
+    $("#lab-var").hidden = !["r_disp", "r_hist", "r_signo"].includes(st.resVista);
+    const sr = specRes();
+    const svg = $("#res-svg");
+    const r = dibujar(svg, sr, $("#res-ley"));
+    svg.hidden = !r.svg;
+    if (r.alto) svg.setAttribute("viewBox", `0 0 ${W} ${r.alto}`);
+    $("#res-extra").innerHTML = r.html || "";
+  }
+  lineaje();
+  $("#n-pines").textContent = st.pines.length;
+  guardar();
+}
+
+function chispa(s) {
+  if (!s.x) return "";
+  const v = s.y.filter((x) => x != null && isFinite(x)); if (v.length < 2) return "";
+  const lo = Math.min(...v), hi = Math.max(...v);
+  const d = s.y.map((y, i) => (y == null || !isFinite(y) ? null : `${((i / (s.y.length - 1)) * 200).toFixed(1)},${(26 - ((y - lo) / (hi - lo || 1)) * 24).toFixed(1)}`)).filter(Boolean).join(" ");
+  return `<svg viewBox="0 0 200 28" preserveAspectRatio="none" aria-hidden="true"><polyline points="${d}" fill="none" stroke="var(${s.color})" stroke-width="1.4" vector-effect="non-scaling-stroke"/></svg>`;
+}
+function htmlFicha(s) {
+  const v = s.y.filter((x) => x != null && isFinite(x));
+  const ult = v[v.length - 1];
+  const rango = s.x ? `${s.x[0].slice(0, 7)} → ${s.x[s.x.length - 1].slice(0, 7)}` : `${v.length} valores (no temporal)`;
+  return `<div class="ficha ${st.sel.has(s.id) ? "sel" : ""}" data-id="${s.id}" tabindex="0" role="button" aria-pressed="${st.sel.has(s.id)}">
+    <div class="cab"><span class="punto" style="background:var(${s.color})"></span><span class="nom" title="${esc(s.nombre)}">${esc(s.nombre)}</span><span class="tipo ${s.tipo}">${s.tipo === "catalogo" ? "panel" : s.tipo}</span></div>
+    <div class="receta" title="${esc(s.receta.texto)}"><span class="alias">${esc(s.alias)}</span> = ${esc(s.receta.texto)}</div>
+    ${chispa(s)}
+    <div class="meta"><span>${esc(rango)}</span><span>n ${v.length}</span><span>último ${num(ult)}</span>${s.unidad ? `<span>${esc(s.unidad)}</span>` : ""}</div>
+    ${s.sellos.length ? `<div class="sellos">${s.sellos.map((x) => `<span class="sello ${x.w ? "w" : ""}">${esc(x.t)}</span>`).join("")}</div>` : ""}
+    <div class="acc"><button type="button" data-a="ver" aria-pressed="${s.graf}">${s.graf ? "◉ graficada" : "○ graficar"}</button><button type="button" data-a="origen">↗ linaje</button>${s.tipo !== "catalogo" ? `<button type="button" data-a="quitar">✕</button>` : ""}</div>
+  </div>`;
+}
+
+/* ═════════════ linaje ═════════════ */
+function lineaje() {
+  const nodos = st.series.map((s) => ({ id: s.id, t1: s.nombre, t2: s.tipo === "catalogo" ? "panel" : s.receta.op, ins: s.receta.insumos.concat(s._de ? [s._de] : []), color: s.color }));
+  if (st.res) nodos.push({ id: "res1", t1: st.res.nodo.nombre, t2: "modelar · iterar", ins: st.res.nodo.insumos, color: "--accent" });
+  const prof = {};
+  const p = (n) => { if (prof[n.id] != null) return prof[n.id]; prof[n.id] = 0; const ds = n.ins.map((i) => nodos.find((x) => x.id === i)).filter(Boolean).map(p); prof[n.id] = ds.length ? Math.max(...ds) + 1 : 0; return prof[n.id]; };
+  nodos.forEach(p);
+  const cols = {}; nodos.forEach((n) => { (cols[prof[n.id]] ||= []).push(n); });
+  const NW = 196, NH = 38, GX = 70, GY = 12;
+  const pos = {};
+  Object.entries(cols).forEach(([c, ns]) => ns.forEach((n, i) => { pos[n.id] = { x: 10 + c * (NW + GX), y: 10 + i * (NH + GY) }; }));
+  const ancho = 20 + (Object.keys(cols).length) * (NW + GX), alto = 20 + Math.max(...Object.values(cols).map((c) => c.length)) * (NH + GY);
+  let g = `<defs><marker id="fl" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L8,4L0,8z" fill="var(--ink-faint)"/></marker></defs>`;
+  nodos.forEach((n) => n.ins.forEach((i) => { const a = pos[i], b = pos[n.id]; if (!a || !b) return; const x1 = a.x + NW, y1 = a.y + NH / 2, x2 = b.x, y2 = b.y + NH / 2; g += `<path class="arista" d="M${x1},${y1}C${x1 + GX / 2},${y1} ${x2 - GX / 2},${y2} ${x2 - 2},${y2}" marker-end="url(#fl)"/>`; }));
+  nodos.forEach((n) => { const q = pos[n.id]; const sel = st.sel.has(n.id) || st._resaltar === n.id; g += `<g class="nodo ${sel ? "sel" : ""}" data-id="${n.id}" transform="translate(${q.x},${q.y})"><rect width="${NW}" height="${NH}" rx="6"/><rect width="4" height="${NH}" rx="2" fill="var(${n.color})" stroke="none"/><text x="11" y="15">${esc(n.t1.length > 30 ? n.t1.slice(0, 29) + "…" : n.t1)}</text><text class="t2" x="11" y="29">${esc(n.t2)}</text></g>`; });
+  const svg = $("#lin");
+  svg.setAttribute("viewBox", `0 0 ${ancho} ${alto}`);
+  svg.setAttribute("width", ancho); svg.setAttribute("height", alto);
+  svg.style.width = ancho + "px"; svg.style.maxWidth = "none";
+  svg.innerHTML = g;
+}
+
+/* ═════════════ proyecto y documento ═════════════ */
+function pinear(spec, titulo, origen) {
+  const pin = { id: "p" + (st.pines.length + 1) + "_" + Date.now().toString(36), titulo, spec: JSON.parse(JSON.stringify(spec)), origen, color: COLS[st.pines.length % COLS.length] };
+  st.pines.push(pin);
+  render();
+  toast(`«${titulo}» quedó en el Proyecto.`);
+  return pin;
+}
+function recetaTexto(origen) {
+  return origen.map((id) => { if (id === "res1") return `Universo de ${MODS.length.toLocaleString("es-AR")} modelos ← ${st.res?.nodo.texto || ""}`; const s = byId(id); if (!s) return ""; const cadena = []; let cur = s; const vistos = new Set(); while (cur && !vistos.has(cur.id)) { vistos.add(cur.id); cadena.push(`${cur.alias} = ${cur.receta.texto}`); cur = cur.receta.insumos.length ? byId(cur.receta.insumos[0]) : null; } return cadena.join("  ←  "); }).filter(Boolean).join("<br>");
+}
+function renderTablero() {
+  const t = $("#tablero");
+  if (!st.pines.length) { t.innerHTML = `<div class="vacio">Todavía no clavaste nada. En la Mesa, «📌 Al proyecto» trae el gráfico o el resultado que estás mirando.</div>`; return; }
+  t.innerHTML = st.pines.map((p) => `<div class="card pin" data-id="${p.id}"><div class="card-hd"><button class="bolita" type="button" data-volver="${p.id}" title="Volver al origen en la Mesa" style="background:var(${p.color})"></button><h3 style="font-size:13.5px">${esc(p.titulo)}</h3><span class="sp"></span><button class="btn sm" type="button" data-insertar="${p.id}">→ Documento</button><button class="btn sm" type="button" data-sacar="${p.id}">✕</button></div><div class="graf-wrap" style="padding:6px 4px 0"><svg class="g" data-pin="${p.id}"></svg></div><div class="ley" data-ley="${p.id}"></div><div class="receta">${recetaTexto(p.origen)}</div></div>`).join("");
+  st.pines.forEach((p) => { const svg = t.querySelector(`svg[data-pin="${p.id}"]`); const o = dibujar(svg, { ...p.spec, alto: 300 }, t.querySelector(`[data-ley="${p.id}"]`)); if (o.alto) svg.setAttribute("viewBox", `0 0 ${W} ${o.alto}`); if (o.html) svg.outerHTML = `<div style="padding:0 12px">${o.html}</div>`; });
+}
+function renderDoc() {
+  $("#doc-tit").textContent = st.docTit || D.titulo;
+  let fig = 0;
+  $("#doc-cuerpo").innerHTML = st.doc.map((b, i) => {
+    if (b.t === "h") return `<h2 contenteditable="true" data-b="${i}">${esc(b.v)}</h2>`;
+    if (b.t === "p") return `<div contenteditable="true" data-b="${i}">${esc(b.v)}</div>`;
+    const p = st.pines.find((x) => x.id === b.pin); if (!p) return "";
+    fig++;
+    return `<figure data-fig="${p.id}"><svg class="g" data-dpin="${p.id}"></svg><div class="ley" data-dley="${p.id}" style="padding:4px 0 0"></div><figcaption><b>Figura ${fig}.</b> ${esc(p.titulo)}. <span class="mono" style="font-size:10.5px">Receta: ${recetaTexto(p.origen)}</span></figcaption></figure>`;
+  }).join("");
+  st.doc.filter((b) => b.t === "fig").forEach((b) => { const p = st.pines.find((x) => x.id === b.pin); const svg = document.querySelector(`svg[data-dpin="${b.pin}"]`); if (!p || !svg) return; const o = dibujar(svg, { ...p.spec, alto: 300 }, document.querySelector(`[data-dley="${b.pin}"]`)); if (o.alto) svg.setAttribute("viewBox", `0 0 ${W} ${o.alto}`); if (o.html) svg.outerHTML = o.html; });
+  $("#doc-pines").innerHTML = st.pines.map((p) => `<div class="p"><span class="bo" style="background:var(${p.color})"></span><span class="tx" title="${esc(p.titulo)}">${esc(p.titulo)}</span><button class="btn sm" type="button" data-insertar="${p.id}">Insertar</button></div>`).join("") || `<div class="vacio">Sin figuras: clavalas desde la Mesa.</div>`;
+}
+
+/* ═════════════ expresiones (gramática cerrada, sin eval) ═════════════ */
+function evaluarExpr(txt) {
+  const tok = txt.match(/\d+(?:[.,]\d+)?|[A-Za-z_][A-Za-z0-9_]*|[-+*/^(),×÷−]/g) || [];
+  let i = 0;
+  const ver = () => tok[i], tomar = (t) => { if (t && tok[i] !== t) throw new Error(`Esperaba «${t}» y encontré «${tok[i] ?? "fin"}»`); return tok[i++]; };
+  const usados = new Set();
+  const op = (a, b, f) => { if (typeof a === "number" && typeof b === "number") return f(a, b); const A = typeof a === "number" ? null : a, B = typeof b === "number" ? null : b; if (A && B) { const m = new Map(B.x.map((x, k) => [x, B.y[k]])); const x = A.x.filter((d) => m.has(d)); const ma = new Map(A.x.map((d, k) => [d, A.y[k]])); return { x, y: x.map((d) => f(ma.get(d), m.get(d))) }; } const s = A || B; return { x: s.x, y: s.y.map((v) => (A ? f(v, b) : f(a, v))) }; };
+  const FN = {
+    log: (s) => ({ x: s.x, y: s.y.map((v) => (v > 0 ? Math.log(v) : null)) }), exp: (s) => ({ x: s.x, y: s.y.map(Math.exp) }), abs: (s) => ({ x: s.x, y: s.y.map(Math.abs) }),
+    dif: (s, k = 1) => ({ x: s.x.slice(k), y: s.y.slice(k).map((v, j) => v - s.y[j]) }), lag: (s, k = 1) => ({ x: s.x.slice(k), y: s.y.slice(0, -k) }),
+    mm: (s, k = 12) => ({ x: s.x.slice(k - 1), y: s.y.slice(k - 1).map((_, j) => media(s.y.slice(j, j + k))) }), z: (s) => { const m = media(s.y), d = desvio(s.y); return { x: s.x, y: s.y.map((v) => (v - m) / d) }; },
+  };
+  function prim() {
+    const t = ver();
+    if (t === "(") { tomar("("); const v = expr(); tomar(")"); return v; }
+    if (t === "-" || t === "−") { tomar(); return op(-1, prim(), (a, b) => a * b); }
+    if (/^\d/.test(t)) { i++; return parseFloat(t.replace(",", ".")); }
+    if (/^[A-Za-z_]/.test(t)) {
+      i++;
+      if (ver() === "(") { if (!FN[t]) throw new Error(`Función desconocida: ${t}`); tomar("("); const args = [expr()]; while (ver() === ",") { tomar(","); args.push(expr()); } tomar(")"); return FN[t](...args); }
+      const s = st.series.find((x) => x.alias === t && x.x); if (!s) throw new Error(`No hay ninguna ficha con alias «${t}»`); usados.add(s.id); return { x: s.x, y: s.y };
+    }
+    throw new Error(`No entiendo «${t ?? "fin"}»`);
+  }
+  function pot() { let a = prim(); while (ver() === "^") { tomar(); a = op(a, prim(), (x, y) => x ** y); } return a; }
+  function term() { let a = pot(); while (["*", "/", "×", "÷"].includes(ver())) { const o = tomar(); a = op(a, pot(), o === "*" || o === "×" ? (x, y) => x * y : (x, y) => (y ? x / y : null)); } return a; }
+  function expr() { let a = term(); while (["+", "-", "−"].includes(ver())) { const o = tomar(); a = op(a, term(), o === "+" ? (x, y) => x + y : (x, y) => x - y); } return a; }
+  const r = expr();
+  if (i < tok.length) throw new Error(`Sobra «${tok[i]}»`);
+  if (typeof r === "number") throw new Error("La expresión no usa ninguna serie");
+  return { ...r, usados: [...usados] };
+}
+
+/* ═════════════ eventos ═════════════ */
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("button, .ficha, .nodo");
+  if (!b) return;
+  if (b.closest("#seg-vista") && b.dataset.v) { st.vista = b.dataset.v; render(); return; }
+  if (b.closest("#seg-res") && b.dataset.v) { st.resVista = b.dataset.v; render(); return; }
+  const f = b.closest(".ficha");
+  if (f) {
+    const s = byId(f.dataset.id);
+    const a = e.target.closest("button")?.dataset.a;
+    if (a === "ver") s.graf = !s.graf;
+    else if (a === "quitar") { st.series = st.series.filter((x) => x !== s); st.sel.delete(s.id); }
+    else if (a === "origen") { st._resaltar = s.id; render(); $("#lin").scrollIntoView({ behavior: "smooth", block: "center" }); setTimeout(() => { st._resaltar = null; lineaje(); }, 2500); return; }
+    else { st.sel.has(s.id) ? st.sel.delete(s.id) : st.sel.add(s.id); }
+    render(); return;
+  }
+  const n = e.target.closest(".nodo");
+  if (n) { if (n.dataset.id === "res1") { $("#res-card").scrollIntoView({ behavior: "smooth" }); return; } const s = byId(n.dataset.id); if (s) { st.sel.add(s.id); render(); document.querySelector(`.ficha[data-id="${s.id}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" }); } return; }
+  if (b.dataset.tool) { aplicar(HERR.find((t) => t.id === b.dataset.tool)); return; }
+  if (b.dataset.clase) { const c = document.querySelector(`.tools[data-c="${b.dataset.clase}"]`); c.hidden = !c.hidden; return; }
+  if (b.dataset.insertar) { st.doc.push({ t: "fig", pin: b.dataset.insertar }); location.hash = "#documento"; renderDoc(); guardar(); toast("Figura insertada en el documento."); return; }
+  if (b.dataset.sacar) { st.pines = st.pines.filter((p) => p.id !== b.dataset.sacar); st.doc = st.doc.filter((d) => d.pin !== b.dataset.sacar); renderTablero(); render(); return; }
+  if (b.dataset.volver) { const p = st.pines.find((x) => x.id === b.dataset.volver); location.hash = "#mesa"; setTimeout(() => { if (p.spec.vista.startsWith("r_")) { st.resVista = p.spec.vista; render(); $("#res-card").scrollIntoView({ behavior: "smooth" }); } else { st.vista = p.spec.vista; st.rango = p.spec.rango; st.series.forEach((s) => (s.graf = p.spec.ids.includes(s.id))); p.origen.forEach((id) => st.sel.add(id)); render(); window.scrollTo({ top: 0, behavior: "smooth" }); } }, 30); return; }
+});
+document.addEventListener("keydown", (e) => { if ((e.key === "Enter" || e.key === " ") && e.target.classList?.contains("ficha")) { e.preventDefault(); e.target.click(); } });
+["#res-var", "#res-filtro", "#res-alpha"].forEach((s) => $(s).addEventListener("change", render));
+$("#traer").addEventListener("click", traer);
+$("#buscar").addEventListener("keydown", (e) => { if (e.key === "Enter") traer(); });
+function traer() {
+  const q = $("#buscar").value.trim().toLowerCase(); if (!q) return;
+  const col = [D.dep, ...D.vars].find((c) => D.cortos[c].toLowerCase().includes(q) || c.includes(q));
+  if (!col) { toast("No está en el panel del TF. En la plataforma buscaría en las 719 series del catálogo."); return; }
+  const s = delPanel(col); s.graf = true; st.sel.clear(); st.sel.add(s.id); $("#buscar").value = ""; render();
+}
+$("#pin-graf").addEventListener("click", () => { const sp = specGraf(); if (!sp.ids.length) { toast("No hay series graficadas."); return; } pinear(sp, `${VISTAS.find((v) => v[0] === sp.vista)[1]}: ${sp.ids.map((i) => byId(i).nombre).join(" · ")}`.slice(0, 120), sp.ids); });
+$("#res-pin").addEventListener("click", () => { const sp = specRes(); const nv = RVISTAS.find((v) => v[0] === sp.vista)[1]; const varTxt = ["r_disp", "r_hist", "r_signo"].includes(sp.vista) ? ` · ${D.cortos[D.vars[sp.v]]}` : ""; pinear(sp, `${nv}${varTxt} (${sp.filtro ? "residuos limpios" : "todos"}, α=${sp.alpha})`, ["res1"]); });
+$("#res-serie").addEventListener("click", () => {
+  const sp = specRes();
+  if (["r_disp", "r_hist", "r_signo"].includes(sp.vista)) {
+    const ef = efectosDe(sp.v, sp.filtro).filter((e) => sp.vista !== "r_signo" || e[3] < sp.alpha);
+    const s = nuevaSerie({ nombre: `Coef. LP de ${D.cortos[D.vars[sp.v]]} en ${ef.length} modelos`, tipo: "resultado", x: null, y: ef.map((e) => e[2]), unidad: "coef.", receta: { op: "resultados", insumos: [], texto: `coef_lp(${slug(D.cortos[D.vars[sp.v]])}) en el universo${sp.filtro ? " · residuos limpios" : ""}` } });
+    st.series.forEach((x) => (x.graf = false)); s._de = "res1"; s.graf = true; st.vista = "hist";
+    toast("Los coeficientes ahora son una ficha: el gráfico pasó a Histograma.");
+  } else if (sp.vista === "r_ranking" && D.ajuste_mejor) {
+    const a = D.ajuste_mejor, m = MODS[a.modelo];
+    const t = `mejor ARDL ${m[2]} por BIC: ${m[1].map((i) => D.cortos[D.vars[i]]).join(", ")}`;
+    const s1 = nuevaSerie({ nombre: "RPI ajustado (mejor ARDL)", tipo: "resultado", x: a.fechas, y: a.ajustado, unidad: "pb", receta: { op: "ajustado", insumos: [], texto: t } });
+    const s2 = nuevaSerie({ nombre: "Residuo (mejor ARDL)", tipo: "resultado", x: a.fechas, y: a.residuo, unidad: "pb", receta: { op: "residuo", insumos: [], texto: t } });
+    st.series.forEach((x) => (x.graf = false)); s1._de = s2._de = "res1"; s1.graf = true; const rpi = st.series.find((s) => s.col === D.dep); if (rpi) rpi.graf = true; st.vista = "lineas";
+    toast("Ajustado y residuo del mejor ARDL quedaron como series temporales.");
+  } else {
+    const d = pctSig(sp.alpha, sp.filtro);
+    const s = nuevaSerie({ nombre: `% significativos en VAR por variable`, tipo: "resultado", x: null, y: d.map((o) => o.VAR), unidad: "%", receta: { op: "resultados", insumos: [], texto: `pct_sig(VAR, α=${sp.alpha})` } });
+    st.series.forEach((x) => (x.graf = false)); s._de = "res1"; s.graf = true; st.vista = "box";
+  }
+  render(); window.scrollTo({ top: 0, behavior: "smooth" });
+});
+$("#expr-ok").addEventListener("click", () => {
+  try {
+    const r = evaluarExpr($("#expr").value);
+    const nom = $("#expr-nom").value.trim() || "Serie calculada";
+    const padres = r.usados.map(byId);
+    const s = hija(padres, nom, "expresión", $("#expr").value.trim(), r.x, r.y, { tipo: "derivada", unidad: "" });
+    s.alias = slug(nom); render(); toast(`Serie «${nom}» creada con alias ${s.alias}.`);
+  } catch (err) { toast(err.message); }
+});
+$("#tema").addEventListener("click", () => { const r = document.documentElement; const oscuro = r.dataset.theme ? r.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches; r.dataset.theme = oscuro ? "light" : "dark"; render(); renderTablero(); });
+
+/* arrastrar herramientas */
+document.addEventListener("dragstart", (e) => { const t = e.target.closest?.(".tool"); if (t) { e.dataTransfer.setData("text/plain", t.dataset.tool); e.dataTransfer.effectAllowed = "copy"; } });
+document.addEventListener("dragover", (e) => { const f = e.target.closest?.(".ficha, #graf-wrap"); if (f) { e.preventDefault(); f.classList.add("drop"); } });
+document.addEventListener("dragleave", (e) => { e.target.closest?.(".ficha")?.classList.remove("drop"); });
+document.addEventListener("drop", (e) => {
+  const f = e.target.closest?.(".ficha, #graf-wrap"); if (!f) return;
+  e.preventDefault(); f.classList.remove("drop");
+  const t = HERR.find((x) => x.id === e.dataTransfer.getData("text/plain")); if (!t) return;
+  if (f.id === "graf-wrap") { if (t.aridad === "vista") { st.vista = t.fn; render(); } else { const sel = st.series.filter((s) => s.graf); sel.forEach((s) => st.sel.add(s.id)); aplicar(t); } return; }
+  aplicar(t, byId(f.dataset.id));
+});
+
+/* recortar arrastrando sobre el gráfico */
+(function brush() {
+  const svg = $("#graf"), wrap = $("#graf-wrap");
+  let ini = null, rect = null, flot = null, tip = null;
+  const xsvg = (ev) => { const r = svg.getBoundingClientRect(); return ((ev.clientX - r.left) / r.width) * W; };
+  const tDe = (x) => { const o = st._graf; return o.x0 + ((x - M.l) / (W - M.l - M.r)) * (o.x1 - o.x0); };
+  svg.addEventListener("pointerdown", (ev) => { if (!st._graf?.x0 || !["lineas", "base", "z"].includes(st.vista)) return; flot?.remove(); ini = Math.max(M.l, Math.min(W - M.r, xsvg(ev))); rect = document.createElementNS("http://www.w3.org/2000/svg", "rect"); rect.setAttribute("class", "brush"); rect.setAttribute("y", M.t); rect.setAttribute("height", 330 - M.t - M.b); svg.appendChild(rect); try { svg.setPointerCapture(ev.pointerId); } catch (e) { /* sin captura: igual funciona */ } });
+  svg.addEventListener("pointermove", (ev) => {
+    const x = Math.max(M.l, Math.min(W - M.r, xsvg(ev)));
+    if (rect) { rect.setAttribute("x", Math.min(ini, x)); rect.setAttribute("width", Math.abs(x - ini)); return; }
+    const o = st._graf; if (!o?.ss) return;
+    const t = tDe(x);
+    tip ||= Object.assign(document.createElement("div"), { className: "tip" }); if (!tip.isConnected) wrap.appendChild(tip);
+    tip.innerHTML = o.ss.map((s) => { let k = 0, d = Infinity; s.x.forEach((f, i) => { const dd = Math.abs(tms(f) - t); if (dd < d) { d = dd; k = i; } }); return `<div><i style="background:var(${s.color})"></i>${esc(s.nombre)} · ${s.x[k].slice(0, 7)}: <b>${num(s.y[k])}</b></div>`; }).join("");
+    const r = svg.getBoundingClientRect(); const px = ev.clientX - r.left; tip.style.left = px > r.width * 0.6 ? "auto" : px + 14 + "px"; tip.style.right = px > r.width * 0.6 ? r.width - px + 14 + "px" : "auto"; tip.style.top = ev.clientY - r.top + 12 + "px";
+  });
+  svg.addEventListener("pointerleave", () => tip?.remove());
+  svg.addEventListener("pointerup", (ev) => {
+    if (!rect) return;
+    const x = Math.max(M.l, Math.min(W - M.r, xsvg(ev)));
+    const a = Math.min(ini, x), b = Math.max(ini, x);
+    rect.remove(); rect = null;
+    if (b - a < 12) return;
+    const f0 = new Date(tDe(a)).toISOString().slice(0, 10), f1 = new Date(tDe(b)).toISOString().slice(0, 10);
+    flot = document.createElement("div"); flot.className = "flot";
+    flot.style.left = Math.max(8, (a / W) * svg.getBoundingClientRect().width) + "px"; flot.style.top = "8px";
+    flot.innerHTML = `<b class="mono">${f0.slice(0, 7)} → ${f1.slice(0, 7)}</b><button class="btn sm primary" type="button" data-f="cortar">✂ Crear serie con el tramo</button><button class="btn sm" type="button" data-f="zoom">🔍 Hacer zoom</button><button class="btn sm" type="button" data-f="no">✕</button>`;
+    wrap.appendChild(flot);
+    flot.addEventListener("click", (e2) => {
+      const k = e2.target.dataset.f; if (!k) return;
+      if (k === "cortar") { const pad = st.series.filter((s) => s.graf && s.x); pad.forEach((s) => { const idx = s.x.map((f, i) => (f >= f0 && f <= f1 ? i : -1)).filter((i) => i >= 0); if (idx.length < 3) return; const h = hija([s], `${s.nombre} · ${f0.slice(0, 7)}–${f1.slice(0, 7)}`, "recorte", `${s.alias}[${f0.slice(0, 7)} : ${f1.slice(0, 7)}]`, idx.map((i) => s.x[i]), idx.map((i) => s.y[i]), { tipo: "recorte" }); h.graf = false; st.sel.add(h.id); }); toast("Cada serie graficada dejó su tramo como ficha nueva (tipo recorte)."); }
+      if (k === "zoom") st.rango = [f0, f1];
+      flot.remove(); render();
+    });
+  });
+  svg.addEventListener("dblclick", () => { st.rango = null; render(); });
+})();
+
+/* herramientas: lista */
+function renderHerr() {
+  const q = ($("#herr-q").value || "").toLowerCase();
+  $("#herr-lista").innerHTML = CLASES.map((c, k) => {
+    const ts = HERR.filter((t) => t.clase === c.id && (!q || (t.nombre + " " + (t.plat || "") + " " + c.nombre).toLowerCase().includes(q)));
+    if (!ts.length) return "";
+    return `<div class="clase"><button type="button" data-clase="${c.id}"><span class="num">${k + 1}</span><b>${c.nombre}</b><span class="q">${c.q}</span></button><div class="desc">${c.desc}</div><div class="tools" data-c="${c.id}">${ts.map((t) => `<div class="tool ${t.plat ? "plat" : ""}" draggable="${!t.plat}" data-tool="${t.id}" role="button" tabindex="0" title="${esc(t.plat ? "En la plataforma: " + t.plat : t.desc || "")}">${esc(t.nombre)}<span class="ar">${t.plat ? "plataforma" : t.aridad === 1 ? "1 serie" : t.aridad === 2 ? "A, B" : t.aridad === "vista" ? "vista" : t.aridad === "n" ? "dep + X" : t.aridad === "graf" ? "gráfico" : "panel"}</span></div>`).join("")}</div></div>`;
+  }).join("");
+}
+document.addEventListener("click", (e) => { const t = e.target.closest(".tool"); if (t) aplicar(HERR.find((x) => x.id === t.dataset.tool)); });
+$("#herr-q").addEventListener("input", renderHerr);
+
+/* doc: edición */
+document.addEventListener("input", (e) => { const b = e.target.dataset?.b; if (b != null) { st.doc[+b].v = e.target.textContent; guardar(); } if (e.target.id === "doc-tit") { st.docTit = e.target.textContent; guardar(); } });
+
+/* rutas */
+function ruta() {
+  const v = (location.hash || "#mesa").slice(1);
+  const vista = ["mesa", "proyecto", "documento"].includes(v) ? v : "mesa";
+  document.querySelectorAll("main > section").forEach((s) => (s.hidden = s.id !== "v-" + vista));
+  document.querySelectorAll(".espacios a").forEach((a) => a.setAttribute("aria-current", a.dataset.v === vista ? "page" : "false"));
+  if (vista === "proyecto") renderTablero();
+  if (vista === "documento") renderDoc();
+}
+window.addEventListener("hashchange", ruta);
+
+/* persistencia local (comodidad del visitante; el mockup funciona sin ella) */
+function guardar() { try { localStorage.setItem("cueva_mockup_mesa_v1", JSON.stringify({ doc: st.doc, docTit: st.docTit })); } catch (e) { /* sin almacenamiento */ } }
+
+/* ═════════════ estado inicial: el TF a medio trabajar ═════════════ */
+(function inicio() {
+  $("#dl-panel").innerHTML = [D.dep, ...D.vars].map((c) => `<option value="${esc(D.cortos[c])}"></option>`).join("");
+  $("#res-var").innerHTML = D.vars.map((c, i) => `<option value="${i}" ${c === "itcrm_multilateral" ? "selected" : ""}>${esc(D.cortos[c])}</option>`).join("");
+  const rpi = delPanel(D.dep); rpi.alias = "rpi"; rpi.graf = true;
+  const res = delPanel("reservas_brutas_bcra_pbi_usd"); res.alias = "reservas"; res.graf = true;
+  const deu = delPanel("deuda_externa_bruta_total_pbi_usd"); deu.alias = "deuda";
+  const bre = delPanel("brecha_cambiaria_mep_oficial"); bre.alias = "brecha";
+  const vix = delPanel("vix_cboe_volatility_index"); vix.alias = "vix";
+  st.vista = "z";
+  HERR.find((t) => t.id === "orden").fn(rpi); HERR.find((t) => t.id === "quiebre").fn(rpi);
+  const d = HERR.find((t) => t.id === "dif").fn(rpi); d.alias = "d_rpi"; d.graf = false;
+  correrUniverso();
+  // proyecto y documento sembrados con ejemplos
+  const p1 = { id: "p1", titulo: "% de modelos con efecto significativo, por variable (residuos limpios, α=0,05)", spec: { vista: "r_barras", v: 6, filtro: true, alpha: 0.05 }, origen: ["res1"], color: "--s1" };
+  const p2 = { id: "p2", titulo: "Causalidad de Granger entre las 17 series (α=0,05)", spec: { vista: "r_granger", v: 0, filtro: true, alpha: 0.05 }, origen: ["res1"], color: "--s2" };
+  const p3 = { id: "p3", titulo: "RPI y reservas/PBI, estandarizados", spec: { vista: "z", ids: [rpi.id, res.id], rango: null }, origen: [rpi.id, res.id], color: "--s3" };
+  st.pines.push(p1, p2, p3);
+  let prev = null; try { prev = JSON.parse(localStorage.getItem("cueva_mockup_mesa_v1") || "null"); } catch (e) { prev = null; }
+  st.doc = prev?.doc?.length ? prev.doc : [
+    { t: "h", v: "1. Introducción" },
+    { t: "p", v: "El riesgo país idiosincrático (RPI) mide cuánto paga Argentina por encima del promedio de América Latina. Este trabajo pregunta qué parte de su dinámica responde a fundamentos observables —régimen cambiario y posición de reservas— y qué parte a quiebres institucionales. En lugar de defender una especificación, estima el universo de combinaciones posibles y mira qué resultados sobreviven." },
+    { t: "h", v: "4. Resultados" },
+    { t: "p", v: "La figura muestra, para cada variable, el porcentaje de modelos en los que su efecto es significativo. La línea roja marca lo que daría el azar: una variable que sólo aparece significativa en el 5 % de los modelos no dice nada." },
+    { t: "fig", pin: "p1" },
+    { t: "p", v: "La precedencia temporal entre las series se resume en la matriz de Granger. Es precedencia, no causalidad económica." },
+    { t: "fig", pin: "p2" },
+  ];
+  st.docTit = prev?.docTit || null;
+  renderHerr();
+  render();
+  ruta();
+})();
+</script>

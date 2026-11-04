@@ -224,7 +224,11 @@ def granger(sid_x: str, sid_y: str, freq: str = "mensual", max_lags: int = 6, tr
     d = df.dropna()
     # statsmodels: testea si la 2da columna causa-Granger a la 1ra → orden [y, x]
     try:
-        res = grangercausalitytests(d[[sid_y, sid_x]].diff().dropna(), maxlag=max_lags, verbose=False)
+        import inspect
+
+        # statsmodels 0.15 quitó `verbose` (antes imprimía por defecto): se pasa sólo si existe
+        kw = {"verbose": False} if "verbose" in inspect.signature(grangercausalitytests).parameters else {}
+        res = grangercausalitytests(d[[sid_y, sid_x]].diff().dropna(), maxlag=max_lags, **kw)
     except Exception as e:
         return {"ok": False, "herramienta": "granger", "resumen": f"Falló el test: {e}"}
     # int() nativo: statsmodels devuelve claves numpy.int64 y json.dumps no las acepta
