@@ -79,6 +79,15 @@ class SerieDerivada(BaseModel):
     receta: str | dict | None = None  # de qué sale (si se conoce): queda guardada al lado de los datos
 
 
+class VectorResultado(BaseModel):
+    """Selección de una tabla o matriz de resultados (no es una serie de tiempo)."""
+
+    nombre: str = Field(min_length=1, max_length=120)
+    valores: list[float | None] = Field(min_length=1, max_length=200_000)
+    etiquetas: list[str] | None = Field(default=None, max_length=200_000)
+    procedencia: str = Field(default="", max_length=500)
+
+
 class HerramientaEjecutar(BaseModel):
     nombre: str = Field(pattern=r"^[a-z][a-z0-9_]{1,29}$")
     args: dict = Field(default_factory=dict)

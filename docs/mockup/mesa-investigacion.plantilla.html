@@ -40,6 +40,7 @@
   --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 32px -16px rgba(0,0,0,.7); color-scheme:dark}
 
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{height:100%}
 body{background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:13px;line-height:1.45}
 button,input,select,textarea{font:inherit;color:inherit}
@@ -83,7 +84,8 @@ textarea{resize:vertical}
 .card-hd{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:9px 12px;border-bottom:1px solid var(--line-soft)}
 .card-hd h3{font-size:14.5px}
 .card-hd .sp{flex:1}
-.card-bd{padding:10px 12px}
+.card-bd{padding:10px 12px;min-width:0}
+.card-bd>*{min-width:0}
 
 /* ── Mesa ── */
 .mesa{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;align-items:start}
@@ -259,7 +261,7 @@ svg.lin .nodo{cursor:pointer}
           <div class="res-ctrl">
             <div class="seg" id="seg-res" role="group" aria-label="Vista de resultados"></div>
           </div>
-          <div class="res-ctrl">
+          <div class="res-ctrl" id="res-ctrl-graf">
             <label id="lab-var">Variable <select id="res-var"></select></label>
             <label><input type="checkbox" id="res-filtro" checked> Sólo modelos con residuos limpios (Ljung-Box p &gt; 0,05)</label>
             <label>α <select id="res-alpha"><option>0.01</option><option selected>0.05</option><option>0.10</option></select></label>
@@ -267,6 +269,10 @@ svg.lin .nodo{cursor:pointer}
           <div class="graf-wrap" id="res-wrap"><svg class="g" id="res-svg" viewBox="0 0 900 360" role="img" aria-label="Resultados de modelos"></svg></div>
           <div class="ley" id="res-ley" style="padding:0"></div>
           <div id="res-extra"></div>
+          <div id="res-tabla" hidden>
+            <div class="res-ctrl" style="margin-bottom:8px"><label>Tabla <select id="res-conj"></select></label><span class="lbl">filtrá, agrupá, seleccioná columnas o filas y convertí la selección en ficha</span></div>
+            <div id="res-tv"></div>
+          </div>
         </div>
       </div>
 
@@ -325,6 +331,10 @@ svg.lin .nodo{cursor:pointer}
 
 <script>
 /*__DATOS__*/
+</script>
+<script>
+/* web/mesa/tabla_viva.js (el mismo componente que usa la plataforma), inyectado por el armador */
+/*__TABLA_VIVA__*/
 </script>
 <script>
 "use strict";
@@ -538,6 +548,28 @@ function pctSig(alpha, filtro) {
   return out.map((o) => ({ v: o.v, nombre: D.cortos[D.vars[o.v]], ARDL: pc(o.ARDL), VAR: pc(o.VAR), VECM: pc(o.VECM), nARDL: o.ARDL[0], nVAR: o.VAR[0], nVECM: o.VECM[0], n: o.ARDL[0] + o.VAR[0] + o.VECM[0] }));
 }
 
+/* ═════════════ resultados como TABLAS VIVAS (tabla_viva.js) ═════════════ */
+const CONJ = {
+  efectos: () => ({ nombre: "Efectos (modelo × variable)", columnas: ["modelo", "tipo", "spec", "variable", "coef_lp", "p", "residuos_limpios", "k"],
+    filas: EFS.map(([m, v, c, p]) => [m, MODS[m][0], MODS[m][2], D.cortos[D.vars[v]], c, p, MODS[m][8] ? "sí" : "no", MODS[m][1].length]) }),
+  modelos: () => ({ nombre: "Modelos", columnas: ["modelo", "tipo", "explicativas", "spec", "r2", "aic", "bic", "nobs", "ljung_box_p", "residuos_limpios"],
+    filas: MODS.map((m, i) => [i, m[0], m[1].map((j) => D.cortos[D.vars[j]]).join(", "), m[2], m[3], m[4], m[5], m[6], m[7], m[8] ? "sí" : "no"]) }),
+  granger_pares: () => { const ss = D.granger.series, out = []; ss.forEach((a, i) => ss.forEach((b, j) => { if (i !== j && D.granger.p[i][j] != null) out.push([D.cortos[a], D.cortos[b], D.granger.p[i][j], D.granger.lag[i][j]]); })); return { nombre: "Granger (pares)", columnas: ["precede", "a", "p", "rezagos"], filas: out.sort((x, y) => x[2] - y[2]) }; },
+  granger_matriz: () => ({ nombre: "Granger (matriz)", columnas: ["", ...D.granger.series.map((s) => D.cortos[s])], filas: D.granger.series.map((s, i) => [D.cortos[s], ...D.granger.p[i]]) }),
+};
+function montarConjunto() {
+  const sel = $("#res-conj");
+  if (!sel.options.length) sel.innerHTML = [["efectos", "Efectos: modelo × variable (" + EFS.length.toLocaleString("es-AR") + " filas)"], ["modelos", "Modelos (" + MODS.length.toLocaleString("es-AR") + ")"], ["granger_pares", "Granger: pares"], ["granger_matriz", "Granger: matriz"]].map(([k, t]) => `<option value="${k}">${esc(t)}</option>`).join("");
+  if (st._tvMontada === sel.value) return;
+  st._tvMontada = sel.value;
+  montarTabla($("#res-tv"), CONJ[sel.value](), {
+    origen: "Universo de modelos del TF",
+    alGuardarSerie: async ({ nombre, fechas, valores, procedencia }) => { const s = nuevaSerie({ nombre, tipo: "resultado", x: fechas, y: valores, unidad: "", receta: { op: "selección", insumos: [], texto: procedencia } }); s._de = "res1"; s.graf = true; render(); return "Quedó como ficha temporal."; },
+    alGuardarVector: async ({ nombre, etiquetas, valores, procedencia }) => { const s = nuevaSerie({ nombre, tipo: "resultado", x: null, y: valores.map((v) => (v == null ? NaN : v)), etiquetas, unidad: "", receta: { op: "selección", insumos: [], texto: procedencia } }); s._de = "res1"; st.series.forEach((x) => (x.graf = false)); s.graf = true; st.vista = "hist"; render(); return "Quedó como ficha (vector de resultados): el gráfico de arriba la muestra como histograma."; },
+  });
+}
+document.addEventListener("change", (e) => { if (e.target.id === "res-conj") { st._tvMontada = null; montarConjunto(); } });
+
 /* ═════════════ motor de gráficos (un solo motor para Mesa, Proyecto y Documento) ═════════════ */
 const W = 900, M = { l: 58, r: 20, t: 14, b: 30 };
 function ticks(lo, hi, n = 5) { if (!(hi > lo)) return [lo]; const paso = Math.pow(10, Math.floor(Math.log10((hi - lo) / n))); const m = [1, 2, 2.5, 5, 10].find((k) => (hi - lo) / (k * paso) <= n) * paso; const o = []; for (let v = Math.ceil(lo / m) * m; v <= hi + 1e-12; v += m) o.push(+v.toFixed(10)); return o; }
@@ -694,8 +726,8 @@ function rRanking(spec, H) {
 
 /* ═════════════ render ═════════════ */
 const VISTAS = [["lineas", "Líneas"], ["base", "Base 100"], ["z", "Estandarizado"], ["dispersion", "Dispersión"], ["hist", "Histograma"], ["box", "Caja"]];
-const RVISTAS = [["r_barras", "% significativos"], ["r_disp", "Coef. vs p-valor"], ["r_hist", "Distribución"], ["r_signo", "Caja por modelo"], ["r_ranking", "Ranking BIC"], ["r_granger", "Granger N×N"]];
-st.resVista = "r_barras";
+const RVISTAS = [["r_tabla", "Tablas"], ["r_barras", "% significativos"], ["r_disp", "Coef. vs p-valor"], ["r_hist", "Distribución"], ["r_signo", "Caja por modelo"], ["r_ranking", "Ranking BIC"], ["r_granger", "Granger N×N"]];
+st.resVista = "r_tabla";
 
 function specGraf() { return { vista: st.vista, ids: st.series.filter((s) => s.graf).map((s) => s.id), rango: st.rango }; }
 function specRes() { return { vista: st.resVista, v: +$("#res-var").value, filtro: $("#res-filtro").checked, alpha: +$("#res-alpha").value }; }
@@ -720,9 +752,14 @@ function render() {
     const sr = specRes();
     const svg = $("#res-svg");
     const r = dibujar(svg, sr, $("#res-ley"));
-    svg.hidden = !r.svg;
+    svg.style.display = r.svg ? "" : "none"; // `hidden` no existe en elementos SVG
     if (r.alto) svg.setAttribute("viewBox", `0 0 ${W} ${r.alto}`);
     $("#res-extra").innerHTML = r.html || "";
+    const enTabla = st.resVista === "r_tabla";
+    $("#res-tabla").hidden = !enTabla;
+    $("#res-ley").hidden = enTabla;
+    $("#res-ctrl-graf").hidden = enTabla;
+    if (enTabla) montarConjunto();
   }
   lineaje();
   $("#n-pines").textContent = st.pines.length;
@@ -871,9 +908,10 @@ function traer() {
   const s = delPanel(col); s.graf = true; st.sel.clear(); st.sel.add(s.id); $("#buscar").value = ""; render();
 }
 $("#pin-graf").addEventListener("click", () => { const sp = specGraf(); if (!sp.ids.length) { toast("No hay series graficadas."); return; } pinear(sp, `${VISTAS.find((v) => v[0] === sp.vista)[1]}: ${sp.ids.map((i) => byId(i).nombre).join(" · ")}`.slice(0, 120), sp.ids); });
-$("#res-pin").addEventListener("click", () => { const sp = specRes(); const nv = RVISTAS.find((v) => v[0] === sp.vista)[1]; const varTxt = ["r_disp", "r_hist", "r_signo"].includes(sp.vista) ? ` · ${D.cortos[D.vars[sp.v]]}` : ""; pinear(sp, `${nv}${varTxt} (${sp.filtro ? "residuos limpios" : "todos"}, α=${sp.alpha})`, ["res1"]); });
+$("#res-pin").addEventListener("click", () => { if (st.resVista === "r_tabla") { toast("Graficá la selección (o elegí una vista de gráfico) y clavá eso."); return; } const sp = specRes(); const nv = RVISTAS.find((v) => v[0] === sp.vista)[1]; const varTxt = ["r_disp", "r_hist", "r_signo"].includes(sp.vista) ? ` · ${D.cortos[D.vars[sp.v]]}` : ""; pinear(sp, `${nv}${varTxt} (${sp.filtro ? "residuos limpios" : "todos"}, α=${sp.alpha})`, ["res1"]); });
 $("#res-serie").addEventListener("click", () => {
   const sp = specRes();
+  if (sp.vista === "r_tabla") { toast("En «Tablas», seleccioná columnas o filas y usá «Guardar como vector»."); return; }
   if (["r_disp", "r_hist", "r_signo"].includes(sp.vista)) {
     const ef = efectosDe(sp.v, sp.filtro).filter((e) => sp.vista !== "r_signo" || e[3] < sp.alpha);
     const s = nuevaSerie({ nombre: `Coef. LP de ${D.cortos[D.vars[sp.v]]} en ${ef.length} modelos`, tipo: "resultado", x: null, y: ef.map((e) => e[2]), unidad: "coef.", receta: { op: "resultados", insumos: [], texto: `coef_lp(${slug(D.cortos[D.vars[sp.v]])}) en el universo${sp.filtro ? " · residuos limpios" : ""}` } });

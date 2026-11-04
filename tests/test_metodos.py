@@ -621,9 +621,13 @@ def test_la_carga_usa_cache(banco, monkeypatch):
 def test_universo_devuelve_datos_ademas_de_dibujos(banco):
     r = ejecutar("universo_modelos", ARGS["universo_modelos"])
     nombres = {c["nombre"] for c in r["conjuntos"]}
-    assert {"modelos", "efectos", "explicativas"} <= nombres
+    assert {"modelos", "efectos"} <= nombres
     efectos = next(c for c in r["conjuntos"] if c["nombre"] == "efectos")
-    assert efectos["columnas"] == ["modelo", "var", "coef_lp", "p"] and len(efectos["filas"]) > 20
+    assert (
+        efectos["columnas"][:6] == ["modelo", "tipo", "spec", "variable", "coef_lp", "p"]
+        and len(efectos["filas"]) > 20
+    )
+    assert {f[1] for f in efectos["filas"]} <= {"ARDL", "VAR", "VECM"}  # se filtra por nombre, no por índice
 
 
 def test_api_recetas_y_procedencia(banco):
@@ -648,3 +652,31 @@ def test_api_recetas_y_procedencia(banco):
     assert g["receta"] == "HP-ciclo(log positiva)"
     lista = {x["id"]: x for x in c.get("/api/v1/mis-series").json()}
     assert lista["mis_ciclo"]["receta"] == "HP-ciclo(log positiva)"
+
+
+def test_api_mis_resultados(banco):
+    from fastapi.testclient import TestClient
+
+    from cueva.api.app import crear_app
+
+    c = TestClient(crear_app())
+    g = c.post(
+        "/api/v1/mis-resultados",
+        json={
+            "nombre": "Coef. ITCRM (ARDL)",
+            "valores": [0.1, -0.2, None],
+            "etiquetas": ["m1", "m2", "m3"],
+            "procedencia": "universo_modelos · efectos · variable=ITCRM",
+        },
+    )
+    assert g.status_code == 200 and g.json()["id"] == "res_coef_itcrm_ardl"
+    assert c.get("/api/v1/mis-resultados").json()[0]["n"] == 3
+    d = c.get("/api/v1/mis-resultados/res_coef_itcrm_ardl").json()
+    assert d["valores"] == [0.1, -0.2, None] and "ITCRM" in d["procedencia"]
+    assert (
+        c.post(
+            "/api/v1/mis-resultados", json={"nombre": "x", "valores": [1], "etiquetas": ["a", "b"]}
+        ).status_code
+        == 422
+    )
+    assert c.get("/api/v1/mis-resultados/../../etc").status_code == 404

@@ -115,7 +115,7 @@ def iterar(
         )
         for x, (c, p) in e.items():
             if np.isfinite(c) and np.isfinite(p):
-                efs.append([mid, idx[x], round(c, 6), round(p, 5)])
+                efs.append([mid, idx[x], float(f"{c:.6g}"), float(f"{p:.4g}")])
 
     def muestra(lista):
         if len(lista) <= max_por_modelo:
@@ -219,7 +219,7 @@ def granger_nxn(est: pd.DataFrame, max_lag: int = 6):
                 sub = est[[efecto, causa]].values
                 k = max(1, int(VAR(sub).select_order(maxlags=max_lag).selected_orders["aic"]))
                 r = grangercausalitytests(sub, maxlag=[k], **kw)
-                P[i][j] = round(float(r[k][0]["ssr_ftest"][1]), 5)
+                P[i][j] = float(f"{float(r[k][0]['ssr_ftest'][1]):.4g}")
                 L[i][j] = k
     return P, L
 
@@ -337,19 +337,47 @@ def universo_modelos(dep, candidatas, freq, tamanos, modelos, alpha, solo_limpio
         horizontal=True,
         eje_y="%",
     )
-    r.conjunto(
-        "modelos",
-        ["tipo", "vars", "spec", "r2", "aic", "bic", "nobs", "lb_p", "pasa"],
-        mods,
-        "Un modelo por fila; vars son índices de la lista de explicativas.",
-    )
+    # tablas DESNORMALIZADAS: se filtran y agrupan por nombre («=ITCRM», «=ARDL») sin cruzar tablas
     r.conjunto(
         "efectos",
-        ["modelo", "var", "coef_lp", "p"],
-        efs,
-        "Tabla larga modelo × variable: coeficiente de largo plazo (ARDL, VECM) o acumulado (VAR) y su p-valor.",
+        ["modelo", "tipo", "spec", "variable", "coef_lp", "p", "residuos_limpios", "k"],
+        [
+            [m, mods[m][0], mods[m][2], nombres[v], c, p, "sí" if mods[m][8] else "no", len(mods[m][1])]
+            for m, v, c, p in efs
+        ],
+        "Una fila por modelo × variable: coeficiente de largo plazo (ARDL, VECM) o acumulado (VAR) y su p-valor.",
     )
-    r.conjunto("explicativas", ["indice", "id", "nombre"], [[i, x, et[x]] for i, x in enumerate(xs)])
+    r.conjunto(
+        "modelos",
+        [
+            "modelo",
+            "tipo",
+            "explicativas",
+            "spec",
+            "r2",
+            "aic",
+            "bic",
+            "nobs",
+            "ljung_box_p",
+            "residuos_limpios",
+        ],
+        [
+            [
+                i,
+                m[0],
+                ", ".join(nombres[j] for j in m[1]),
+                m[2],
+                m[3],
+                m[4],
+                m[5],
+                m[6],
+                m[7],
+                "sí" if m[8] else "no",
+            ]
+            for i, m in enumerate(mods)
+        ],
+        "Un modelo por fila.",
+    )
     robustas = [
         f[0]
         for f in filas
@@ -410,7 +438,13 @@ def granger_matriz(sids, freq, max_rezago, alpha):
         key=lambda f: f[2],
     )
     r.tabla("Pares ordenados por p-valor", ["precede", "a", "p", "rezagos"], pares[:60], resaltar_p="p")
-    r.conjunto("granger", ["causa", "efecto", "p", "rezagos"], pares)
+    r.conjunto("granger (pares)", ["precede", "a", "p", "rezagos"], pares)
+    r.conjunto(
+        "granger (matriz)",
+        ["", *nombres],
+        [[nombres[i], *P[i]] for i in range(len(sids))],
+        "Fila = la que precede; columna = la precedida; celda = p-valor.",
+    )
     n_sig = sum(1 for f in pares if f[2] < alpha)
     esperados = alpha * len(pares)
     r.metrica("Pares significativos", n_sig)

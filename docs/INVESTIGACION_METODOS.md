@@ -515,6 +515,8 @@ iba a escalar:
 | Dos registros paralelos (11 herramientas viejas y el catálogo) | La capa vieja queda declarada como compatibilidad (la leen el orquestador y el Estudio clásico); no se suman herramientas ahí. Migración pendiente en su docstring |
 | Una serie guardada no decía de qué salía | `POST /api/v1/mis-series/derivada` acepta la receta y la guarda al lado de los datos (`.receta.json`); `GET /api/v1/mis-series` la devuelve |
 
+| Las tablas y matrices de resultados eran sólo para mirar | **Tablas vivas** (`web/mesa/tabla_viva.js`): filtrar, agrupar, seleccionar columnas, filas o filas de una matriz, graficar la selección y guardarla como serie temporal o como vector de resultados (`/api/v1/mis-resultados`). Un solo componente para la plataforma y el mockup |
+
 Lo que se decidió NO cambiar: el mockup sigue haciendo sus cálculos en JS porque es un
 archivo estático que tiene que abrirse sin servidor; la pantalla real llama a
 `POST /api/v1/recetas/evaluar`.

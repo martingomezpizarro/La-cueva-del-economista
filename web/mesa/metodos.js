@@ -15,6 +15,8 @@
  * bandas, barras, mapa_calor, dispersion, texto, veredicto. Todo texto del servidor se escapa.
  */
 
+import { montarTabla, matrizComoConjunto, tablaComoConjunto } from '/web/mesa/tabla_viva.js';
+
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const COL = ['--s1', '--s2', '--s3', '--s4', '--s5'];
@@ -61,6 +63,7 @@ export async function montar(raiz) {
       <div class="mt-mis">
         <label class="btn sm" title="CSV con una columna de fechas y una o más columnas numéricas (precios, tasas…)">⬆ Subir mis series (CSV)<input type="file" id="mt-csv" accept=".csv" hidden></label>
         <div class="mt-mis-estado" id="mt-mis-estado"></div>
+        <div class="mt-misres-caja" id="mt-misres"></div>
       </div>
     </aside>
     <section class="mt-main">
@@ -97,6 +100,7 @@ export async function montar(raiz) {
   pintarLista();
   pintarFicha();
   pintarResultados();
+  pintarMisResultados();
 }
 
 function llenarDatalist() {
@@ -352,6 +356,47 @@ function pintarResultados() {
   }));
   cont.querySelectorAll('[data-guardar]').forEach((b) => b.addEventListener('click', () => guardarSalida(b)));
   cont.querySelectorAll('svg.mt-g').forEach(activarTooltip);
+  cont.querySelectorAll('.tv[data-tv]').forEach(montarViva);
+}
+
+/* Cualquier tabla, matriz o conjunto de un resultado se explora y se selecciona (tabla_viva.js) */
+function montarViva(div) {
+  const [pos, tipo] = div.dataset.tv.split(':');
+  const [i, j] = pos.split('-').map(Number);
+  const res = st.resultados[i];
+  if (!res) return;
+  const conj = tipo === 'c' ? res.conjuntos[j] : tipo === 'm' ? matrizComoConjunto(res.bloques[j]) : tablaComoConjunto(res.bloques[j]);
+  montarTabla(div, conj, {
+    origen: `${res.metodo}(${argsTexto(res.args)})`,
+    alGuardarSerie: async ({ nombre, fechas, valores, procedencia }) => {
+      const r = await fetch('/api/v1/mis-series/derivada', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nombre, fechas, valores, descripcion: procedencia }) });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error?.mensaje || 'no se pudo guardar');
+      await refrescarSeries();
+      return `Guardada como serie «${d.id}»: ya se puede usar en cualquier método.`;
+    },
+    alGuardarVector: async ({ nombre, etiquetas, valores, procedencia }) => {
+      const r = await fetch('/api/v1/mis-resultados', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nombre, etiquetas, valores, procedencia }) });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error?.mensaje || 'no se pudo guardar');
+      pintarMisResultados();
+      return `Guardado en «Mis resultados» como ${d.id} (${d.n} valores).`;
+    },
+  });
+}
+
+async function pintarMisResultados() {
+  const caja = $('#mt-misres');
+  if (!caja) return;
+  let lista = [];
+  try { lista = await fetch('/api/v1/mis-resultados').then((r) => r.json()); } catch { /* sin servidor */ }
+  caja.innerHTML = lista.length ? `<span class="lbl">Mis resultados</span>${lista.map((x) => `<button type="button" class="mt-misres" data-res="${esc(x.id)}" title="${esc(x.procedencia)}">${esc(x.nombre)} <span>${x.n}</span></button>`).join('')}` : '';
+  caja.querySelectorAll('[data-res]').forEach((b) => b.addEventListener('click', async () => {
+    const d = await fetch('/api/v1/mis-resultados/' + b.dataset.res).then((r) => r.json());
+    st.resultados.unshift({ ok: true, metodo: 'mis_resultados', nombre: d.nombre, args: {}, resumen: `${d.valores.length} valores · ${d.procedencia}`,
+      bloques: [], conjuntos: [{ nombre: d.nombre, columnas: ['etiqueta', 'valor'], filas: d.valores.map((v, k) => [d.etiquetas ? d.etiquetas[k] : String(k + 1), v]) }] });
+    guardar(); pintarResultados(); $('#mt-res').scrollIntoView({ block: 'start', behavior: 'smooth' });
+  }));
 }
 
 function tarjeta(res, i) {
@@ -363,8 +408,7 @@ function tarjeta(res, i) {
   const salidas = (res.series_salida || []).length ? `<div class="mt-salidas"><h4>Series que produjo este paso</h4>${res.series_salida.map((s, k) => `
       <div class="mt-salida"><span><b>${esc(s.nombre)}</b> · ${s.valores.length} obs. <small>${esc(s.descripcion || '')}</small></span>
       <button class="btn sm" data-guardar="${i}:${k}" title="Queda en «Mis series» y se puede usar como insumo de cualquier método">Guardar como serie</button></div>`).join('')}</div>` : '';
-  const conjuntos = (res.conjuntos || []).map((c) => `<details class="mt-cod"><summary>Datos · ${esc(c.nombre)} (${c.filas.length.toLocaleString('es-AR')} filas)${c.descripcion ? ' — ' + esc(c.descripcion) : ''}</summary>
-      <div class="mt-tabla"><div class="mt-scroll"><table><thead><tr>${c.columnas.map((h) => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${c.filas.slice(0, 100).map((f) => `<tr>${f.map((v) => `<td class="${typeof v === 'number' ? 'n' : ''}">${typeof v === 'number' ? num(v) : esc(Array.isArray(v) ? v.join(', ') : v)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>${c.filas.length > 100 ? `<small>Se muestran 100 de ${c.filas.length.toLocaleString('es-AR')} filas: el conjunto completo viaja con el resultado y se puede volver a graficar.</small>` : ''}</div></details>`).join('');
+  const conjuntos = (res.conjuntos || []).map((c, k) => `<details class="mt-cod" ${k === 0 ? 'open' : ''}><summary>Datos · ${esc(c.nombre)} (${c.filas.length.toLocaleString('es-AR')} filas)${c.descripcion ? ' — ' + esc(c.descripcion) : ''}</summary><div class="tv" data-tv="${i}-${k}:c"></div></details>`).join('');
   const codigo = res.codigo ? `<details class="mt-cod"><summary>Código equivalente</summary><pre>${esc(res.codigo)}</pre></details>` : '';
   return `<article class="mt-card ${res.ok === false ? 'err' : ''}">
     <header><b>${esc(res._nombre || res.nombre || res.metodo)}</b>${sem}<span class="mt-args">${esc(argsTexto(res.args))}</span>
@@ -418,26 +462,16 @@ function bloque(b, key) {
   switch (b.tipo) {
     case 'metricas':
       return `<div class="mt-mets">${b.items.map((it) => `<div class="mt-met" title="${esc(it.ayuda || '')}"><span>${esc(it.nombre)}</span><b>${num(it.valor)}</b></div>`).join('')}</div>`;
-    case 'tabla': return tabla(b);
+    case 'tabla': return `<div class="mt-tabla"><h4>${esc(b.titulo)}</h4><div class="tv" data-tv="${key}:b"></div>${b.nota ? `<small>${esc(b.nota)}</small>` : ''}</div>`;
     case 'veredicto': return `<div class="mt-ver ${esc(b.semaforo || '')}">${esc(b.texto)}</div>`;
     case 'texto': return `<div class="mt-txt"><h4>${esc(b.titulo)}</h4><p>${esc(b.cuerpo)}</p></div>`;
     case 'lineas': return figura(b, svgLineas(b, key));
     case 'bandas': return figura(b, svgBandas(b, key));
     case 'barras': return figura(b, svgBarras(b));
-    case 'mapa_calor': return figura(b, svgCalor(b));
+    case 'mapa_calor': return figura(b, svgCalor(b)) + `<details class="mt-cod"><summary>Ver la matriz como tabla y seleccionar filas o columnas</summary><div class="tv" data-tv="${key}:m"></div></details>`;
     case 'dispersion': return figura(b, svgDispersion(b));
     default: return '';
   }
-}
-
-function tabla(b) {
-  const ip = b.resaltar_p ? b.columnas.indexOf(b.resaltar_p) : -1;
-  const filas = b.filas.slice(0, 200).map((f) => `<tr>${f.map((c, j) => {
-    const sig = j === ip && typeof c === 'number' && c < 0.05;
-    return `<td class="${typeof c === 'number' ? 'n' : ''} ${sig ? 'sig' : ''}">${typeof c === 'number' ? num(c) : esc(c)}</td>`;
-  }).join('')}</tr>`).join('');
-  const mas = b.filas.length > 200 ? `<caption>Se muestran 200 de ${b.filas.length} filas.</caption>` : '';
-  return `<div class="mt-tabla"><h4>${esc(b.titulo)}</h4><div class="mt-scroll"><table>${mas}<thead><tr>${b.columnas.map((c) => `<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${filas}</tbody></table></div>${b.nota ? `<small>${esc(b.nota)}</small>` : ''}</div>`;
 }
 
 function figura(b, svg) {

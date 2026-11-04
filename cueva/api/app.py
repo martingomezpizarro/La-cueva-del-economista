@@ -21,6 +21,8 @@ Endpoints (todos bajo /api/v1):
     POST   /api/v1/mis-series                     → sube un CSV propio (precios, bases)
     POST   /api/v1/mis-series/derivada            → guarda como serie la salida de un método
     DELETE /api/v1/mis-series/{archivo}           → borra un CSV propio
+    GET    /api/v1/mis-resultados[/{id}]          → vectores de resultados guardados (selecciones de tablas)
+    POST   /api/v1/mis-resultados                 → guarda una selección de una tabla o matriz
 
     GET    /api/v1/proyectos                      → lista las investigaciones guardadas
     POST   /api/v1/proyectos                      → crea una investigación (acepta semilla de Vista Rápida)
@@ -78,6 +80,7 @@ from .esquemas import (
     ProyectoPatch,
     RecetaEvaluar,
     SerieDerivada,
+    VectorResultado,
 )
 
 log = logging.getLogger("cueva.api")
@@ -432,6 +435,33 @@ def crear_app() -> FastAPI:
                 )
             )
         except mis_series.ArchivoInvalido as e:
+            raise HTTPException(422, str(e)) from e
+
+    # ── vectores de resultados (selecciones de tablas y matrices) ───────────
+    @app.get("/api/v1/mis-resultados")
+    def api_mis_resultados():
+        from cueva.datos import mis_resultados
+
+        return JSONResponse(mis_resultados.listar())
+
+    @app.get("/api/v1/mis-resultados/{rid}")
+    def api_mi_resultado(rid: str = Path(pattern=r"^res_[a-z0-9_]{1,50}$")):
+        from cueva.datos import mis_resultados
+
+        try:
+            return JSONResponse(mis_resultados.obtener(rid))
+        except KeyError as e:
+            raise HTTPException(404, "No existe ese resultado.") from e
+
+    @app.post("/api/v1/mis-resultados")
+    def api_guardar_resultado(body: VectorResultado):
+        from cueva.datos import mis_resultados
+
+        try:
+            return JSONResponse(
+                mis_resultados.guardar(body.nombre, body.valores, body.etiquetas, body.procedencia)
+            )
+        except mis_resultados.ResultadoInvalido as e:
             raise HTTPException(422, str(e)) from e
 
     @app.delete("/api/v1/mis-series/{archivo}")

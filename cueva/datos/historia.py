@@ -63,6 +63,7 @@ class EventoNoEncontrado(KeyError):
 
 # ─────────────────────────────────────────────────────────────── modelos
 
+
 @dataclass(frozen=True)
 class Periodo:
     """Una fila de las tablas de instituciones: un período con quién estaba a cargo."""
@@ -180,6 +181,7 @@ class Ficha:
 
 # ─────────────────────────────────────────────────────────────── utilidades
 
+
 def _fecha(texto: str) -> date | None:
     texto = (texto or "").strip()
     if not texto:
@@ -200,6 +202,7 @@ def _filas(ruta: Path) -> list[dict[str, str]]:
 
 # ─────────────────────────────────────────────────────────────── vocabulario
 
+
 @lru_cache(maxsize=1)
 def cargar_vocabulario() -> dict[str, Any]:
     ruta = HISTORIA / "vocabulario.json"
@@ -209,6 +212,7 @@ def cargar_vocabulario() -> dict[str, Any]:
 
 
 # ─────────────────────────────────────────────────────────────── instituciones
+
 
 @lru_cache(maxsize=1)
 def cargar_presidencias() -> list[Periodo]:
@@ -275,6 +279,7 @@ def gobierno_en(fecha: date) -> Periodo | None:
 
 # ─────────────────────────────────────────────────────────────── eventos
 
+
 @lru_cache(maxsize=1)
 def cargar_eventos() -> list[Evento]:
     out = []
@@ -312,6 +317,7 @@ def evento(evento_id: str) -> Evento:
 
 # ─────────────────────────────────────────────────────────────── series troncales (T3)
 
+
 @lru_cache(maxsize=1)
 def cargar_series() -> list[dict[str, Any]]:
     """Catálogo cerrado de series troncales. Hoy no existe: es la fase T3.
@@ -339,6 +345,7 @@ def ids_de_series() -> set[str]:
 
 # ─────────────────────────────────────────────────────────────── bibliografía
 
+
 @lru_cache(maxsize=1)
 def referencias() -> dict[str, dict[str, str]]:
     """`RAG/referencias.bib` parseado a {clave: {campo: valor}}.
@@ -352,7 +359,7 @@ def referencias() -> dict[str, dict[str, str]]:
     marcas = list(BIB_ENTRADA_RE.finditer(txt))
     for i, m in enumerate(marcas):
         fin = marcas[i + 1].start() if i + 1 < len(marcas) else len(txt)
-        cuerpo = txt[m.end():fin]
+        cuerpo = txt[m.end() : fin]
         campos = {k.lower(): " ".join(v.split()) for k, v in BIB_CAMPO_RE.findall(cuerpo + "\n")}
         campos["tipo"] = m.group(1).lower()
         entradas[m.group(2)] = campos
@@ -393,6 +400,7 @@ def _formatear_referencia(clave: str) -> dict[str, Any]:
 
 # ─────────────────────────────────────────────────────────────── markdown → HTML
 
+
 def _inline(texto: str, cifras: dict[str, dict], usadas: set[str]) -> str:
     """Transformaciones en línea sobre texto YA ESCAPADO. Nada de HTML del autor."""
     t = html.escape(texto, quote=True)
@@ -409,7 +417,7 @@ def _inline(texto: str, cifras: dict[str, dict], usadas: set[str]) -> str:
         return (
             f'<button class="cifra" data-cifra="{html.escape(nombre, quote=True)}" '
             f'data-serie="{serie}" data-anio="{anio}" title="{titulo}">'
-            f'{html.escape(str(c.get("v", "")))}</button>'
+            f"{html.escape(str(c.get('v', '')))}</button>"
         )
 
     # {{c:x}} se resuelve ANTES que el resto: su contenido ya viene escapado del frontmatter
@@ -488,12 +496,16 @@ def _render_item(item: str, cifras, usadas) -> str:
     """Un ítem de cronología: **1890-10-07** — texto → fecha a un lado, texto al otro."""
     m = re.match(r"^\*\*(.+?)\*\*\s*[—–-]\s*(.*)$", item, flags=re.DOTALL)
     if not m:
-        return f"<li><span class=\"ct\">{_inline(item, cifras, usadas)}</span></li>"
+        return f'<li><span class="ct">{_inline(item, cifras, usadas)}</span></li>'
     fecha_txt, texto = m.group(1).strip(), m.group(2).strip()
     partes = fecha_txt.split("-")
     anio = partes[0]
     resto = "-".join(partes[1:])
-    cf = f'{html.escape(resto)}<br><span class="yy">{html.escape(anio)}</span>' if resto else f'<span class="yy">{html.escape(anio)}</span>'
+    cf = (
+        f'{html.escape(resto)}<br><span class="yy">{html.escape(anio)}</span>'
+        if resto
+        else f'<span class="yy">{html.escape(anio)}</span>'
+    )
     return f'<li><span class="cf">{cf}</span><span class="ct">{_inline(texto, cifras, usadas)}</span></li>'
 
 
@@ -522,6 +534,7 @@ def renderizar(cuerpo: str, cifras: dict[str, dict], usadas: set[str]) -> list[d
 
 # ─────────────────────────────────────────────────────────────── fichas
 
+
 def ruta_ficha(evento_id: str) -> Path:
     if not ID_RE.match(evento_id or ""):
         raise EventoNoEncontrado(evento_id)  # ids validados ANTES de tocar el disco
@@ -535,7 +548,7 @@ def _partir_frontmatter(texto: str) -> tuple[dict[str, Any], str]:
     if fin == -1:
         return {}, texto
     cabecera = texto[3:fin]
-    cuerpo = texto[fin + 4:]
+    cuerpo = texto[fin + 4 :]
     return yaml.safe_load(cabecera) or {}, cuerpo
 
 
@@ -557,7 +570,12 @@ def cargar_ficha(evento_id: str) -> Ficha | None:
     for rid in fm.get("relacionados") or []:
         e = por_id.get(str(rid))
         relacionados.append(
-            {"id": str(rid), "titulo": e.titulo if e else str(rid), "anio": e.anio if e else None, "existe": bool(e)}
+            {
+                "id": str(rid),
+                "titulo": e.titulo if e else str(rid),
+                "anio": e.anio if e else None,
+                "existe": bool(e),
+            }
         )
 
     ev = por_id.get(evento_id)
@@ -601,6 +619,7 @@ def cargar_ficha(evento_id: str) -> Ficha | None:
 
 
 # ─────────────────────────────────────────────────────────────── payload de la API
+
 
 def resumen_estado() -> dict[str, Any]:
     """Lo que la pantalla dice de sí misma en el encabezado. Números CALCULADOS."""
@@ -659,6 +678,7 @@ def payload_evento(evento_id: str) -> dict[str, Any]:
 
 
 # ─────────────────────────────────────────────────────────────── validación
+
 
 def validar() -> list[str]:
     """Los datos se testean como código. Devuelve la lista de errores (vacía = todo bien)."""
@@ -724,7 +744,9 @@ def validar() -> list[str]:
             if not c["fuente"]:
                 errores.append(f"fichas/{ruta.name}: la cifra '{c['id']}' no declara fuente")
             if c["serie"] and troncales and not c["serie_disponible"]:
-                errores.append(f"fichas/{ruta.name}: la cifra '{c['id']}' apunta a la serie '{c['serie']}' inexistente")
+                errores.append(
+                    f"fichas/{ruta.name}: la cifra '{c['id']}' apunta a la serie '{c['serie']}' inexistente"
+                )
         for s in f.secciones:
             if 'class="cifra-rota"' in s["html"]:
                 errores.append(f"fichas/{ruta.name}: hay un {{{{c:...}}}} que no está en `cifras`")
@@ -737,6 +759,8 @@ def validar() -> list[str]:
         for m in f.medios:
             faltan = [c for c in ("credito", "licencia", "url_origen") if not m.get(c)]
             if faltan:
-                errores.append(f"fichas/{ruta.name}: el medio '{m.get('archivo', '?')}' no declara {', '.join(faltan)}")
+                errores.append(
+                    f"fichas/{ruta.name}: el medio '{m.get('archivo', '?')}' no declara {', '.join(faltan)}"
+                )
 
     return errores

@@ -66,6 +66,17 @@ pendientes y hoja de ruta en **`docs/INVESTIGACION_METODOS.md`** (leerlo antes d
 - Mockup de la Mesa de investigación con el TF: `docs/mockup/mesa-investigacion.html`
   (artifact), armado por `scripts/mockup_mesa_investigacion_datos.py` (panel del repo
   `riesgo-pais-argentino`) + `scripts/armar_mockup_mesa_investigacion.py`.
+- **Tablas vivas** (`web/mesa/tabla_viva.js`, UN componente para plataforma y mockup — el
+  armador lo inyecta en el HTML): toda tabla, matriz (`mapa_calor`) o `conjunto` de un
+  resultado se filtra por columna (`<0.05`, `=ARDL`, texto), se agrupa y resume (n, media,
+  mediana, % < α, % > 0…), se seleccionan columnas (hasta 2: dispersión), filas (shift =
+  rango) o filas de una matriz, se grafica (histograma, barras, líneas, dispersión) y se
+  guarda: como serie temporal (si hay fechas → Mis series) o como **vector de resultados**
+  (`cueva/datos/mis_resultados.py` → `<CUEVA_DATA>/resultados/`, `GET|POST
+  /api/v1/mis-resultados`). `universo_modelos` y `granger_matriz` devuelven tablas
+  DESNORMALIZADAS (nombres, no índices) para filtrar sin cruzar tablas. p-valores con 4 cifras
+  significativas (redondear a decimales los convertía en 0).
+- ⚠ En SVG, `el.hidden = true` NO oculta (la propiedad es de HTML): usar `style.display`.
 - statsmodels 0.15 quitó `verbose` de `grangercausalitytests`: pasarlo sólo si existe.
 - Dependencias: extra `[ml]` (xgboost, lightgbm, ruptures; el CI lo instala). Sin él, esos
   métodos aparecen como «falta instalar». `torch` NO se usa (bloqueado en el sandbox y pesado).
