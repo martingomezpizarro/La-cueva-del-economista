@@ -13,7 +13,7 @@ visual: `docs/mockup/cueva-mockup.html` (publicado como artifact; el documento m
 
 ## Estado (actualizado 2026-07-14)
 
-**Catálogo de métodos: 90 métodos en 16 familias (sesión 2026-11-04).** Mapa completo,
+**Catálogo de métodos: 100 métodos en 16 familias (sesión 2026-11-04).** Mapa completo,
 pendientes y hoja de ruta en **`docs/INVESTIGACION_METODOS.md`** (leerlo antes de sumar métodos).
 - **`cueva/metodos/`**: cada método se DECLARA con `@metodo(...)` (familia, pregunta, `Param`
   tipados, supuestos, trampas, deps, costo, referencias) y devuelve un `Resultado` con BLOQUES
@@ -47,6 +47,14 @@ pendientes y hoja de ruta en **`docs/INVESTIGACION_METODOS.md`** (leerlo antes d
   sobre tokens; `?vista=metodos`). Paso nuevo en el recorrido guiado (`#vistas`).
 - ⚠ `from cueva.metodos import registro` es el SUBMÓDULO: no reexportar la función `registro`
   en `cueva/metodos/__init__.py` (ya pasó: rompía la API).
+- Fase M1 (activos) en `familias/finanzas_avanzadas.py`: `burbuja_gsadf` (ADF con rezagos
+  vectorizado en lote para todas las ventanas + críticos por wild bootstrap con la dinámica
+  impuesta bajo H0: con críticos i.i.d. aparecían burbujas falsas; tamaño medido ≈ 7,5 % al 5 %),
+  `sobreajuste_backtest` (PBO/CSCV, Sharpe deflactado, White), `apuesta_binaria` (Kalshi),
+  `triple_barrera`, `eventos_mercado`, `contagio_diebold_yilmaz`, `dcc_garch`, `colas_extremas`,
+  `curva_nelson_siegel`; en evaluación `intervalos_conformales` y el MCS dentro del torneo.
+- ⚠ `tests/sinteticas_metodos.py`: una serie nueva que use el `rng` compartido cambia TODAS las
+  siguientes (y los tests de conclusiones); usar un generador propio por serie nueva.
 - Dependencias: extra `[ml]` (xgboost, lightgbm, ruptures; el CI lo instala). Sin él, esos
   métodos aparecen como «falta instalar». `torch` NO se usa (bloqueado en el sandbox y pesado).
 - ⚠ CI: ya venía rojo antes de esta sesión por `ruff format --check .` (35 archivos ajenos) y

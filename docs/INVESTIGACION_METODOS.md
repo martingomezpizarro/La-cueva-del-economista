@@ -12,7 +12,7 @@
 > `/mesa` → **Métodos**, desde la API o desde los agentes). Lo que falta está clasificado por
 > esfuerzo para decidir el orden.
 
-**Estado al cierre de la sesión: 90 métodos en 16 familias, todos con test, todos en la pantalla.**
+**Estado al cierre de la sesión: 100 métodos en 16 familias, todos con test (125), todos en la pantalla.**
 
 ---
 
@@ -84,7 +84,7 @@ dos validaciones: los métodos predictivos se juzgan **sólo** fuera de muestra;
 | Quandt-Andrews (sup-F) y Andrews-Ploberger | quiebre único de fecha desconocida en regresión | 🟢 |
 | Linealidad de Teräsvirta / Tsay | elegir entre AR, SETAR y STAR | 🟢 (LM3 ya está en `transicion_suave`) |
 | Raíz unitaria en panel (IPS, LLC, CIPS) | provincias/países | 🟡 (requiere datos de panel) |
-| Prueba de burbuja (SADF/GSADF de Phillips-Shi-Yu) | explosividad: dólar, activos, brecha | 🟢 **alta prioridad para activos** |
+| Prueba de burbuja (SADF/GSADF de Phillips-Shi-Yu) con fechado BSADF y críticos por wild bootstrap | explosividad: dólar, activos, brecha | ✅ `burbuja_gsadf` |
 
 ### 1.3 Filtros y descomposición (🪚 `filtros`)
 
@@ -123,10 +123,10 @@ Todos producen series derivadas que se pueden guardar y usar en otros métodos.
 | GARCH, GJR, EGARCH, APARCH, FIGARCH con comparación BIC y distribución t/skew-t/GED | ✅ `garch_familia` |
 | VaR/ES histórico, normal y Cornish-Fisher + Kupiec | ✅ `valor_en_riesgo` |
 | GARCH-M (prima por riesgo) | 🟢 |
-| GARCH multivariado: CCC, DCC (correlaciones dinámicas) | 🟡 — **contagio, correlaciones en crisis** |
+| DCC-GARCH (correlaciones dinámicas; ¿suben en las crisis?) | ✅ `dcc_garch` |
 | Volatilidad estocástica (SV) | 🟡 |
 | Volatilidad realizada y HAR-RV (Corsi) | 🟢 con datos intradía |
-| Teoría de valores extremos (POT / GPD) | 🟢 — colas de devaluaciones |
+| Teoría de valores extremos (POT / GPD, Hill, niveles de retorno) | ✅ `colas_extremas` |
 | Backtest de VaR de Christoffersen (independencia) | 🟢 |
 | Cópulas (gaussiana, t, Clayton, Gumbel) | 🟡 — dependencia en las colas entre activos |
 
@@ -163,7 +163,7 @@ Todos producen series derivadas que se pueden guardar y usar en otros métodos.
 | TVP-VAR con volatilidad estocástica (Primiceri) | 🔴 |
 | FAVAR | 🟡 |
 | VAR por umbral (TVAR) | 🟡 |
-| Conectividad de Diebold-Yilmaz (spillovers) | 🟢 — **contagio entre activos o países** |
+| Conectividad de Diebold-Yilmaz (derrames, transmisores netos, índice móvil) | ✅ `contagio_diebold_yilmaz` |
 
 ### 1.8 Cointegración y largo plazo (🔗 `cointegracion`)
 
@@ -214,7 +214,7 @@ Todos producen series derivadas que se pueden guardar y usar en otros métodos.
 | Double/Debiased ML (Chernozhukov) | 🟡 — controles de alta dimensión con ML |
 | Bosques causales (efectos heterogéneos) | 🟡 `econml` — necesita panel |
 | Shocks narrativos (Romer-Romer) como instrumento en LP-IV | 🟢 una vez cargados los shocks en la Línea de Tiempo |
-| Event study de mercado (retornos anormales con modelo de mercado, CAR) | 🟢 — **anuncios sobre acciones y bonos** |
+| Event study de mercado (retornos anormales con modelo de mercado, CAR) | ✅ `eventos_mercado` |
 
 ### 1.12 Aprendizaje automático (🌲 `ml`)
 
@@ -236,11 +236,11 @@ muestra**, dependencia parcial).
 | Selección de predictores entre 40 candidatas (estabilidad Lasso + bosque) | ✅ `seleccion_variables` |
 | CatBoost | 🟢 dependencia liviana |
 | Regresión cuantílica con boosting / bosques cuantílicos (intervalos) | 🟢 |
-| Predicción conformal (intervalos con cobertura garantizada) | 🟢 — **intervalos honestos para cualquier modelo** |
+| Predicción conformal por origen móvil (cobertura medida fuera de muestra) | ✅ `intervalos_conformales` |
 | Calibración isotónica / Platt de probabilidades | 🟢 |
 | Pronóstico multi-horizonte (estrategias directa, recursiva, DirRec) | 🟢 |
 | Validación purgada con embargo (López de Prado) | 🟢 — imprescindible con etiquetas que se solapan |
-| Etiquetado de triple barrera + meta-etiquetado | 🟢 — **activos: ¿toca el take-profit antes que el stop?** |
+| Etiquetado de triple barrera + meta-etiquetado con entrenamiento purgado | ✅ `triple_barrera` |
 | AutoML (búsqueda de hiperparámetros con Optuna sobre origen móvil) | 🟡 |
 | TabPFN (red pre-entrenada para tablas chicas) | 🔴 |
 
@@ -293,12 +293,12 @@ trabajos.
 | Regímenes y agrupamiento de volatilidad | ✅ `regimenes_volatilidad` |
 | Mapa de estacionalidad intradía / día × mes / mes × año | ✅ `estacionalidad_calendario` |
 | Chequeo de neutralidad a factores (betas, alfa, betas móviles, descomposición) | ✅ `neutralidad_factores` |
-| Sharpe deflactado y probabilidad de sobreajuste del backtest (CSCV) | 🟢 **alta prioridad** |
-| Reality check de White / SPA de Hansen (¿la mejor de N estrategias es suerte?) | 🟢 |
-| Criterio de Kelly y dimensionamiento por volatilidad objetivo | 🟢 |
+| Sharpe deflactado y probabilidad de sobreajuste del backtest (CSCV) | ✅ `sobreajuste_backtest` |
+| Reality check de White (¿la mejor de N estrategias es suerte?) | ✅ `sobreajuste_backtest` · SPA de Hansen 🟢 |
+| Contrato binario: valor esperado, Kelly fraccional, sensibilidad a p y riesgo de ruina | ✅ `apuesta_binaria` · volatilidad objetivo 🟢 |
 | Bandas de Bollinger / reversión a la media / breakout como reglas de backtest | 🟢 (mismo motor que `cruce_medias`) |
 | Probabilidades implícitas en opciones (Breeden-Litzenberger) | 🟡 necesita cadena de opciones |
-| Curva de rendimientos: Nelson-Siegel-Svensson, PCA de la curva | 🟢 — bonos soberanos argentinos |
+| Curva de rendimientos: Nelson-Siegel (Diebold-Li) | ✅ `curva_nelson_siegel` · Svensson 🟢 |
 | Spread, duration, convexidad de bonos | 🟢 |
 | Microestructura: volumen, VWAP, profundidad, order flow | ⚪ necesita datos tick |
 | Sentimiento de noticias con LLM como predictor | 🟡 (la plataforma ya tiene el gateway LLM) |
@@ -309,7 +309,7 @@ trabajos.
 |---|---|
 | **Torneo de modelos**: AR lineal vs regularizados vs árboles vs boosting vs redes, mismo diseño, Diebold-Mariano contra el ganador, combinación simple | ✅ `torneo_modelos` |
 | Curva de especificaciones (todas las transformaciones × rezagos × muestras × controles) | ✅ `curva_especificaciones` |
-| Model Confidence Set (Hansen-Lunde-Nason) | 🟢 |
+| Model Confidence Set (Hansen-Lunde-Nason) | ✅ dentro de `torneo_modelos` |
 | Giacomini-White (precisión condicional) | 🟢 |
 | Combinación con pesos (Bates-Granger, inversa del ECM, stacking temporal) | 🟢 |
 | Evaluación de densidades (PIT, CRPS, pinball) | 🟢 — para pronósticos probabilísticos |
@@ -391,8 +391,9 @@ implícita. Lo que la plataforma aporta:
 - **Calibración**: se mide con Brier y curva de calibración; una probabilidad mal calibrada
   hace perder plata aunque «acierte» seguido.
 - **Ventaja esperada**: `EV = p_modelo − precio_contrato` (menos comisiones). Con un modelo
-  calibrado, Kelly fraccional define el tamaño. 🟢 próximo: método `apuesta_binaria` que
-  tome el precio del contrato y devuelva EV, Kelly y la sensibilidad a la incertidumbre de p.
+  calibrado, Kelly fraccional define el tamaño. ✅ `apuesta_binaria`: elige el lado (SÍ/NO),
+  da EV, Kelly, la p mínima para que convenga, y simula la banca con una p verdadera que
+  difiere de la del modelo (la incertidumbre de tu p es lo que lleva a la ruina).
 - **Sesgos conocidos** para investigar con los datos históricos del mercado: favorito-
   longshot (los eventos improbables están caros), sobrerreacción a noticias.
 - **Dato**: Kalshi y Polymarket publican APIs con precios históricos de contratos; un
@@ -458,10 +459,10 @@ cueva/metodos/
 ├── insumos.py      series transformadas, panel alineado, matriz de diseño SIN fuga, eventos
 ├── validacion.py   origen móvil expansivo, métricas, Diebold-Mariano (HLN), R² fuera de muestra
 ├── redes_np.py     LSTM, GRU y ESN en numpy (gradiente verificado)
-└── familias/       16 módulos, uno por familia, un método por función
+└── familias/       un módulo por familia (+ finanzas_avanzadas.py con la fase M1)
 cueva/datos/mis_series.py   subir CSV propios y guardar salidas de métodos como series
 web/mesa/metodos.{js,css}   la pantalla: catálogo, ficha, formulario y bloques en SVG
-tests/test_metodos.py       111 tests; tests/sinteticas_metodos.py el banco de series
+tests/test_metodos.py       125 tests; tests/sinteticas_metodos.py el banco de series
 ```
 
 **Sumar un método** es escribir una función en la familia que corresponde:
@@ -509,8 +510,9 @@ habilitar una familia entera con `herramientas: [familia:pruebas]`.
    los backtests operan en t+1 con la señal de t; los regímenes usan medianas expansivas.
 3. **Elegir y evaluar con datos distintos.** El cruce de medias, los pares y el momentum
    eligen parámetros en la primera mitad y se evalúan en la segunda.
-4. **Multiplicidad.** El torneo dice cuántos rivales empatan con el ganador. 🟢 Falta: Sharpe
-   deflactado, reality check de White, MCS.
+4. **Multiplicidad.** El torneo dice cuántos rivales empatan con el ganador y arma el conjunto
+   de confianza de modelos (MCS); `sobreajuste_backtest` da PBO, Sharpe deflactado y White.
+   Las pruebas de burbuja sólo fechan episodios si la prueba global rechaza.
 5. **Robustez visible.** Curva de especificaciones, grillas de parámetros, placebos.
 6. **Causalidad declarada.** Todo método causal dice su supuesto de identificación en el
    veredicto.
@@ -524,8 +526,8 @@ habilitar una familia entera con `herramientas: [familia:pruebas]`.
 
 | Fase | Contenido | Esfuerzo |
 |---|---|---|
-| **M0 — hecho (esta sesión)** | 90 métodos, pantalla, Mis series, encadenamiento, puente con agentes, 111 tests | ✅ |
-| **M1 — activos y robustez** | prueba de burbuja (GSADF), Sharpe deflactado + CSCV, reality check/SPA, MCS, Kelly, `apuesta_binaria`, triple barrera + validación purgada, event study de mercado (CAR), Diebold-Yilmaz, DCC-GARCH, EVT, Nelson-Siegel | 🟢 ~1 semana |
+| **M0 — hecho (esta sesión)** | 90 métodos, pantalla, Mis series, encadenamiento, puente con agentes | ✅ |
+| **M1 — activos y robustez** | ✅ hecho en la misma sesión: GSADF, PBO/Sharpe deflactado/White, MCS, `apuesta_binaria`, triple barrera purgada, CAR, Diebold-Yilmaz, DCC, EVT, Nelson-Siegel, conformal (10 métodos, 100 en total). Falta: SPA de Hansen, volatilidad objetivo, Svensson | ✅ / 🟢 |
 | **M2 — econometría que falta** | SVAR (largo plazo y signos), descomposición histórica, LP con estado, Gregory-Hansen, NARDL, raíz unitaria con 2 quiebres, HEGY, MIDAS, nowcasting DFM, X-13 | 🟢/🟡 ~1-2 semanas |
 | **M3 — ML avanzado** | conformal, cuantílico con boosting, calibración, multi-horizonte, Optuna, DML, CatBoost, DTW, matrix profile | 🟢/🟡 ~1 semana |
 | **M4 — cola de trabajos** | lo que tarda minutos sale del request (es la fase 4 del roadmap general) | 🟡 |
@@ -534,8 +536,7 @@ habilitar una familia entera con `herramientas: [familia:pruebas]`.
 
 ### Decisiones abiertas para Martín
 
-1. **¿M1 (activos) antes que M2 (econometría)?** Propuesta: sí, porque desbloquea tu proyecto
-   de activos y casi todo es 🟢.
+1. **¿M2 (econometría) o M3 (ML avanzado) después de M1?** M1 quedó hecho en esta sesión.
 2. **¿Fuente de datos de activos?** Subir CSV ya funciona. Para automatizar: ¿qué proveedor?
    (Yahoo Finance no tiene API oficial; Alpha Vantage, Tiingo, Polygon, o el BYMA/Rava para
    activos argentinos). Va en `cueva/fuentes/`.
