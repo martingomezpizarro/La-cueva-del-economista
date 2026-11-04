@@ -19,10 +19,8 @@ import json
 import sys
 import time
 import warnings
-from itertools import combinations
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
 warnings.filterwarnings("ignore")
@@ -67,165 +65,32 @@ CORTOS = {
 }
 
 
-def ljung_box_p(resid, lags=12):
-    from statsmodels.stats.diagnostic import acorr_ljungbox
-
-    r = np.asarray(resid)
-    r = r[np.isfinite(r)]
-    return float(acorr_ljungbox(r, lags=[lags], return_df=True)["lb_pvalue"].iloc[0])
-
-
-def ardl_lr(df, x_vars, p, q):
-    """ARDL en niveles; coeficiente de largo plazo θ_x = Σβ_x / (1 − Σφ) con EE por método delta."""
-    from statsmodels.tsa.ardl import ARDL
-
-    res = ARDL(df[DEP], lags=p, exog=df[x_vars], order={x: q for x in x_vars}, trend="c").fit()
-    nombres = list(res.params.index)
-    b = res.params.values
-    V = res.cov_params().values
-    iy = [i for i, n in enumerate(nombres) if n.startswith(f"{DEP}.L")]
-    den = 1 - b[iy].sum()
-    salida = {}
-    for x in x_vars:
-        ix = [i for i, n in enumerate(nombres) if n.startswith(f"{x}.L")]
-        num = b[ix].sum()
-        th = num / den
-        g = np.zeros(len(b))
-        g[ix] = 1 / den
-        g[iy] = num / den**2
-        se = float(np.sqrt(max(g @ V @ g, 1e-300)))
-        from scipy import stats
-
-        salida[x] = (float(th), float(2 * stats.norm.sf(abs(th / se))))
-    return res, salida
-
-
 def main(panel_csv: str, dicc_csv: str):
-    from statsmodels.tsa.api import VAR
-    from statsmodels.tsa.stattools import grangercausalitytests
-    from statsmodels.tsa.vector_ar.vecm import VECM, coint_johansen
+    """La iteración y Granger son los MISMOS del catálogo (cueva/metodos/familias/universo.py):
+    acá sólo se arman los datos para el mockup."""
+    from cueva.metodos.familias.universo import estacionarias, granger_nxn, iterar
 
     t0 = time.time()
     df = pd.read_csv(panel_csv, parse_dates=["fecha"]).set_index("fecha")
+    df.index.freq = "ME"
     dic = pd.read_csv(dicc_csv).set_index("columna")
     orden = {c: dic.loc[c, "orden_integracion"] if c in dic.index else "" for c in [DEP, *VARS]}
+    orden[DEP] = "I(1)"  # el RPI entra en diferencias al VAR, como en el TF
     unidades = {c: dic.loc[c, "unidad"] if c in dic.index else "" for c in [DEP, *VARS]}
-    # transformación estacionaria (para VAR y Granger): Δ para I(1) y para la dependiente
-    est = pd.DataFrame({c: (df[c].diff() if orden[c] != "I(0)" else df[c]) for c in [DEP, *VARS]}).dropna()
-
-    modelos, efectos = [], []  # modelo: [tipo, vars(idx), spec, r2, aic, bic, nobs, lb_p, pasa]
-    idx = {v: i for i, v in enumerate(VARS)}
-
-    def registrar(tipo, xs, spec, r2, aic, bic, nobs, lbp, efs):
-        mid = len(modelos)
-        modelos.append([tipo, [idx[x] for x in xs], spec, r2, aic, bic, nobs, round(lbp, 4), int(lbp > 0.05)])
-        for x, (c, p) in efs.items():
-            if np.isfinite(c) and np.isfinite(p):
-                efectos.append([mid, idx[x], round(c, 6), round(p, 5)])
-
-    combos = [list(c) for r in (1, 2, 3) for c in combinations(VARS, r)]
-    # ── ARDL: todas las combinaciones de 1 a 3 explicativas × (p, q) ∈ {1,2}² ──
-    for xs in combos:
-        for p in (1, 2):
-            for q in (1, 2):
-                try:
-                    res, lr = ardl_lr(df, xs, p, q)
-                    r2 = 1 - np.var(res.resid) / np.var(df[DEP].iloc[-len(res.resid) :])
-                    registrar(
-                        "ARDL",
-                        xs,
-                        f"p{p}q{q}",
-                        round(float(r2), 4),
-                        round(res.aic, 2),
-                        round(res.bic, 2),
-                        int(res.nobs),
-                        ljung_box_p(res.resid),
-                        lr,
-                    )
-                except Exception:
-                    continue
-    print(f"ARDL listos: {len(modelos)} modelos ({time.time() - t0:.0f} s)")
-    # ── VAR en diferencias: efecto acumulado de x sobre ΔRPI y Wald (Granger en el sistema) ──
-    for xs in combos:
-        try:
-            sub = est[[DEP, *xs]]
-            sel = VAR(sub.values).select_order(maxlags=4)
-            k = max(1, int(sel.selected_orders["aic"]))
-            res = VAR(sub.values).fit(k)
-            efs = {}
-            for j, x in enumerate(xs, start=1):
-                coef = float(sum(res.coefs[L][0, j] for L in range(k)))
-                p = float(res.test_causality(0, [j], kind="f").pvalue)
-                efs[x] = (coef, p)
-            e0 = res.resid[:, 0]
-            r2 = 1 - np.var(e0) / np.var(sub.values[k:, 0])
-            registrar(
-                "VAR",
-                xs,
-                f"k{k}",
-                round(float(r2), 4),
-                round(float(res.aic), 3),
-                round(float(res.bic), 3),
-                int(res.nobs),
-                ljung_box_p(e0),
-                efs,
-            )
-        except Exception:
-            continue
-    print(f"VAR listos: {len(modelos)} modelos ({time.time() - t0:.0f} s)")
-    # ── VECM en niveles (combinaciones de 1 y 2 explicativas): β normalizado en el RPI ──
-    for xs in [c for c in combos if len(c) <= 2]:
-        sub = df[[DEP, *xs]]
-        try:
-            jo = coint_johansen(sub.values, det_order=0, k_ar_diff=1)
-            rango = int(sum(jo.lr1 > jo.cvt[:, 1]))
-            if rango < 1:
-                continue
-            res = VECM(sub.values, k_ar_diff=1, coint_rank=1, deterministic="ci").fit()
-            beta = res.beta[:, 0] / res.beta[0, 0]
-            pv = getattr(res, "pvalues_beta", None)
-            efs = {}
-            for j, x in enumerate(xs, start=1):
-                p = float(np.ravel(pv)[j - 1]) if pv is not None and np.size(pv) >= j else float("nan")
-                efs[x] = (float(-beta[j]), p)
-            e0 = res.resid[:, 0]
-            r2 = 1 - np.var(e0) / np.var(np.diff(sub.values[:, 0]))
-            registrar(
-                "VECM", xs, f"r{rango}", round(float(r2), 4), None, None, int(res.nobs), ljung_box_p(e0), efs
-            )
-        except Exception:
-            continue
-    print(f"VECM listos: {len(modelos)} modelos ({time.time() - t0:.0f} s)")
-    # ── Granger N × N sobre las series estacionarias, rezago por AIC (≤ 6) ──
-    import inspect
-
-    kw_g = {"verbose": False} if "verbose" in inspect.signature(grangercausalitytests).parameters else {}
+    modelos, efectos = iterar(df, DEP, VARS, orden=orden)
+    print(f"Universo: {len(modelos)} modelos ({time.time() - t0:.0f} s)")
     todas = [DEP, *VARS]
-    G = [[None] * len(todas) for _ in todas]
-    LAG = [[None] * len(todas) for _ in todas]
-    for i, causa in enumerate(todas):
-        for j, efecto in enumerate(todas):
-            if i == j:
-                continue
-            sub = est[[efecto, causa]].values
-            try:
-                k = max(1, int(VAR(sub).select_order(maxlags=6).selected_orders["aic"]))
-                r = grangercausalitytests(sub, maxlag=[k], **kw_g)
-                G[i][j] = round(float(r[k][0]["ssr_ftest"][1]), 5)
-                LAG[i][j] = k
-            except Exception as e:  # que no falle en silencio
-                print(f"  Granger {causa} → {efecto}: {type(e).__name__}: {e}")
-                continue
+    G, LAG = granger_nxn(estacionarias(df[todas], orden))
     print(f"Granger listo ({time.time() - t0:.0f} s)")
-    # ── el mejor ARDL que pasa el filtro (por BIC): sus resultados también son series ──
+    # el mejor ARDL con residuos limpios (por BIC): sus resultados también son series
+    from cueva.metodos.familias.universo import _ardl_largo_plazo
+
     ardl_ok = [m for m in range(len(modelos)) if modelos[m][0] == "ARDL" and modelos[m][8]]
-    mejor = min(ardl_ok, key=lambda m: modelos[m][5]) if ardl_ok else None
     ajuste = None
-    if mejor is not None:
-        tipo, vx, spec, *_ = modelos[mejor]
-        xs = [VARS[i] for i in vx]
-        p, q = int(spec[1]), int(spec[3])
-        res, _ = ardl_lr(df, xs, p, q)
+    if ardl_ok:
+        mejor = min(ardl_ok, key=lambda m: modelos[m][5])
+        _, vx, spec, *_ = modelos[mejor]
+        res, _ = _ardl_largo_plazo(df, DEP, [VARS[i] for i in vx], int(spec[1]), int(spec[3]))
         ajuste = {
             "modelo": mejor,
             "fechas": [str(f.date()) for f in res.fittedvalues.index],
@@ -241,7 +106,7 @@ def main(panel_csv: str, dicc_csv: str):
         "unidades": unidades,
         "orden": orden,
         "fechas": [str(f.date()) for f in df.index],
-        "panel": {c: [round(float(v), 5) for v in df[c].values] for c in [DEP, *VARS]},
+        "panel": {c: [round(float(v), 5) for v in df[c].values] for c in todas},
         "modelos_cols": ["tipo", "vars", "spec", "r2", "aic", "bic", "nobs", "lb_p", "pasa"],
         "modelos": modelos,
         "efectos_cols": ["modelo", "var", "coef_lp", "p"],

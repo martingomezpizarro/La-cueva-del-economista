@@ -56,6 +56,39 @@ FAMILIAS: dict[str, dict[str, str]] = {
 }
 
 
+# El VERBO: qué le hace un método a lo que hay en la mesa. Ordena la caja de herramientas y
+# decide dónde se puede soltar cada cosa (docs/INVESTIGACION_METODOS.md, Mesa de investigación).
+CLASES: dict[str, dict[str, str]] = {
+    "traer": {"nombre": "Traer", "flujo": "nada → serie"},
+    "transformar": {"nombre": "Transformar", "flujo": "1 serie → 1 serie"},
+    "combinar": {"nombre": "Combinar", "flujo": "series → serie"},
+    "descomponer": {"nombre": "Descomponer", "flujo": "serie(s) → componentes"},
+    "diagnosticar": {"nombre": "Diagnosticar", "flujo": "serie → veredicto"},
+    "mirar": {"nombre": "Mirar", "flujo": "series → vista"},
+    "modelar": {"nombre": "Modelar", "flujo": "series → modelo + series"},
+    "simular": {"nombre": "Simular", "flujo": "→ muchas trayectorias"},
+    "evaluar": {"nombre": "Evaluar", "flujo": "modelos → comparación"},
+}
+CLASE_POR_FAMILIA = {
+    "exploratorio": "diagnosticar",
+    "pruebas": "diagnosticar",
+    "filtros": "descomponer",
+    "univariados": "modelar",
+    "volatilidad": "modelar",
+    "regresion": "modelar",
+    "multivariados": "modelar",
+    "cointegracion": "modelar",
+    "regimenes": "modelar",
+    "estado": "modelar",
+    "causal": "modelar",
+    "ml": "modelar",
+    "redes": "modelar",
+    "no_supervisado": "modelar",
+    "finanzas": "modelar",
+    "evaluacion": "evaluar",
+}
+
+
 @dataclass
 class Param:
     """Un parámetro de un método. `tipo` es uno de TIPOS_PARAM."""
@@ -145,10 +178,14 @@ class Metodo:
     referencias: list[str] = field(default_factory=list)
     etiquetas: list[str] = field(default_factory=list)  # para el buscador
     nivel: str = "intermedio"  # basico | intermedio | avanzado
+    clase: str = ""  # verbo (CLASES); vacío = el de su familia
 
     def __post_init__(self):
         if self.familia not in FAMILIAS:
             raise ValueError(f"{self.id}: familia desconocida {self.familia}")
+        self.clase = self.clase or CLASE_POR_FAMILIA[self.familia]
+        if self.clase not in CLASES:
+            raise ValueError(f"{self.id}: clase desconocida {self.clase}")
         if self.costo not in COSTOS:
             raise ValueError(f"{self.id}: costo desconocido {self.costo}")
 
@@ -158,6 +195,8 @@ class Metodo:
             "nombre": self.nombre,
             "familia": self.familia,
             "familia_nombre": FAMILIAS[self.familia]["nombre"],
+            "clase": self.clase,
+            "clase_nombre": CLASES[self.clase]["nombre"],
             "pregunta": self.pregunta,
             "cuando": self.cuando,
             "supuestos": self.supuestos,
@@ -253,6 +292,7 @@ class Resultado:
         self.series_salida: list[dict] = []
         self.codigo: str = ""
         self.datos: dict[str, Any] = {}  # evidencia estructurada extra (para agentes y tests)
+        self.conjuntos: list[dict] = []  # tablas de datos crudas (resultados que se vuelven a graficar)
 
     # ── bloques ──
     def metrica(self, nombre: str, valor, ayuda: str = "", formato: str = "") -> Resultado:
@@ -436,6 +476,30 @@ class Resultado:
         )
         return self
 
+    def conjunto(
+        self,
+        nombre: str,
+        columnas: list[str],
+        filas: list[list],
+        descripcion: str = "",
+        max_filas: int = 50000,
+    ) -> Resultado:
+        """Tabla de datos CRUDA que el método produce (un universo de modelos, un ranking, una
+        matriz). No es un dibujo: la pantalla la puede graficar como quiera, filtrarla, o
+        convertir una columna en serie. Los bloques son la vista sugerida; el conjunto, los datos."""
+        if len(filas) > max_filas:
+            self.advertir(f"«{nombre}» tiene {len(filas)} filas; se envían las primeras {max_filas}.")
+            filas = filas[:max_filas]
+        self.conjuntos.append(
+            {
+                "nombre": nombre,
+                "descripcion": descripcion,
+                "columnas": columnas,
+                "filas": [[_num(c) if not isinstance(c, (str, list)) else c for c in f] for f in filas],
+            }
+        )
+        return self
+
     # ── salida ──
     def a_dict(self) -> dict:
         return {
@@ -445,6 +509,7 @@ class Resultado:
             "advertencias": self.advertencias,
             "semaforo": self.semaforo,
             "series_salida": self.series_salida,
+            "conjuntos": self.conjuntos,
             "codigo": self.codigo,
             **({"datos": _limpiar(self.datos)} if self.datos else {}),
         }

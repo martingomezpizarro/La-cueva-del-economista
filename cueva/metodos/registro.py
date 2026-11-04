@@ -104,19 +104,28 @@ def validar_args(m: Metodo, args: dict) -> dict:
     return limpio
 
 
+def _serie_o_receta(p: Param, v) -> str:
+    """Un id de serie, o una receta (dict) que se registra y se vuelve un id «r:<huella>»:
+    así CUALQUIER método corre sobre series derivadas sin saber que lo son."""
+    from cueva.metodos.insumos import registrar_receta
+
+    if isinstance(v, dict):
+        return registrar_receta(v)
+    if not isinstance(v, str) or not re.match(r"^[A-Za-z0-9_.:\-]{1,120}$", v):
+        raise ErrorMetodo(f"«{p.etiqueta}»: id de serie inválido.")
+    return v
+
+
 def _coercer(p: Param, v):
     t = p.tipo
     if t == "serie":
-        if not isinstance(v, str) or not re.match(r"^[A-Za-z0-9_.\-]{1,120}$", v):
-            raise ErrorMetodo(f"«{p.etiqueta}»: id de serie inválido.")
-        return v
+        return _serie_o_receta(p, v)
     if t == "series":
         if isinstance(v, str):
             v = [x.strip() for x in v.split(",") if x.strip()]
-        if not isinstance(v, list) or not all(
-            isinstance(x, str) and re.match(r"^[A-Za-z0-9_.\-]{1,120}$", x) for x in v
-        ):
+        if not isinstance(v, list):
             raise ErrorMetodo(f"«{p.etiqueta}»: lista de series inválida.")
+        v = [_serie_o_receta(p, x) for x in v]
         v = list(dict.fromkeys(v))  # sin repetidos, en orden
         if p.min_items and len(v) < p.min_items:
             raise ErrorMetodo(f"«{p.etiqueta}»: hacen falta al menos {p.min_items} series.")

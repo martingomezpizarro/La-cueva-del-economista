@@ -145,6 +145,7 @@ def tvp_kalman(dep, indeps, freq, transf, con_constante, desde, hasta):
     "Modelo de factores dinámicos",
     F,
     "¿Hay un factor común (un 'índice del ciclo') detrás de muchas series?",
+    clase="descomponer",
     params=[
         P_SERIES("sids", "Series (3 a 20)", minimo=3, maximo=20),
         P_FREQ,
@@ -219,6 +220,7 @@ def factor_dinamico(sids, freq, transf, factores, orden_factor):
     "Desagregación temporal (Chow-Lin / Denton)",
     F,
     "¿Cómo paso una serie trimestral (o anual) a mensual usando un indicador mensual, respetando los totales?",
+    clase="combinar",
     params=[
         P_SERIE("sid_baja", "Serie de baja frecuencia (a desagregar)"),
         Param("freq_baja", "opcion", "Su frecuencia", defecto="trimestral", opciones=["trimestral", "anual"]),

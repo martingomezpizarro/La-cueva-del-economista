@@ -1,5 +1,14 @@
 """herramientas — Herramientas econométricas ejecutables por los agentes (modo HÍBRIDO).
 
+⚠ CAPA DE COMPATIBILIDAD (revisión 2026-11-04). El catálogo vivo es `cueva.metodos` (100+
+métodos declarados, con verbo, recetas y bloques tipados). Estas 11 herramientas quedan porque
+el orquestador de la mesa de agentes y el Estudio del explorador clásico leen sus campos
+propios (`conclusion`, `rango_cointegracion`, `p_por_lag`…). No sumar herramientas acá:
+`ejecutar()` ya resuelve cualquier método del catálogo, y las transformaciones delegan en
+`cueva.metodos.recetas`. Migración pendiente: que el orquestador lea `datos` de los métodos
+equivalentes (ols→mco, vecm→johansen_vecm, var→var_completo, granger→toda_yamamoto/granger_matriz,
+estacionariedad→raiz_unitaria, garch→garch_familia, arima→sarima, describir→estadisticos).
+
 Lo ESTÁNDAR se ejecuta de verdad sobre las series reales (estacionariedad, Granger, OLS, VAR,
 VECM, GARCH, descriptivos). Lo no estándar no está acá: el agente lo detecta, lo asesora y, si
 hace falta, pide confirmación al usuario.
@@ -40,25 +49,19 @@ TRANSFORMACIONES = {
 
 
 def _transformar(s, transf: str | None):
-    """Aplica una transformación a una serie. Devuelve (serie, sufijo legible)."""
+    """Aplica una transformación a una serie. Devuelve (serie, sufijo legible).
+    La definición vive en `cueva.metodos.recetas` (única fuente de las transformaciones)."""
     import numpy as np
+
+    from cueva.metodos import recetas as R
 
     t = (transf or "nivel").lower()
     if t in ("", "nivel", "none"):
         return s, ""
     if t not in TRANSFORMACIONES:
         raise ValueError(f"Transformación desconocida: {transf} (hay: {', '.join(TRANSFORMACIONES)})")
-    if t == "log":
-        s = np.log(s[s > 0])
-    elif t == "dif":
-        s = s.diff()
-    elif t == "dif2":
-        s = s.diff().diff()
-    elif t == "dif_log":
-        s = np.log(s[s > 0]).diff()
-    elif t == "pct":
-        s = s.pct_change() * 100
-    return s.dropna(), f" ({TRANSFORMACIONES[t]})"
+    out = R.OPS[t].fn(s).replace([np.inf, -np.inf], np.nan)
+    return out.dropna(), f" ({TRANSFORMACIONES[t]})"
 
 
 def _transf_de(transf, sid: str) -> str:

@@ -1,4 +1,4 @@
-"""Fase M1 (docs/INVESTIGACION_METODOS.md §7): activos, eventos y robustez.
+"""Activos, eventos y robustez (fase M1 de docs/INVESTIGACION_METODOS.md §7).
 
 - Burbujas: SADF/GSADF de Phillips-Shi-Yu con fechado BSADF y valores críticos por Monte Carlo.
 - Sobreajuste de backtests: PBO por CSCV, Sharpe deflactado y reality check de White.
@@ -84,6 +84,7 @@ def _psy(y, r0, k=1):
     "Prueba de burbujas (SADF / GSADF de Phillips-Shi-Yu) con fechado",
     "pruebas",
     "¿La serie tuvo episodios explosivos (burbujas, corridas) y cuándo empezaron y terminaron?",
+    clase="diagnosticar",
     params=[
         P_SERIE(),
         Param(
@@ -245,6 +246,7 @@ def _bootstrap_estacionario(n, L, rng):
     "¿La mejor estrategia es suerte? (PBO, Sharpe deflactado, reality check de White)",
     "evaluacion",
     "Si probé muchas variantes de una regla y me quedé con la mejor, ¿cuánto de su rendimiento es sobreajuste?",
+    clase="evaluar",
     params=[
         P_SERIE("sid", "Precio del activo"),
         P_FREQ_F,
@@ -400,6 +402,7 @@ def sobreajuste_backtest(sid, freq, familia_reglas, bloques, bootstrap, costo_pb
     "Contrato binario (Kalshi / Polymarket): valor esperado, Kelly y riesgo de ruina",
     "finanzas",
     "Si mi modelo dice p y el contrato cotiza a precio q, ¿conviene, cuánto apostar y qué tan sensible es a errores en p?",
+    clase="simular",
     params=[
         Param(
             "probabilidad",
@@ -966,6 +969,7 @@ def dcc_garch(sids, freq):
     "Colas extremas (teoría de valores extremos, picos sobre umbral)",
     "volatilidad",
     "¿Qué tan grande puede ser la peor caída de cada cuántos años (devaluaciones, crashes)?",
+    clase="diagnosticar",
     params=[
         P_SERIE("sid", "Serie (precio o nivel)"),
         Param("freq", "opcion", "Frecuencia", defecto="diaria", opciones=FREQS),

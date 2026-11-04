@@ -12,7 +12,7 @@
 > `/mesa` → **Métodos**, desde la API o desde los agentes). Lo que falta está clasificado por
 > esfuerzo para decidir el orden.
 
-**Estado al cierre de la sesión: 100 métodos en 16 familias, todos con test (125), todos en la pantalla.**
+**Estado al cierre de la sesión: 102 métodos en 16 familias y 9 verbos, más 20 operaciones de recetas; todos con test (141), todos en la pantalla.**
 
 ---
 
@@ -498,6 +498,26 @@ factor de un PCA entra en un VAR.
 **Agentes**: `herramientas.ejecutar()` resuelve cualquier método del catálogo y
 `declaraciones_herramientas()` arma su JSON Schema para function calling. Un skill puede
 habilitar una familia entera con `herramientas: [familia:pruebas]`.
+
+### 5.1 Revisión de arquitectura (2026-11-04, después del mockup)
+
+Se revisó lo construido contra el diseño de la Mesa de investigación y se cambió lo que no
+iba a escalar:
+
+| Problema | Cambio |
+|---|---|
+| Las transformaciones eran un parámetro `transf` repetido en 17 archivos, sin receta guardable; el mockup las reimplementaba en JS | **`cueva/metodos/recetas.py`**: una serie derivada es una RECETA (árbol JSON de operaciones sobre ids del catálogo), con `texto()`, `huella()` estable y `hojas()` para el linaje. 20 operaciones (transformar, combinar, descomponer) definidas UNA vez; `transf`, las herramientas viejas y la API pasan por acá |
+| Ningún método aceptaba una serie derivada sin guardarla antes | Todo parámetro `serie`/`series` acepta una receta: se registra como id `r:<huella>` y la carga la evalúa. Los 100 métodos corren sobre derivadas sin tocarlos |
+| El catálogo sólo se clasificaba por tema | `Metodo.clase` = el VERBO (`contrato.CLASES`): por defecto el de la familia, con excepciones declaradas en el método. La API devuelve verbos, familias, métodos y operaciones; la pantalla ordena «Por verbo / Por tema» |
+| Los resultados sólo podían ser dibujos o series temporales | `Resultado.conjunto(...)`: tablas de datos crudas (un universo de modelos, un ranking) que la pantalla vuelve a graficar como quiera |
+| La iteración del Trabajo Final vivía en un script | `universo_modelos` y `granger_matriz` en el catálogo (`familias/universo.py`); el script del mockup usa esas mismas funciones |
+| Cada método releía el CSV del disco | `insumos.cargar_base` con caché por (serie, frecuencia, versión del archivo) |
+| Dos registros paralelos (11 herramientas viejas y el catálogo) | La capa vieja queda declarada como compatibilidad (la leen el orquestador y el Estudio clásico); no se suman herramientas ahí. Migración pendiente en su docstring |
+| Una serie guardada no decía de qué salía | `POST /api/v1/mis-series/derivada` acepta la receta y la guarda al lado de los datos (`.receta.json`); `GET /api/v1/mis-series` la devuelve |
+
+Lo que se decidió NO cambiar: el mockup sigue haciendo sus cálculos en JS porque es un
+archivo estático que tiene que abrirse sin servidor; la pantalla real llama a
+`POST /api/v1/recetas/evaluar`.
 
 ---
 

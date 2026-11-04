@@ -247,6 +247,7 @@ def periodograma(sid, freq, transf):
     "Perfil estacional",
     F,
     "¿Hay meses (o trimestres) sistemáticamente distintos?",
+    clase="mirar",
     params=[
         P_SERIE(),
         Param("freq", "opcion", "Frecuencia", defecto="mensual", opciones=["mensual", "trimestral"]),
@@ -295,6 +296,7 @@ def perfil_estacional(sid, freq, transf):
     "Estadísticos en ventanas móviles",
     F,
     "¿La media, la volatilidad o la correlación cambiaron con el tiempo?",
+    clase="mirar",
     params=[
         P_SERIES("sids", "Series (1 o 2)", minimo=1, maximo=2),
         P_FREQ,
@@ -345,6 +347,7 @@ def ventanas_moviles(sids, freq, transf, ventana):
     "Diagrama de dispersión y correlaciones",
     F,
     "¿Qué forma tiene la relación entre X e Y (lineal, monótona, con outliers)?",
+    clase="mirar",
     params=[
         P_SERIE("sid_x", "Serie X"),
         P_SERIE("sid_y", "Serie Y"),
@@ -406,6 +409,7 @@ def dispersion(sid_x, sid_y, freq, transf, rezago_x):
     "Matriz de correlaciones con significancia",
     F,
     "¿Cómo se mueven juntas varias series?",
+    clase="mirar",
     params=[
         P_SERIES("sids", "Series", minimo=2, maximo=15),
         P_FREQ,

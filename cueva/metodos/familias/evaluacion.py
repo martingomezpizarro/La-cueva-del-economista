@@ -214,7 +214,7 @@ def conjunto_confianza(
 ):
     """Model Confidence Set (Hansen, Lunde y Nason 2011), estadístico T_max con bootstrap
     estacionario. Devuelve (modelos que quedan, [(eliminado, p-valor)])."""
-    from cueva.metodos.familias.finanzas_avanzadas import _bootstrap_estacionario
+    from cueva.metodos.familias.activos import _bootstrap_estacionario
 
     rng = np.random.default_rng(seed)
     T = perdidas.shape[0]
@@ -395,6 +395,7 @@ def curva_especificaciones(dep, interes, controles, freq, transformaciones, reza
     "Intervalos de predicción conformales (cobertura garantizada)",
     F,
     "¿Qué rango de valores es creíble para el próximo dato, con una cobertura que se cumpla de verdad fuera de muestra?",
+    clase="evaluar",
     params=params_diseno()
     + [
         Param("modelo", "opcion", "Modelo base", defecto="ridge", opciones=CANDIDATOS),

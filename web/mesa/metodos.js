@@ -34,13 +34,15 @@ function num(v, d) {
 }
 
 /* ───────────────────────── estado ───────────────────────── */
-const st = { familias: [], metodos: [], fam: null, q: '', sel: null, resultados: [], series: [], corriendo: false };
+const st = { clases: [], familias: [], metodos: [], eje: 'clase', fam: null, q: '', sel: null, resultados: [], series: [], corriendo: false };
 let R = null;
 const $ = (s) => R.querySelector(s);
 
 function guardar() {
   try {
-    sessionStorage.setItem(CLAVE, JSON.stringify({ fam: st.fam, sel: st.sel, resultados: st.resultados.slice(0, 12) }));
+    // los conjuntos grandes (un universo de modelos) no entran en sessionStorage: se guardan recortados
+    const livianos = st.resultados.slice(0, 12).map((r) => ({ ...r, conjuntos: (r.conjuntos || []).map((c) => ({ ...c, filas: c.filas.slice(0, 200) })) }));
+    sessionStorage.setItem(CLAVE, JSON.stringify({ eje: st.eje, fam: st.fam, sel: st.sel, resultados: livianos }));
   } catch { /* cuota o modo privado: los resultados viven en memoria */ }
 }
 function leer() {
@@ -67,6 +69,7 @@ export async function montar(raiz) {
     </section>
     <datalist id="mt-series-dl"></datalist>`;
   const prev = leer();
+  st.eje = prev.eje || 'clase';
   st.fam = prev.fam || null;
   st.resultados = prev.resultados || [];
   try {
@@ -75,6 +78,7 @@ export async function montar(raiz) {
       fetch('/api/v1/series?limite=0').then((r) => r.json()).catch(() => []),
     ]);
     st.familias = cat.familias || [];
+    st.clases = cat.clases || [];
     st.metodos = cat.metodos || [];
     st.series = Array.isArray(ser) ? ser : ser.series || [];
   } catch (e) {
@@ -98,25 +102,33 @@ function llenarDatalist() {
 }
 
 /* ───────────────────────── catálogo ───────────────────────── */
+// Dos ejes sobre el mismo catálogo: el VERBO (qué le hace a lo que hay en la mesa) y el TEMA
 function pintarFamilias() {
   const total = st.metodos.length;
+  const grupos = st.eje === 'clase'
+    ? st.clases.map((c) => ({ id: c.id, nombre: c.nombre, ayuda: c.flujo, n: st.metodos.filter((m) => m.clase === c.id).length }))
+    : st.familias.map((f) => ({ id: f.id, nombre: `${f.icono} ${f.nombre}`, ayuda: '', n: f.n }));
   $('#mt-fams').innerHTML =
+    `<div class="seg mt-eje" role="group" aria-label="Ordenar por"><button type="button" data-eje="clase" aria-pressed="${st.eje === 'clase'}">Por verbo</button><button type="button" data-eje="familia" aria-pressed="${st.eje === 'familia'}">Por tema</button></div>` +
     `<button class="mt-fam ${st.fam ? '' : 'on'}" data-f="">Todos <span>${total}</span></button>` +
-    st.familias.filter((f) => f.n).map((f) =>
-      `<button class="mt-fam ${st.fam === f.id ? 'on' : ''}" data-f="${esc(f.id)}">${esc(f.icono)} ${esc(f.nombre)} <span>${f.n}</span></button>`).join('');
+    grupos.filter((g) => g.n).map((g) =>
+      `<button class="mt-fam ${st.fam === g.id ? 'on' : ''}" data-f="${esc(g.id)}" title="${esc(g.ayuda)}">${esc(g.nombre)} <span>${g.n}</span></button>`).join('');
   R.querySelectorAll('.mt-fam').forEach((b) => b.addEventListener('click', () => {
     st.fam = b.dataset.f || null; guardar(); pintarFamilias(); pintarLista();
+  }));
+  R.querySelectorAll('.mt-eje button').forEach((b) => b.addEventListener('click', () => {
+    st.eje = b.dataset.eje; st.fam = null; guardar(); pintarFamilias(); pintarLista();
   }));
 }
 
 function coincide(m, q) {
   if (!q) return true;
-  const txt = [m.id, m.nombre, m.pregunta, m.cuando, ...(m.etiquetas || []), m.familia_nombre].join(' ').toLowerCase();
+  const txt = [m.id, m.nombre, m.pregunta, m.cuando, ...(m.etiquetas || []), m.familia_nombre, m.clase_nombre].join(' ').toLowerCase();
   return q.split(/\s+/).every((p) => txt.includes(p));
 }
 
 function pintarLista() {
-  const lista = st.metodos.filter((m) => (!st.fam || m.familia === st.fam) && coincide(m, st.q));
+  const lista = st.metodos.filter((m) => (!st.fam || m[st.eje] === st.fam) && coincide(m, st.q));
   $('#mt-lista').innerHTML = lista.length ? lista.map((m) => `
     <button class="mt-item ${st.sel === m.id ? 'on' : ''} ${m.disponible ? '' : 'nodisp'}" data-id="${esc(m.id)}">
       <b>${esc(m.nombre)}</b>
@@ -308,20 +320,25 @@ function tarjeta(res, i) {
   const salidas = (res.series_salida || []).length ? `<div class="mt-salidas"><h4>Series que produjo este paso</h4>${res.series_salida.map((s, k) => `
       <div class="mt-salida"><span><b>${esc(s.nombre)}</b> · ${s.valores.length} obs. <small>${esc(s.descripcion || '')}</small></span>
       <button class="btn sm" data-guardar="${i}:${k}" title="Queda en «Mis series» y se puede usar como insumo de cualquier método">Guardar como serie</button></div>`).join('')}</div>` : '';
+  const conjuntos = (res.conjuntos || []).map((c) => `<details class="mt-cod"><summary>Datos · ${esc(c.nombre)} (${c.filas.length.toLocaleString('es-AR')} filas)${c.descripcion ? ' — ' + esc(c.descripcion) : ''}</summary>
+      <div class="mt-tabla"><div class="mt-scroll"><table><thead><tr>${c.columnas.map((h) => `<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${c.filas.slice(0, 100).map((f) => `<tr>${f.map((v) => `<td class="${typeof v === 'number' ? 'n' : ''}">${typeof v === 'number' ? num(v) : esc(Array.isArray(v) ? v.join(', ') : v)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>${c.filas.length > 100 ? `<small>Se muestran 100 de ${c.filas.length.toLocaleString('es-AR')} filas: el conjunto completo viaja con el resultado y se puede volver a graficar.</small>` : ''}</div></details>`).join('');
   const codigo = res.codigo ? `<details class="mt-cod"><summary>Código equivalente</summary><pre>${esc(res.codigo)}</pre></details>` : '';
   return `<article class="mt-card ${res.ok === false ? 'err' : ''}">
     <header><b>${esc(res._nombre || res.nombre || res.metodo)}</b>${sem}<span class="mt-args">${esc(argsTexto(res.args))}</span>
       <span class="mt-t">${res.meta ? num(res.meta.segundos, 2) + ' s' : ''}</span><button class="mt-x" data-quitar="${i}" title="Quitar">×</button></header>
-    <p class="mt-resumen">${esc(res.resumen)}</p>${adv}${cuerpo}${salidas}${codigo}</article>`;
+    <p class="mt-resumen">${esc(res.resumen)}</p>${adv}${cuerpo}${salidas}${conjuntos}${codigo}</article>`;
 }
 
 async function guardarSalida(btn) {
   const [i, k] = btn.dataset.guardar.split(':').map(Number);
-  const s = st.resultados[i].series_salida[k];
+  const res = st.resultados[i];
+  const s = res.series_salida[k];
+  // procedencia: de qué método y con qué argumentos salió (queda guardada al lado de los datos)
+  const origen = `${res.metodo}(${argsTexto(res.args)})`;
   btn.disabled = true; btn.textContent = 'Guardando…';
   try {
     const r = await fetch('/api/v1/mis-series/derivada', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nombre: s.nombre, fechas: s.fechas, valores: s.valores, descripcion: s.descripcion || '' }) });
+      body: JSON.stringify({ nombre: s.nombre, fechas: s.fechas, valores: s.valores, descripcion: `${s.descripcion || s.nombre} · sale de ${origen}`.slice(0, 500) }) });
     const d = await r.json();
     if (!r.ok) throw new Error(d.error?.mensaje || 'no se pudo guardar');
     btn.textContent = `✓ guardada como ${d.id}`;

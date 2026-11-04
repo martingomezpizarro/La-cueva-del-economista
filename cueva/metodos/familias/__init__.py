@@ -1,6 +1,7 @@
 """Familias del catálogo de métodos. Importar este paquete registra todos los métodos."""
 
 from cueva.metodos.familias import (  # noqa: F401
+    activos,
     causal,
     cointegracion,
     estado,
@@ -8,7 +9,6 @@ from cueva.metodos.familias import (  # noqa: F401
     exploratorio,
     filtros,
     finanzas,
-    finanzas_avanzadas,
     ml,
     multivariados,
     no_supervisado,
@@ -17,5 +17,6 @@ from cueva.metodos.familias import (  # noqa: F401
     regimenes,
     regresion,
     univariados,
+    universo,
     volatilidad,
 )

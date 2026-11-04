@@ -62,6 +62,13 @@ class PreguntaAgente(BaseModel):
     pregunta: str = Field(min_length=1, max_length=4_000)
 
 
+class RecetaEvaluar(BaseModel):
+    """Una receta (id de serie o árbol {op, de, p}) a evaluar; se valida en cueva.metodos.recetas."""
+
+    receta: str | dict
+    freq: str = Field(default="mensual", pattern=r"^(mensual|trimestral|anual|diaria)$")
+
+
 class SerieDerivada(BaseModel):
     """Salida de un método que el usuario guarda como serie propia (para encadenar métodos)."""
 
@@ -69,6 +76,7 @@ class SerieDerivada(BaseModel):
     fechas: list[str] = Field(max_length=200_000)
     valores: list[float | None] = Field(max_length=200_000)
     descripcion: str = Field(default="", max_length=500)
+    receta: str | dict | None = None  # de qué sale (si se conoce): queda guardada al lado de los datos
 
 
 class HerramientaEjecutar(BaseModel):

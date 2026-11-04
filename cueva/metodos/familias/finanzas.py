@@ -107,6 +107,7 @@ def _sharpe(r, k):
     "Rendimiento, riesgo y caídas de uno o varios activos",
     F,
     "¿Cuánto rindió, con cuánto riesgo, y cuáles fueron sus peores caídas?",
+    clase="diagnosticar",
     params=[P_SERIES("sids", "Precios / índices", minimo=1, maximo=10), P_FREQ_F],
     cuando="La ficha básica de cualquier activo o estrategia antes de compararlos.",
     trampas=["El Sharpe supone rendimientos normales: con colas pesadas, mirá Sortino y la caída máxima."],
@@ -155,6 +156,7 @@ def metricas_rendimiento(sids, freq):
     "Riesgo de cartera por Monte Carlo",
     F,
     "¿Qué distribución de resultados puede tener la cartera en el horizonte, y cuánto se puede perder?",
+    clase="simular",
     params=[
         P_SERIES("sids", "Activos (precios)", minimo=1, maximo=20),
         Param("pesos", "texto", "Pesos", ayuda="Ej. 0.5,0.3,0.2 (vacío = iguales)"),
@@ -258,6 +260,7 @@ def montecarlo_cartera(sids, pesos, freq, horizonte, simulaciones, metodo, nivel
     "Probabilidad de cruzar un nivel (Monte Carlo de trayectorias)",
     F,
     "¿Qué probabilidad hay de que el precio (o el riesgo país, o el dólar) toque un nivel antes de cierta fecha?",
+    clase="simular",
     params=[
         P_SERIE("sid", "Serie (positiva)"),
         P_FREQ_F,
@@ -368,6 +371,7 @@ def montecarlo_umbral(sid, freq, nivel_objetivo, horizonte, simulaciones, metodo
     "Carteras: Markowitz, mínima varianza, paridad de riesgo y HRP (con evaluación fuera de muestra)",
     F,
     "¿Cómo repartir entre activos, y qué regla de asignación funciona mejor FUERA de muestra?",
+    clase="evaluar",
     params=[
         P_SERIES("sids", "Activos", minimo=2, maximo=30),
         Param("freq", "opcion", "Frecuencia", defecto="mensual", opciones=["diaria", "semanal", "mensual"]),
@@ -519,6 +523,7 @@ def frontera_eficiente(sids, freq, ventana, rebalanceo, solo_largos):
     "Backtest de cruce de medias móviles (con robustez y fuera de muestra)",
     F,
     "¿Una regla de cruce de medias le gana a comprar y mantener después de costos, y sin sobreoptimizar?",
+    clase="evaluar",
     params=[
         P_SERIE("sid", "Precio"),
         P_FREQ_F,
@@ -629,6 +634,7 @@ def cruce_medias(sid, freq, rapida, lenta, modo, costo_pb):
     "Momentum dependiente del régimen",
     F,
     "¿El momentum (comprar lo que viene subiendo) funciona igual en calma que en turbulencia, en tendencia que en lateralidad?",
+    clase="evaluar",
     params=[
         P_SERIES("sids", "Activos (1 = series de tiempo; varios = transversal)", minimo=1, maximo=50),
         P_FREQ_F,
@@ -745,6 +751,7 @@ def momentum_regimen(sids, freq, formacion, salto, regimen, sid_regimen, ventana
     "Trading de pares (cointegración + reversión a la media)",
     F,
     "¿Dos activos tienen un diferencial que revierte, y se puede operar ese diferencial fuera de muestra?",
+    clase="evaluar",
     params=[
         P_SERIE("sid_a", "Activo A"),
         P_SERIE("sid_b", "Activo B"),
@@ -857,6 +864,7 @@ def pares_trading(sid_a, sid_b, freq, formacion, entrada, salida, ventana_z, cos
     "Clusters y regímenes de volatilidad",
     F,
     "¿En qué régimen de volatilidad está el activo, cuánto suelen durar, y la volatilidad se agrupa?",
+    clase="diagnosticar",
     params=[
         P_SERIE("sid", "Precio"),
         P_FREQ_F,
@@ -949,6 +957,7 @@ def regimenes_volatilidad(sid, freq, ventana, regimenes):
     "Mapa de estacionalidad (intradía, día de la semana, mes)",
     F,
     "¿Hay horas, días o meses en los que el activo rinde (o se mueve) sistemáticamente distinto?",
+    clase="mirar",
     params=[
         P_SERIE("sid", "Precio"),
         Param(
@@ -1062,6 +1071,7 @@ def estacionalidad_calendario(sid, mapa, medida):
     "Chequeo de neutralidad a factores (betas, alfa y exposición en el tiempo)",
     F,
     "¿La estrategia o el activo gana por habilidad (alfa) o porque está expuesto a factores (mercado, dólar, tasa)?",
+    clase="diagnosticar",
     params=[
         P_SERIE("sid", "Activo o estrategia (precio / índice)"),
         P_SERIES("factores", "Factores (precios / índices)", minimo=1, maximo=8),

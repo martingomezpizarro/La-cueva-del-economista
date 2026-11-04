@@ -14,7 +14,8 @@ Endpoints (todos bajo /api/v1):
     GET    /api/v1/herramientas                   → herramientas econométricas disponibles
     POST   /api/v1/herramienta                    → ejecuta una herramienta {nombre, args, proyecto_id?}
                                                     (también cualquier método del catálogo)
-    GET    /api/v1/metodos                        → catálogo de métodos (familias + declaración de cada uno)
+    GET    /api/v1/metodos                        → catálogo: verbos, familias, métodos y operaciones de recetas
+    POST   /api/v1/recetas/evaluar                → evalúa una receta (serie derivada) {receta, freq}
     GET    /api/v1/metodos/{id}                   → declaración completa de un método
     GET    /api/v1/mis-series                     → series propias del usuario
     POST   /api/v1/mis-series                     → sube un CSV propio (precios, bases)
@@ -75,6 +76,7 @@ from .esquemas import (
     PreguntaAgente,
     ProyectoCrear,
     ProyectoPatch,
+    RecetaEvaluar,
     SerieDerivada,
 )
 
@@ -350,14 +352,46 @@ def crear_app() -> FastAPI:
     # ── catálogo de métodos (econometría, ML, redes, finanzas) ─────────────
     @app.get("/api/v1/metodos")
     def listar_metodos():
+        from cueva.metodos import recetas as R
         from cueva.metodos import registro as MR
-        from cueva.metodos.contrato import FAMILIAS
+        from cueva.metodos.contrato import CLASES, FAMILIAS
 
         cat = MR.catalogo()
+        ops = R.catalogo_operaciones()
         familias = [
             {"id": k, **v, "n": sum(1 for m in cat if m["familia"] == k)} for k, v in FAMILIAS.items()
         ]
-        return JSONResponse({"familias": familias, "metodos": cat})
+        clases = [
+            {
+                "id": k,
+                **v,
+                "n": sum(1 for m in cat if m["clase"] == k) + sum(1 for o in ops if o["clase"] == k),
+            }
+            for k, v in CLASES.items()
+        ]
+        return JSONResponse({"clases": clases, "familias": familias, "metodos": cat, "operaciones": ops})
+
+    @app.post("/api/v1/recetas/evaluar")
+    def evaluar_receta(body: RecetaEvaluar):
+        """Evalúa una receta (árbol de operaciones sobre series) y devuelve la serie + su texto."""
+        from cueva.metodos import recetas as R
+        from cueva.metodos.contrato import ErrorMetodo, limpiar
+
+        try:
+            s = R.evaluar(body.receta, body.freq)
+        except ErrorMetodo as e:
+            raise HTTPException(422, str(e)) from e
+        return JSONResponse(
+            limpiar(
+                {
+                    "texto": R.texto(body.receta),
+                    "huella": R.huella(body.receta),
+                    "hojas": R.hojas(body.receta),
+                    "fechas": [str(f.date()) for f in s.index],
+                    "valores": s.values.tolist(),
+                }
+            )
+        )
 
     @app.get("/api/v1/metodos/{mid}")
     def obtener_metodo(mid: str = Path(pattern=r"^[a-z][a-z0-9_]{1,29}$")):
@@ -393,7 +427,9 @@ def crear_app() -> FastAPI:
 
         try:
             return JSONResponse(
-                mis_series.guardar_derivada(body.nombre, body.fechas, body.valores, body.descripcion)
+                mis_series.guardar_derivada(
+                    body.nombre, body.fechas, body.valores, body.descripcion, body.receta
+                )
             )
         except mis_series.ArchivoInvalido as e:
             raise HTTPException(422, str(e)) from e

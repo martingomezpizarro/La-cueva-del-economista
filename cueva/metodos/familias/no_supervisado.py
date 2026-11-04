@@ -29,6 +29,7 @@ FREQS = ["diaria", "mensual", "trimestral", "anual"]
     "Componentes principales (PCA)",
     F,
     "¿Cuántas fuerzas comunes mueven a un grupo de series y cuál es su 'índice' resumen?",
+    clase="descomponer",
     params=[
         P_SERIES("sids", "Series (3 a 40)", minimo=3, maximo=40),
         Param("freq", "opcion", "Frecuencia", defecto="mensual", opciones=FREQS),
@@ -296,6 +297,7 @@ def clusters_periodos(sids, freq, transf, grupos, suavizado, algoritmo):
     "Detección de anomalías (STL robusto + bosque de aislamiento)",
     F,
     "¿Qué períodos fueron atípicos y coinciden con algún evento histórico?",
+    clase="diagnosticar",
     params=[
         P_SERIE(),
         Param("freq", "opcion", "Frecuencia", defecto="mensual", opciones=FREQS),

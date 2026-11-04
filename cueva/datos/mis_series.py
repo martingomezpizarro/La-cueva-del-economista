@@ -87,6 +87,7 @@ def listar() -> list[dict]:
     out = []
     for sid, info in S.catalogo().items():
         if info.origen == S.ORIGEN_USUARIO:
+            r = receta_de(sid)
             out.append(
                 {
                     "id": sid,
@@ -95,6 +96,7 @@ def listar() -> list[dict]:
                     "n": info.n,
                     "desde": info.desde,
                     "hasta": info.hasta,
+                    "receta": r["texto"] if r else None,
                 }
             )
     return sorted(out, key=lambda x: x["id"])
@@ -107,11 +109,15 @@ def borrar(archivo: str) -> bool:
     if not ruta.exists():
         return False
     ruta.unlink()
+    for extra in (".txt", ".receta.json"):
+        ruta.with_name(ruta.stem + extra).unlink(missing_ok=True)
     S.refrescar()
     return True
 
 
-def guardar_derivada(nombre: str, fechas: list[str], valores: list, descripcion: str = "") -> dict:
+def guardar_derivada(
+    nombre: str, fechas: list[str], valores: list, descripcion: str = "", receta=None
+) -> dict:
     """Guarda como serie propia una SALIDA de un método (ciclo HP, probabilidad de régimen,
     factor, pronóstico…). Así se encadenan métodos: la salida de uno es insumo del siguiente."""
     import pandas as pd
@@ -129,5 +135,31 @@ def guardar_derivada(nombre: str, fechas: list[str], valores: list, descripcion:
     df.to_csv(carpeta / f"{base}.csv", index=False, encoding="utf-8-sig")
     if descripcion:
         (carpeta / f"{base}.txt").write_text(descripcion[:500], encoding="utf-8")
+    texto = ""
+    if receta is not None:
+        import json
+
+        from cueva.metodos import recetas as R
+
+        R.validar(receta)
+        texto = R.texto(receta)
+        (carpeta / f"{base}.receta.json").write_text(
+            json.dumps(
+                {"receta": receta, "texto": texto, "huella": R.huella(receta), "hojas": R.hojas(receta)},
+                ensure_ascii=False,
+                indent=1,
+            ),
+            encoding="utf-8",
+        )
     S.refrescar()
-    return {"archivo": f"{base}.csv", "id": base}
+    return {"archivo": f"{base}.csv", "id": base, "receta": texto}
+
+
+def receta_de(sid: str) -> dict | None:
+    """La receta guardada de una serie de Mis series (o None si se subió como dato)."""
+    import json
+
+    ruta = S.carpeta_usuario() / f"{sid}.receta.json"
+    if not ruta.exists():
+        return None
+    return json.loads(ruta.read_text(encoding="utf-8"))

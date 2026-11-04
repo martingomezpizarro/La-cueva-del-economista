@@ -934,6 +934,7 @@ def _clasificador(nombre):
     "Selección de predictores entre muchas series (estabilidad Lasso + bosque)",
     F,
     "De 10-40 series candidatas del catálogo, ¿cuáles ayudan de verdad a predecir Y?",
+    clase="evaluar",
     params=[
         P_SERIE("dep", "Objetivo (Y)"),
         P_SERIES("candidatas", "Candidatas", minimo=2, maximo=40),

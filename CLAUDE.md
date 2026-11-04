@@ -13,7 +13,7 @@ visual: `docs/mockup/cueva-mockup.html` (publicado como artifact; el documento m
 
 ## Estado (actualizado 2026-07-14)
 
-**Catálogo de métodos: 100 métodos en 16 familias (sesión 2026-11-04).** Mapa completo,
+**Catálogo de métodos: 102 métodos en 16 familias y 9 VERBOS + 20 operaciones de recetas (sesión 2026-11-04).** Mapa completo,
 pendientes y hoja de ruta en **`docs/INVESTIGACION_METODOS.md`** (leerlo antes de sumar métodos).
 - **`cueva/metodos/`**: cada método se DECLARA con `@metodo(...)` (familia, pregunta, `Param`
   tipados, supuestos, trampas, deps, costo, referencias) y devuelve un `Resultado` con BLOQUES
@@ -55,6 +55,18 @@ pendientes y hoja de ruta en **`docs/INVESTIGACION_METODOS.md`** (leerlo antes d
   `curva_nelson_siegel`; en evaluación `intervalos_conformales` y el MCS dentro del torneo.
 - ⚠ `tests/sinteticas_metodos.py`: una serie nueva que use el `rng` compartido cambia TODAS las
   siguientes (y los tests de conclusiones); usar un generador propio por serie nueva.
+- **Revisión de arquitectura (misma sesión, `INVESTIGACION_METODOS.md` §5.1)**:
+  `cueva/metodos/recetas.py` es LA definición de las transformaciones (una serie derivada =
+  receta JSON `{op, de, p}` con `texto`/`huella`/`hojas`); todo param `serie` acepta una receta
+  (se vuelve id `r:<huella>`); `Metodo.clase` = verbo (`contrato.CLASES`); `Resultado.conjunto()`
+  para tablas de datos crudas; `universo_modelos` y `granger_matriz` (el método del TF) en
+  `familias/universo.py`; caché de carga en `insumos.cargar_base`; Mis series guarda la receta
+  en `.receta.json`. `herramientas.py` es capa de compatibilidad: NO sumar herramientas ahí.
+  `finanzas_avanzadas.py` se renombró `activos.py`. API nueva: `POST /api/v1/recetas/evaluar`.
+- Mockup de la Mesa de investigación con el TF: `docs/mockup/mesa-investigacion.html`
+  (artifact), armado por `scripts/mockup_mesa_investigacion_datos.py` (panel del repo
+  `riesgo-pais-argentino`) + `scripts/armar_mockup_mesa_investigacion.py`.
+- statsmodels 0.15 quitó `verbose` de `grangercausalitytests`: pasarlo sólo si existe.
 - Dependencias: extra `[ml]` (xgboost, lightgbm, ruptures; el CI lo instala). Sin él, esos
   métodos aparecen como «falta instalar». `torch` NO se usa (bloqueado en el sandbox y pesado).
 - ⚠ CI: ya venía rojo antes de esta sesión por `ruff format --check .` (35 archivos ajenos) y

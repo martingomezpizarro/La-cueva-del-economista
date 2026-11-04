@@ -188,6 +188,11 @@ ARGS: dict[str, dict] = {
     "colas_extremas": dict(sid="mercado"),
     "curva_nelson_siegel": dict(sids=["fac0", "fac1", "fac2", "fac3"], plazos="0.25, 1, 5, 10"),
     "intervalos_conformales": dict(ML, modelo="svr"),
+    # universo de modelos (el método del Trabajo Final)
+    "universo_modelos": dict(
+        dep="coint_y", candidatas=["coint_x", "ar1", "paseo"], tamanos=["1", "2"], max_por_modelo=50
+    ),
+    "granger_matriz": dict(sids=["pred_x", "pred_y", "ar1"], max_rezago=4),
 }
 
 
@@ -461,3 +466,185 @@ def test_api_metodos_y_mis_series(banco):
         c.post("/api/v1/mis-series", files={"archivo": ("x.txt", b"hola", "text/plain")}).status_code == 422
     )
     assert c.delete("/api/v1/mis-series/mis_mi_accion.csv").json()["ok"]
+
+
+# ──────────────────────────────────────────────────────────────────────────
+# Recetas, verbos y caché (revisión de arquitectura 2026-11-04)
+# ──────────────────────────────────────────────────────────────────────────
+def test_todo_metodo_tiene_un_verbo_valido():
+    from cueva.metodos.contrato import CLASES
+
+    cat = catalogo()
+    assert all(m["clase"] in CLASES for m in cat)
+    assert {"diagnosticar", "descomponer", "modelar", "simular", "evaluar"} <= {m["clase"] for m in cat}
+
+
+def test_receta_texto_huella_y_hojas():
+    from cueva.metodos import recetas as R
+
+    r = {"op": "dif", "de": [{"op": "log", "de": ["emae"]}], "p": {"k": 12}}
+    assert R.texto(r) == "Δ12 log emae"
+    assert R.huella(r) == R.huella({"p": {"k": 12}, "de": [{"de": ["emae"], "op": "log"}], "op": "dif"})
+    assert R.hojas({"op": "cociente", "de": [r, "ipc"]}) == ["emae", "ipc"]
+
+
+@pytest.mark.parametrize(
+    "mala",
+    [
+        {"op": "exec", "de": ["x"]},
+        {"op": "log", "de": ["a", "b"]},
+        {"op": "dif", "de": ["x"], "p": {"k": 999}},
+        {"op": "dif", "de": ["x"], "p": {"codigo": "rm -rf"}},
+        {"op": "log", "de": ["../../etc/passwd"]},
+        {
+            "op": "log",
+            "de": [
+                {
+                    "op": "log",
+                    "de": [
+                        {
+                            "op": "log",
+                            "de": [
+                                {
+                                    "op": "log",
+                                    "de": [
+                                        {
+                                            "op": "log",
+                                            "de": [
+                                                {
+                                                    "op": "log",
+                                                    "de": [
+                                                        {
+                                                            "op": "log",
+                                                            "de": [
+                                                                {
+                                                                    "op": "log",
+                                                                    "de": [
+                                                                        {
+                                                                            "op": "log",
+                                                                            "de": [
+                                                                                {
+                                                                                    "op": "log",
+                                                                                    "de": [
+                                                                                        {
+                                                                                            "op": "log",
+                                                                                            "de": [
+                                                                                                {
+                                                                                                    "op": "log",
+                                                                                                    "de": [
+                                                                                                        {
+                                                                                                            "op": "log",
+                                                                                                            "de": [
+                                                                                                                "x"
+                                                                                                            ],
+                                                                                                        }
+                                                                                                    ],
+                                                                                                }
+                                                                                            ],
+                                                                                        }
+                                                                                    ],
+                                                                                }
+                                                                            ],
+                                                                        }
+                                                                    ],
+                                                                }
+                                                            ],
+                                                        }
+                                                    ],
+                                                }
+                                            ],
+                                        }
+                                    ],
+                                }
+                            ],
+                        }
+                    ],
+                }
+            ],
+        },
+    ],
+)
+def test_receta_invalida_se_rechaza(mala):
+    from cueva.metodos import recetas as R
+    from cueva.metodos.contrato import ErrorMetodo
+
+    with pytest.raises(ErrorMetodo):
+        R.validar(mala)
+
+
+def test_receta_evalua_igual_que_a_mano(banco):
+    from cueva.metodos import recetas as R
+
+    s = R.evaluar({"op": "cociente", "de": ["coint_y", {"op": "rezago", "de": ["coint_x"], "p": {"k": 1}}]})
+    y, x = S.cargar("coint_y", "mensual"), S.cargar("coint_x", "mensual").shift(1)
+    esperado = (y / x).dropna()
+    assert np.allclose(s.values, esperado.values)
+
+
+def test_cualquier_metodo_corre_sobre_una_receta(banco):
+    r = ejecutar("raiz_unitaria", {"sid": {"op": "dif", "de": ["paseo"]}})
+    assert r["ok"] and r["datos"]["orden"] == 0
+    r = ejecutar(
+        "mco",
+        {
+            "dep": {"op": "dif", "de": ["coint_y"]},
+            "indeps": [{"op": "dif", "de": ["coint_x"]}],
+            "transf": "nivel",
+        },
+    )
+    assert r["ok"] and 0.6 < list(r["datos"]["coef"].values())[1] < 1.1
+
+
+def test_transformaciones_viejas_y_recetas_coinciden(banco):
+    from cueva.econometria.herramientas import _transformar
+    from cueva.metodos import recetas as R
+
+    base = S.cargar("positiva", "mensual")
+    for t in ("log", "dif", "dif2", "dif_log", "pct"):
+        a, _ = _transformar(base, t)
+        b = R.evaluar({"op": t, "de": ["positiva"]})
+        assert np.allclose(a.values, b.values), t
+
+
+def test_la_carga_usa_cache(banco, monkeypatch):
+    from cueva.metodos import insumos
+
+    llamadas = []
+    original = S.cargar
+    monkeypatch.setattr(S, "cargar", lambda *a, **k: llamadas.append(a) or original(*a, **k))
+    insumos._CACHE.clear()
+    for _ in range(5):
+        insumos.cargar_base("ar1", "mensual")
+    assert len(llamadas) == 1
+
+
+def test_universo_devuelve_datos_ademas_de_dibujos(banco):
+    r = ejecutar("universo_modelos", ARGS["universo_modelos"])
+    nombres = {c["nombre"] for c in r["conjuntos"]}
+    assert {"modelos", "efectos", "explicativas"} <= nombres
+    efectos = next(c for c in r["conjuntos"] if c["nombre"] == "efectos")
+    assert efectos["columnas"] == ["modelo", "var", "coef_lp", "p"] and len(efectos["filas"]) > 20
+
+
+def test_api_recetas_y_procedencia(banco):
+    from fastapi.testclient import TestClient
+
+    from cueva.api.app import crear_app
+
+    c = TestClient(crear_app())
+    cat = c.get("/api/v1/metodos").json()
+    assert {x["id"] for x in cat["clases"]} >= {"transformar", "combinar", "modelar"}
+    assert any(o["id"] == "hp" for o in cat["operaciones"])
+    receta = {"op": "hp", "de": [{"op": "log", "de": ["positiva"]}], "p": {"parte": "ciclo"}}
+    ev = c.post("/api/v1/recetas/evaluar", json={"receta": receta}).json()
+    assert (
+        ev["texto"] == "HP-ciclo(log positiva)" and ev["hojas"] == ["positiva"] and len(ev["valores"]) > 100
+    )
+    assert c.post("/api/v1/recetas/evaluar", json={"receta": {"op": "nada", "de": ["x"]}}).status_code == 422
+    g = c.post(
+        "/api/v1/mis-series/derivada",
+        json={"nombre": "ciclo", "fechas": ev["fechas"], "valores": ev["valores"], "receta": receta},
+    ).json()
+    assert g["receta"] == "HP-ciclo(log positiva)"
+    lista = {x["id"]: x for x in c.get("/api/v1/mis-series").json()}
+    assert lista["mis_ciclo"]["receta"] == "HP-ciclo(log positiva)"

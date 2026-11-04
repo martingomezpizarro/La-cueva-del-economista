@@ -149,6 +149,7 @@ def _cerrar_pronostico(r, s, et, freq, media, inf, sup, nombre):
     "Pronósticos ingenuos de referencia",
     F,
     "¿Qué error tiene el pronóstico más tonto? Es la vara contra la que se mide todo lo demás.",
+    clase="evaluar",
     params=[P_SERIE(), P_FREQ, P_TRANSF, P_HORIZONTE(12), P_TEST],
     cuando="Siempre que se pronostique: un modelo que no le gana al paseo aleatorio no aporta.",
     trampas=["Comparar modelos sin benchmark ingenuo es la forma más común de engañarse con ML."],

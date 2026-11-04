@@ -16,7 +16,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from cueva.econometria.herramientas import TRANSFORMACIONES, _transformar
+from cueva.econometria.herramientas import TRANSFORMACIONES
 from cueva.metodos.contrato import ErrorMetodo, Param
 
 FRECUENCIAS = ["mensual", "trimestral", "anual"]
@@ -68,21 +68,70 @@ def _recortar(s, desde: str | None, hasta: str | None):
     return s
 
 
-def serie(sid: str, freq: str = "mensual", transf: str | None = "nivel", desde=None, hasta=None, minimo=12):
-    """Carga UNA serie del catálogo, transformada y recortada. Devuelve (pd.Series, etiqueta)."""
+# ── carga con caché (una serie se lee del disco UNA vez por versión del archivo) ──
+_CACHE: dict[tuple, tuple] = {}
+_RECETAS: dict[str, object] = {}  # "r:<huella>" → receta (registradas al validar argumentos)
+
+
+def registrar_receta(receta) -> str:
+    """Convierte una receta en un id de serie («r:<huella>») que cualquier método acepta."""
+    from cueva.metodos import recetas as R
+
+    R.validar(receta)
+    if isinstance(receta, str):
+        return receta
+    token = "r:" + R.huella(receta)
+    _RECETAS[token] = receta
+    return token
+
+
+def receta_de(sid: str):
+    """La receta detrás de un id (un id del catálogo es su propia receta)."""
+    return _RECETAS.get(sid, sid)
+
+
+def cargar_base(sid: str, freq: str = "mensual") -> pd.Series:
+    """Serie del catálogo (o de Mis series, o una receta registrada) a la frecuencia pedida."""
+    import os
+
     from cueva.datos import series as S
 
+    if sid in _RECETAS:
+        from cueva.metodos import recetas as R
+
+        return R.evaluar(_RECETAS[sid], freq)
+    cat = S.catalogo()
+    if sid not in cat:
+        raise ErrorMetodo(f"No existe la serie «{sid}» en el catálogo.")
     try:
-        s = S.cargar(sid, freq=freq)
-    except KeyError as e:
-        raise ErrorMetodo(f"No existe la serie «{sid}» en el catálogo.") from e
-    s = s.astype(float)
-    s, suf = _transformar(s, transf)
-    s = _recortar(s, desde, hasta).replace([np.inf, -np.inf], np.nan).dropna()
+        version = os.stat(cat[sid].archivo).st_mtime_ns
+    except OSError:
+        version = 0
+    clave = (sid, freq)
+    hit = _CACHE.get(clave)
+    if hit and hit[0] == version:
+        return hit[1].copy()
+    s = S.cargar(sid, freq=freq).astype(float)
+    if len(_CACHE) > 512:
+        _CACHE.clear()
+    _CACHE[clave] = (version, s)
+    return s.copy()
+
+
+def serie(sid: str, freq: str = "mensual", transf: str | None = "nivel", desde=None, hasta=None, minimo=12):
+    """Carga UNA serie (id del catálogo o receta registrada), transformada y recortada.
+    Devuelve (pd.Series, etiqueta). La transformación pasa por el motor de recetas."""
+    from cueva.metodos import recetas as R
+
+    s = R.evaluar(R.de_transf(sid, transf), freq, cargar_base)
+    s = _recortar(s, desde, hasta).dropna()
+    base = R.texto(receta_de(sid)) if sid in _RECETAS else sid
+    t = (transf or "nivel").lower()
+    et = base if t in ("", "nivel", "none") else f"{base} ({TRANSFORMACIONES.get(t, t)})"
     s.name = sid
     if len(s) < minimo:
-        raise ErrorMetodo(f"«{sid}{suf}» tiene {len(s)} observaciones; hacen falta al menos {minimo}.")
-    return s, f"{sid}{suf}"
+        raise ErrorMetodo(f"«{et}» tiene {len(s)} observaciones; hacen falta al menos {minimo}.")
+    return s, et
 
 
 def panel(
