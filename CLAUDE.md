@@ -76,6 +76,21 @@ pendientes y hoja de ruta en **`docs/INVESTIGACION_METODOS.md`** (leerlo antes d
   /api/v1/mis-resultados`). `universo_modelos` y `granger_matriz` devuelven tablas
   DESNORMALIZADAS (nombres, no índices) para filtrar sin cruzar tablas. p-valores con 4 cifras
   significativas (redondear a decimales los convertía en 0).
+- **Código Python restringido** (`cueva/metodos/codigo.py`, sesión 2026-11-05): el usuario pega
+  código; las series son variables, las operaciones de recetas son funciones (`hp`, `dif`, `mm`,
+  `residuo(y, x1, x2)`, `dummy`…) y hay métodos de pandas en lista blanca (`.rolling(k).mean()`,
+  `.shift`, `.pct_change`…). `ast` + lista blanca de nodos, SIN `eval`; imports, bucles,
+  lambdas, dunders y kwargs se rechazan antes de ejecutar. Receta especial `{"op": "codigo"}`
+  (validada en `recetas.validar`), entra a cualquier método. API `POST /api/v1/codigo/evaluar`.
+- **Lienzo de paneles del mockup** (misma sesión): la Mesa ya no tiene UN gráfico con «vista»
+  sino N paneles (`st.paneles`), cada uno con un MODO (tiempo · dispersión · distribución · 3D ·
+  árbol) y CAPAS mezclables (línea/área/barras/puntos/escalón, eje izq./der., color, estilo,
+  visible). Una capa apunta a una REFERENCIA = ficha + cadena de transformaciones con
+  parámetros (`OPSJ`, espejo de recetas) que se muestran como chips y se sacan con ✕. Deshacer/
+  rehacer por fotos del estado (Ctrl+Z/Y). Clusters k-medias (color + ficha de etiquetas),
+  árbol CART propio con nodos clicables (dummy del nodo / predicción como fichas), 3D rotable.
+  La tabla viva ahora elige qué mandar con casillas (columnas y filas, sin tope) y tiene
+  «→ Fichas» / «→ Gráfico» (`alGraficar`, opcional). Pendiente: portar el lienzo a `/mesa`.
 - ⚠ En SVG, `el.hidden = true` NO oculta (la propiedad es de HTML): usar `style.display`.
 - statsmodels 0.15 quitó `verbose` de `grangercausalitytests`: pasarlo sólo si existe.
 - Dependencias: extra `[ml]` (xgboost, lightgbm, ruptures; el CI lo instala). Sin él, esos

@@ -9,15 +9,18 @@
  *   · filtrar por columna  (escribí  <0.05   >0   =ARDL   !=VAR   o un texto)
  *   · agrupar por una columna y resumir otra  (n, media, mediana, mín, máx, suma, % < α, % > 0)
  *     — el resumen es otra tabla viva, que también se selecciona
- *   · seleccionar COLUMNAS (clic en el encabezado; hasta 2), FILAS (clic en la fila,
- *     shift = rango) o ambas: la intersección es la selección
- *   · ver la selección como histograma, barras, líneas o dispersión (2 columnas)
- *   · guardarla: como serie temporal (si la tabla tiene fechas) o como vector de resultados
+ *   · elegir QUÉ MANDAR con casillas a la vista: columnas (encabezado o chips «Mandar:»,
+ *     todas las que quieras) y/o filas (casilla de la fila, shift = rango, la del «#» = todas
+ *     las visibles). Columnas + filas = sólo esas filas de esas columnas.
+ *   · ver la selección como histograma, barras, líneas o dispersión (las 2 primeras = x, y)
+ *   · mandarla: «→ Ficha(s)» = una por columna (o por fila), como serie temporal si la tabla
+ *     tiene fechas o como vector de resultados; «→ Gráfico» = fichas + un gráfico nuevo
  *
  * Uso:  montarTabla(contenedor, { nombre, columnas, filas, descripcion }, {
  *          origen: 'texto de procedencia',
  *          alGuardarSerie: async ({ nombre, fechas, valores, procedencia }) => '…mensaje',
- *          alGuardarVector: async ({ nombre, etiquetas, valores, procedencia }) => '…mensaje' })
+ *          alGuardarVector: async ({ nombre, etiquetas, valores, procedencia }) => '…mensaje',
+ *          alGraficar: async ([{ nombre, etiquetas, fechas, valores, procedencia }]) => '…mensaje' })  // opcional
  *
  * Todo texto se escapa. No depende de nada más que de los tokens de color del tema.
  */
@@ -69,10 +72,10 @@ export function montarTabla(cont, conjunto, opciones = {}) {
 
   const numericas = () => t.columnas.map((_, j) => t.filas.some((f) => typeof f[j] === 'number'));
   const colFecha = () => t.columnas.findIndex((_, j) => t.filas.length && t.filas.slice(0, 20).every((f) => esFecha(f[j])));
-  const colEtiqueta = () => {
-    const nums = numericas();
-    const j = t.columnas.findIndex((_, k) => !nums[k] && k !== colFecha());
-    return j;
+  /** Columnas de texto que identifican una fila (hasta 3): «ITCRM · RPI», «ARDL · (1,2) · ITCRM». */
+  const colsEtiqueta = () => {
+    const nums = numericas(), jf = colFecha();
+    return t.columnas.map((_, k) => k).filter((k) => !nums[k] && k !== jf).slice(0, 3);
   };
   function visibles() {
     const idx = [];
@@ -88,8 +91,8 @@ export function montarTabla(cont, conjunto, opciones = {}) {
     const vis = visibles();
     const filas = filasSel.size ? vis.filter((i) => filasSel.has(i)) : vis;
     const nums = numericas();
-    const jEt = colEtiqueta(), jF = colFecha();
-    const etiq = (i) => (jEt >= 0 ? String(t.filas[i][jEt]) : jF >= 0 ? t.filas[i][jF] : `fila ${i + 1}`);
+    const jEt = colsEtiqueta(), jF = colFecha();
+    const etiq = (i) => (jEt.length ? jEt.map((j) => String(t.filas[i][j])).join(' · ') : jF >= 0 ? t.filas[i][jF] : `fila ${i + 1}`);
     if (colsSel.length) {
       const cols = colsSel.filter((j) => nums[j]);
       return {
@@ -115,6 +118,14 @@ export function montarTabla(cont, conjunto, opciones = {}) {
     return null;
   }
 
+  /** Lo que se manda: una entrada por columna elegida (o por fila elegida, a lo ancho). */
+  function items() {
+    const sel = seleccion(); if (!sel) return [];
+    const f = filtroTexto();
+    if (sel.modo === 'columnas') return sel.cols.map((j, k) => ({ nombre: `${t.columnas[j]} · ${t.nombre}${f}`.slice(0, 80), etiquetas: sel.etiquetas, fechas: sel.fechas, valores: sel.valores[k], procedencia: `${opciones.origen || ''} · ${t.nombre} · columna ${t.columnas[j]}${f}`.slice(0, 480) }));
+    return sel.filas.map((_, k) => ({ nombre: `${sel.nombresFilas[k]} · ${t.nombre}`.slice(0, 80), etiquetas: sel.etiquetas, fechas: null, valores: sel.valores[k], procedencia: `${opciones.origen || ''} · ${t.nombre} · fila ${sel.nombresFilas[k]}`.slice(0, 480) }));
+  }
+
   function render() {
     const vis = visibles();
     const nums = numericas();
@@ -122,7 +133,7 @@ export function montarTabla(cont, conjunto, opciones = {}) {
     pagina = Math.min(pagina, paginas - 1);
     const muestra = vis.slice(pagina * POR_PAGINA, (pagina + 1) * POR_PAGINA);
     const sel = seleccion();
-    const nsel = sel ? (sel.modo === 'columnas' ? sel.filas.length : sel.filas.length) : 0;
+    const its = items();
     const colsOpc = t.columnas.map((c, j) => `<option value="${j}">${escT(c)}</option>`).join('');
     const numOpc = t.columnas.map((c, j) => (nums[j] ? `<option value="${j}">${escT(c)}</option>` : '')).join('');
     cont.innerHTML = `
@@ -137,23 +148,25 @@ export function montarTabla(cont, conjunto, opciones = {}) {
         <button type="button" class="tv-b" data-tv="agrupar">Agrupar</button>
       </div>
       <div class="tv-scroll"><table class="tv-t">
-        <thead><tr><th class="tv-i">#</th>${t.columnas.map((c, j) => `<th data-col="${j}" class="${colsSel.includes(j) ? 'sel' : ''} ${nums[j] ? 'num' : ''}" title="Clic: seleccionar la columna${nums[j] ? '' : ' (no numérica)'}">${escT(c)}${colsSel.includes(j) ? ` <b>${colsSel.indexOf(j) === 0 ? 'x' : 'y'}</b>` : ''}</th>`).join('')}</tr>
+        <thead><tr><th class="tv-i"><input type="checkbox" data-tv="todas" title="Elegir todas las filas visibles" aria-label="Elegir todas las filas visibles" ${muestra.length && muestra.every((i) => filasSel.has(i)) ? 'checked' : ''}></th>${t.columnas.map((c, j) => `<th data-col="${j}" class="${colsSel.includes(j) ? 'sel' : ''} ${nums[j] ? 'num' : ''}" title="${nums[j] ? 'Elegir esta columna para mandarla a una ficha o a un gráfico' : 'Columna de texto: sirve para filtrar y agrupar'}">${nums[j] ? `<input type="checkbox" tabindex="-1" ${colsSel.includes(j) ? 'checked' : ''} aria-label="Elegir ${escT(c)}"> ` : ''}${escT(c)}${colsSel.length > 1 && colsSel.includes(j) ? ` <b>${colsSel.indexOf(j) === 0 ? 'x' : colsSel.indexOf(j) === 1 ? 'y' : colsSel.indexOf(j) + 1}</b>` : ''}</th>`).join('')}</tr>
         <tr class="tv-f"><th></th>${t.columnas.map((c, j) => `<th><input data-filtro="${j}" value="${escT(filtros[j] || '')}" placeholder="${nums[j] ? 'ej. <0.05' : 'ej. =ARDL'}" aria-label="Filtrar ${escT(c)}"></th>`).join('')}</tr></thead>
-        <tbody>${muestra.map((i) => `<tr data-fila="${i}" class="${filasSel.has(i) ? 'sel' : ''}"><td class="tv-i">${i + 1}</td>${t.filas[i].map((v, j) => `<td class="${typeof v === 'number' ? 'n' : ''} ${colsSel.includes(j) ? 'csel' : ''}">${typeof v === 'number' ? numT(v) : escT(Array.isArray(v) ? v.join(', ') : v)}</td>`).join('')}</tr>`).join('')}</tbody>
+        <tbody>${muestra.map((i) => `<tr data-fila="${i}" class="${filasSel.has(i) ? 'sel' : ''}"><td class="tv-i"><input type="checkbox" tabindex="-1" ${filasSel.has(i) ? 'checked' : ''} aria-label="Elegir la fila ${i + 1}"> ${i + 1}</td>${t.filas[i].map((v, j) => `<td class="${typeof v === 'number' ? 'n' : ''} ${colsSel.includes(j) ? 'csel' : ''}">${typeof v === 'number' ? numT(v) : escT(Array.isArray(v) ? v.join(', ') : v)}</td>`).join('')}</tr>`).join('')}</tbody>
       </table></div>
       ${paginas > 1 ? `<div class="tv-pag"><button type="button" class="tv-b" data-tv="ant" ${pagina ? '' : 'disabled'}>‹</button><span>página ${pagina + 1} de ${paginas}</span><button type="button" class="tv-b" data-tv="sig" ${pagina < paginas - 1 ? '' : 'disabled'}>›</button></div>` : ''}
       <div class="tv-sel ${sel ? 'on' : ''}">
-        ${sel ? `<span><b>Selección:</b> ${sel.modo === 'columnas' ? `columna${sel.cols.length > 1 ? 's' : ''} «${escT(sel.nombre)}»` : `${sel.filas.length} fila${sel.filas.length > 1 ? 's' : ''} (a lo ancho)`} · ${nsel.toLocaleString('es-AR')} ${sel.modo === 'columnas' ? 'valores' : 'vectores'}${escT(filtroTexto())}</span>
+        <span class="tv-mandar"><b>Mandar:</b> ${t.columnas.map((c, j) => (nums[j] ? `<button type="button" class="tv-chip" data-ccol="${j}" aria-pressed="${colsSel.includes(j)}">${colsSel.includes(j) ? '☑' : '☐'} ${escT(c)}</button>` : '')).join('')}${filasSel.size ? `<span class="tv-chip on">☑ ${filasSel.size} fila${filasSel.size > 1 ? 's' : ''}</span>` : ''}</span>
+        ${sel ? `<span><b>${its.length}</b> ${sel.modo === 'columnas' ? `columna${its.length > 1 ? 's' : ''} × ${sel.filas.length.toLocaleString('es-AR')} valores${filasSel.size ? ' (sólo las filas tildadas)' : ''}` : `fila${its.length > 1 ? 's' : ''} a lo ancho × ${sel.cols.length} valores`}${escT(filtroTexto())}</span>
         <span class="tv-acc">
+          ${opciones.alGraficar ? `<button type="button" class="tv-b pri" data-tv="graficar" title="Crea una ficha por ${sel.modo === 'columnas' ? 'columna' : 'fila'} y un gráfico nuevo en la Mesa">→ Gráfico</button>` : ''}
+          ${opciones.alGuardarVector || opciones.alGuardarSerie ? `<button type="button" class="tv-b pri" data-tv="fichas" title="Una ficha por ${sel.modo === 'columnas' ? 'columna' : 'fila'}${sel.fechas ? ' (con fechas: serie temporal)' : ' (vector de resultados)'}">→ ${its.length > 1 ? its.length + ' fichas' : 'Ficha'}</button>` : ''}
+          <span class="tv-sep2">ver acá:</span>
           <button type="button" class="tv-b" data-ver="hist">Histograma</button>
           <button type="button" class="tv-b" data-ver="barras">Barras</button>
           ${sel.fechas || sel.modo === 'columnas' ? '<button type="button" class="tv-b" data-ver="lineas">Líneas</button>' : ''}
-          ${sel.modo === 'columnas' && sel.cols.length === 2 ? '<button type="button" class="tv-b" data-ver="disp">Dispersión</button>' : ''}
-          ${sel.fechas && opciones.alGuardarSerie ? '<button type="button" class="tv-b pri" data-tv="serie">Guardar como serie</button>' : ''}
-          ${opciones.alGuardarVector ? '<button type="button" class="tv-b pri" data-tv="vector">Guardar como vector</button>' : ''}
+          ${sel.modo === 'columnas' && sel.cols.length >= 2 ? '<button type="button" class="tv-b" data-ver="disp">Dispersión (x, y)</button>' : ''}
           <button type="button" class="tv-b" data-tv="copiar">Copiar</button>
           <button type="button" class="tv-b" data-tv="limpiar">Limpiar</button>
-        </span>` : '<span class="tv-ayuda">Clic en un encabezado = columna (hasta 2) · clic en una fila = fila (shift = rango) · filtrá con <code>&lt;0.05</code>, <code>=ARDL</code>, <code>&gt;0</code> o texto.</span>'}
+        </span>` : '<span class="tv-ayuda">Tildá columnas (cada una = una serie o vector) o filas (cada una = un vector a lo ancho, útil en matrices). Si tildás columnas y filas, van sólo esas filas. Filtrá con <code>&lt;0.05</code>, <code>=ARDL</code>, <code>&gt;0</code> o texto.</span>'}
       </div>
       ${mensaje ? `<div class="tv-msg">${escT(mensaje)}</div>` : ''}
       ${vista && sel ? `<div class="tv-graf">${graficar(vista, sel)}</div>` : ''}`;
@@ -214,8 +227,9 @@ export function montarTabla(cont, conjunto, opciones = {}) {
 
   /* ── eventos ── */
   cont.addEventListener('click', async (e) => {
-    const th = e.target.closest('th[data-col]');
-    if (th) { const j = +th.dataset.col; colsSel = colsSel.includes(j) ? colsSel.filter((x) => x !== j) : [...colsSel, j].slice(-2); mensaje = ''; render(); return; }
+    const th = e.target.closest('th[data-col], [data-ccol]');
+    if (th) { const j = +(th.dataset.col ?? th.dataset.ccol); if (!numericas()[j]) return; colsSel = colsSel.includes(j) ? colsSel.filter((x) => x !== j) : [...colsSel, j]; mensaje = ''; render(); return; }
+    if (e.target.dataset?.tv === 'todas') { const vis = visibles().slice(pagina * POR_PAGINA, (pagina + 1) * POR_PAGINA); const todas = vis.every((i) => filasSel.has(i)); vis.forEach((i) => (todas ? filasSel.delete(i) : filasSel.add(i))); render(); return; }
     const tr = e.target.closest('tr[data-fila]');
     if (tr) {
       const i = +tr.dataset.fila;
@@ -233,7 +247,8 @@ export function montarTabla(cont, conjunto, opciones = {}) {
     else if (a === 'volver') { pila.pop(); reiniciar(pila[pila.length - 1]); render(); }
     else if (a === 'agrupar') agrupar();
     else if (a === 'copiar') copiar();
-    else if (a === 'serie' || a === 'vector') guardar(a);
+    else if (a === 'fichas') guardar();
+    else if (a === 'graficar') graficarEnMesa();
   });
   cont.addEventListener('change', (e) => {
     const f = e.target.dataset.filtro;
@@ -261,23 +276,22 @@ export function montarTabla(cont, conjunto, opciones = {}) {
     catch { mensaje = 'El navegador no dejó copiar.'; }
     render();
   }
-  async function guardar(tipo) {
-    const sel = seleccion(); if (!sel) return;
-    const procedencia = `${opciones.origen || ''} · ${t.nombre} · ${sel.nombre}${filtroTexto()}`.slice(0, 480);
+  async function guardar() {
+    const its = items(); if (!its.length) return;
     try {
-      if (tipo === 'serie') {
-        const j = 0;
-        mensaje = await opciones.alGuardarSerie({ nombre: `${sel.nombre} · ${t.nombre}${filtroTexto()}`.slice(0, 80), fechas: sel.fechas, valores: sel.valores[j], procedencia });
-      } else {
-        const valores = sel.modo === 'columnas' ? sel.valores[0] : sel.valores[0];
-        const etiquetas = sel.modo === 'columnas' ? sel.etiquetas : sel.etiquetas;
-        mensaje = await opciones.alGuardarVector({ nombre: `${sel.nombre} · ${t.nombre}${filtroTexto()}`.slice(0, 80), etiquetas, valores, procedencia });
-      }
+      const msgs = [];
+      for (const it of its) msgs.push(await (it.fechas && opciones.alGuardarSerie ? opciones.alGuardarSerie(it) : opciones.alGuardarVector(it)));
+      mensaje = its.length > 1 ? `${its.length} fichas: ${msgs.join(' · ')}` : msgs[0];
     } catch (err) { mensaje = `No se pudo guardar: ${err.message}`; }
     render();
   }
+  async function graficarEnMesa() {
+    const its = items(); if (!its.length) return;
+    try { mensaje = await opciones.alGraficar(its); } catch (err) { mensaje = `No se pudo graficar: ${err.message}`; }
+    render();
+  }
   render();
-  return { seleccion };
+  return { seleccion, items };
 }
 
 /** Una matriz (mapa de calor) como tabla viva: primera columna = filas, resto = columnas. */
@@ -318,7 +332,13 @@ export const CSS_TABLA_VIVA = `
 .tv-pag{display:flex;gap:8px;align-items:center;justify-content:flex-end;font-size:11.5px;color:var(--ink-dim);margin-top:5px}
 .tv-sel{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;margin-top:7px;padding:7px 9px;border-radius:6px;background:var(--surface-2);border:1px dashed var(--line);font-size:12px;color:var(--ink-2)}
 .tv-sel.on{border-style:solid;border-color:var(--accent-line);background:var(--accent-soft)}
-.tv-acc{display:flex;flex-wrap:wrap;gap:5px}
+.tv-acc{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.tv-mandar{display:flex;flex-wrap:wrap;gap:4px;align-items:center;flex-basis:100%}
+.tv-chip{font:inherit;font-size:11px;padding:2px 8px;border-radius:100px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);cursor:pointer;font-family:var(--mono)}
+.tv-chip[aria-pressed="true"],.tv-chip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.tv-sep2{font-size:10.5px;color:var(--ink-faint);margin-left:4px}
+.tv-t input[type=checkbox]{margin:0 3px 0 0;vertical-align:-2px;accent-color:var(--accent);pointer-events:none}
+.tv-t th.tv-i input{pointer-events:auto}
 .tv-ayuda{color:var(--ink-dim);font-size:11.5px}
 .tv-ayuda code{font-family:var(--mono);font-size:10.5px}
 .tv-msg{margin-top:6px;font-size:11.5px;color:var(--ok)}

@@ -198,12 +198,67 @@ svg.lin .nodo{cursor:pointer}
 
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--surface);padding:8px 14px;border-radius:var(--r);font-size:12.5px;z-index:50;box-shadow:var(--shadow)}
 
+
+/* lienzo de paneles */
+.paneles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.panel{grid-column:span 1}
+.panel.ancho{grid-column:1/-1}
+.panel.activo{border-color:var(--accent-line);box-shadow:0 0 0 2px var(--accent-soft),var(--shadow)}
+.panel .card-hd{gap:6px}
+.ptit{flex:1 1 180px;min-width:120px;border:0!important;background:none!important;font-family:var(--display);font-size:14px;font-weight:650;padding:2px 0!important;color:var(--ink)}
+.ptit:focus{outline:none;border-bottom:1px dashed var(--accent)!important}
+.seg.mini button{padding:2px 7px;font-size:11px}
+.pbd{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:0;min-width:0}
+.panel:not(.ancho) .pbd{grid-template-columns:minmax(0,1fr)}
+.pgraf{min-width:0;padding-top:4px}
+.capas{border-left:1px solid var(--line-soft);padding:8px 10px;display:grid;gap:7px;align-content:start;min-width:0;max-height:430px;overflow:auto;font-size:11.5px}
+.panel:not(.ancho) .capas{border-left:0;border-top:1px solid var(--line-soft);max-height:none}
+.capa{border:1px solid var(--line-soft);border-radius:var(--r);padding:5px 6px;display:grid;gap:4px;background:var(--surface-2);min-width:0}
+.capa.off{opacity:.55}
+.capa-hd{display:flex;gap:5px;align-items:center;min-width:0}
+.capa-hd select{flex:1;min-width:0;padding:1px 3px;font-size:11px}
+.capa-hd .x{margin-left:auto;color:var(--ink-faint);font-size:11px;padding:0 3px}
+.capa-hd .x:hover{color:var(--crit)}
+.capa-op{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.capa-op label{display:flex;gap:4px;align-items:center}
+.capa-op select,.capa-op input[type=number]{padding:1px 3px;font-size:11px;max-width:150px}
+.capa-op input[type=number]{width:52px}
+.capa-op input[type=range]{width:70px}
+.capa-add{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.capa-add select{flex:1;min-width:0;font-size:11px}
+.ref{display:grid;gap:3px;min-width:0}
+.ref select{width:100%;min-width:0;padding:1px 3px;font-size:11px}
+.chips{display:flex;gap:3px;flex-wrap:wrap}
+.chipt{display:inline-flex;gap:3px;align-items:center;font-family:var(--mono);font-size:10px;padding:1px 6px;border-radius:100px;background:var(--info-soft);color:var(--info);border:1px solid color-mix(in srgb,var(--info) 28%,transparent)}
+.chipt button{font-size:9.5px;color:inherit;opacity:.75}
+.chipt button:hover{opacity:1;color:var(--crit)}
+.chipt.mas{background:none;color:var(--ink-dim);border-style:dashed;border-color:var(--line)}
+.chipt.fijar{background:var(--accent-soft);color:var(--accent);border-color:var(--accent-line)}
+.sw{width:14px;height:14px;border-radius:50%;flex:0 0 auto;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--line)}
+.pop{position:absolute;z-index:40;background:var(--surface);border:1px solid var(--accent-line);border-radius:var(--r-lg);box-shadow:var(--shadow);padding:10px 12px;display:grid;gap:8px;max-width:min(360px,calc(100vw - 16px));font-size:12px}
+.pop-f{display:grid;gap:6px}
+.pop-f label{display:flex;gap:6px;align-items:center;justify-content:space-between;color:var(--ink-2)}
+.pop-f input,.pop-f select{width:120px}
+.pop-acc{display:flex;gap:6px;flex-wrap:wrap}
+.pop-acc .btn{white-space:normal;text-align:left}
+.pop-sw{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pop-sw .sw{width:20px;height:20px}
+.pop-sw input[type=color]{width:34px;height:24px;padding:0;border:1px solid var(--line);border-radius:4px;background:none}
+svg.g .nodo-a:hover rect{stroke:var(--accent)}
+.code{width:100%;min-height:150px;font-family:var(--mono);font-size:12px;line-height:1.55;tab-size:4}
+.code-ayuda{font-size:11px;color:var(--ink-dim);line-height:1.6}
+.code-ayuda code{font-family:var(--mono);font-size:10.5px;background:var(--sunken);padding:0 4px;border-radius:3px}
+.code-res{font-size:11.5px;color:var(--ok)}
+.code-res.err{color:var(--crit)}
 @media (max-width:980px){
   .mesa{grid-template-columns:1fr}
   .herr{position:static;max-height:none}
   .docu{grid-template-columns:1fr}
   .pines{position:static}
   .tablero{grid-template-columns:1fr}
+  .paneles{grid-template-columns:minmax(0,1fr)}
+  .pbd{grid-template-columns:minmax(0,1fr)!important}
+  .capas{border-left:0!important;border-top:1px solid var(--line-soft);max-height:none!important}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
@@ -233,15 +288,12 @@ svg.lin .nodo{cursor:pointer}
           <datalist id="dl-panel"></datalist>
           <button class="btn" id="traer" type="button">Traer</button>
         </div>
-        <div class="seg" id="seg-vista" role="group" aria-label="Cómo mirar las series graficadas"></div>
-        <button class="btn" id="pin-graf" type="button" title="Llevar este gráfico al Proyecto">📌 Al proyecto</button>
+        <label class="btn" style="gap:4px">＋ Gráfico <select id="nuevo-graf" aria-label="Agregar gráfico" style="border:0;background:none;padding:0 2px"><option value="">elegir…</option><option value="tiempo">de tiempo (capas)</option><option value="dispersion">dispersión X/Y</option><option value="clusters">clusters en color</option><option value="distribucion">distribución (hist + caja)</option><option value="3d">3D</option><option value="arbol">árbol de decisión</option></select></label>
+        <button class="btn" id="b-deshacer" type="button" title="Deshacer (Ctrl+Z)">↶ Deshacer</button>
+        <button class="btn" id="b-rehacer" type="button" title="Rehacer (Ctrl+Y)">↷</button>
       </div>
-
-      <div class="card">
-        <div class="card-hd"><h3 id="graf-tit">Gráfico</h3><span class="sp"></span><span class="lbl" id="graf-ayuda">Arrastrá sobre el gráfico para recortar un tramo</span></div>
-        <div class="graf-wrap" id="graf-wrap"><svg class="g" id="graf" viewBox="0 0 900 330" role="img" aria-label="Series graficadas"></svg></div>
-        <div class="ley" id="graf-ley"></div>
-      </div>
+      <div class="note" style="margin-top:-4px"><span>Cada gráfico tiene sus <b>capas</b> a la derecha: prender/apagar, color, estilo, tipo (línea, área, barras, puntos), eje izquierdo o derecho y <b>transformaciones como chips</b> que se sacan con ✕. Se mezclan en el mismo plano; «＋ Gráfico» agrega otro abajo y «⇤⇥» los pone de a dos. Arrastrá sobre uno de tiempo para recortar o hacer zoom; en 3D, para rotar.</span></div>
+      <div class="paneles" id="paneles"></div>
 
       <div>
         <div class="barra" style="margin-bottom:8px">
@@ -270,19 +322,27 @@ svg.lin .nodo{cursor:pointer}
           <div class="ley" id="res-ley" style="padding:0"></div>
           <div id="res-extra"></div>
           <div id="res-tabla" hidden>
-            <div class="res-ctrl" style="margin-bottom:8px"><label>Tabla <select id="res-conj"></select></label><span class="lbl">filtrá, agrupá, seleccioná columnas o filas y convertí la selección en ficha</span></div>
+            <div class="res-ctrl" style="margin-bottom:8px"><label>Tabla <select id="res-conj"></select></label><span class="lbl">tildá qué columnas o filas mandar → fichas o gráfico nuevo</span></div>
             <div id="res-tv"></div>
           </div>
         </div>
       </div>
 
       <div class="card">
-        <div class="card-hd"><h3>Código</h3><span class="sp"></span><span class="lbl">expresión → serie nueva con receta</span></div>
-        <div class="card-bd codigo">
-          <input type="text" id="expr" value="(deuda - reservas) / 100" aria-label="Expresión">
-          <input type="text" id="expr-nom" value="Deuda neta de reservas" aria-label="Nombre de la serie" style="flex:0 1 200px">
-          <button class="btn primary" id="expr-ok" type="button">Crear serie</button>
-          <small>Usá los alias de las fichas (en dorado). Funciones: log, exp, abs, dif(x), dif(x,12), lag(x,k), mm(x,k), z(x). Operadores + − × ÷ ^ y paréntesis. En la plataforma, la receta queda guardada y se recalcula sola cuando llegan datos nuevos.</small>
+        <div class="card-hd"><h3>Código</h3><span class="sp"></span><span class="lbl">Python restringido → fichas con receta</span></div>
+        <div class="card-bd" style="display:grid;gap:8px">
+          <textarea class="code" id="code" spellcheck="false" aria-label="Código Python"># cada variable que da una serie se vuelve ficha (alias = nombre)
+deuda_neta = (deuda - reservas) / 100
+brecha_suave = brecha.rolling(6).mean()
+ciclo_rpi = hp(np.log(rpi), lamb=129600)
+estres = ((vix > vix.quantile(0.8)) | (brecha > 0.5)) * 1
+rpi_sin_vix = residuo(rpi, vix, reservas)
+tramo_2018 = rpi["2017-06":"2020-12"]</textarea>
+          <div class="barra"><button class="btn primary" id="code-ok" type="button">▶ Correr</button><span class="code-res" id="code-res"></span></div>
+          <div class="code-ayuda">Variables: los <b>alias</b> de las fichas (en dorado). Operadores <code>+ - * / ** //</code>, comparaciones <code>&gt; &lt; ==</code> (dan dummies 0/1), <code>&amp; | ~ and or not</code>. Recorte por fechas <code>x["2010-01":"2020-12"]</code>.
+            Métodos: <code>.rolling(k).mean()/std()/sum()/min()/max()/median()</code> · <code>.ewm(span=k).mean()</code> · <code>.shift(k)</code> · <code>.diff(k)</code> · <code>.pct_change(k)</code> · <code>.cumsum()</code> · <code>.clip(lo, hi)</code> · <code>.mean() .std() .quantile(q)</code> (números).
+            Funciones: <code>log dif(x, k) dif2 pct(x, k) dif_log base100(x, fecha) mm(x, k) desvio_movil(x, k) z winsor(x, q) rezago(x, k) recorte(x, desde, hasta) hp(x, lamb, parte) sin_tendencia</code> · <code>residuo(y, x1, x2…)</code> · <code>ajustado(y, …)</code> · <code>corr_movil(a, b, k)</code> · <code>dummy(x, desde, hasta)</code> · <code>np.log/exp/sqrt/abs/sign/where/maximum/minimum/clip</code>.
+            Sin imports, bucles ni funciones propias: es una lista blanca, no Python entero. En la plataforma corre en el servidor (<code>POST /api/v1/codigo/evaluar</code>) y la receta se recalcula sola cuando llegan datos nuevos.</div>
         </div>
       </div>
 
@@ -296,7 +356,7 @@ svg.lin .nodo{cursor:pointer}
       <div class="hd">
         <span class="lbl">Herramientas · ordenadas por lo que hacen</span>
         <input type="search" id="herr-q" placeholder="Buscar: hp, granger, ardl, outliers…" aria-label="Buscar herramienta">
-        <p>Arrastrá una herramienta a una ficha o al gráfico, o tocala para aplicarla a las fichas seleccionadas. Las punteadas existen en la plataforma (catálogo de 100 métodos) y no en este mockup.</p>
+        <p>Arrastrá una herramienta a una ficha o al gráfico, o tocala para aplicarla a las fichas seleccionadas. Las que tienen parámetros abren un formulario. Las punteadas existen en la plataforma (catálogo de 102 métodos) y no en este mockup.</p>
       </div>
       <div class="lista" id="herr-lista"></div>
     </aside>
@@ -347,15 +407,18 @@ const DATOS_TF = {"fuente":"riesgo-pais-argentino · data/replicacion/panel_mens
  *   · filtrar por columna  (escribí  <0.05   >0   =ARDL   !=VAR   o un texto)
  *   · agrupar por una columna y resumir otra  (n, media, mediana, mín, máx, suma, % < α, % > 0)
  *     — el resumen es otra tabla viva, que también se selecciona
- *   · seleccionar COLUMNAS (clic en el encabezado; hasta 2), FILAS (clic en la fila,
- *     shift = rango) o ambas: la intersección es la selección
- *   · ver la selección como histograma, barras, líneas o dispersión (2 columnas)
- *   · guardarla: como serie temporal (si la tabla tiene fechas) o como vector de resultados
+ *   · elegir QUÉ MANDAR con casillas a la vista: columnas (encabezado o chips «Mandar:»,
+ *     todas las que quieras) y/o filas (casilla de la fila, shift = rango, la del «#» = todas
+ *     las visibles). Columnas + filas = sólo esas filas de esas columnas.
+ *   · ver la selección como histograma, barras, líneas o dispersión (las 2 primeras = x, y)
+ *   · mandarla: «→ Ficha(s)» = una por columna (o por fila), como serie temporal si la tabla
+ *     tiene fechas o como vector de resultados; «→ Gráfico» = fichas + un gráfico nuevo
  *
  * Uso:  montarTabla(contenedor, { nombre, columnas, filas, descripcion }, {
  *          origen: 'texto de procedencia',
  *          alGuardarSerie: async ({ nombre, fechas, valores, procedencia }) => '…mensaje',
- *          alGuardarVector: async ({ nombre, etiquetas, valores, procedencia }) => '…mensaje' })
+ *          alGuardarVector: async ({ nombre, etiquetas, valores, procedencia }) => '…mensaje',
+ *          alGraficar: async ([{ nombre, etiquetas, fechas, valores, procedencia }]) => '…mensaje' })  // opcional
  *
  * Todo texto se escapa. No depende de nada más que de los tokens de color del tema.
  */
@@ -407,10 +470,10 @@ function montarTabla(cont, conjunto, opciones = {}) {
 
   const numericas = () => t.columnas.map((_, j) => t.filas.some((f) => typeof f[j] === 'number'));
   const colFecha = () => t.columnas.findIndex((_, j) => t.filas.length && t.filas.slice(0, 20).every((f) => esFecha(f[j])));
-  const colEtiqueta = () => {
-    const nums = numericas();
-    const j = t.columnas.findIndex((_, k) => !nums[k] && k !== colFecha());
-    return j;
+  /** Columnas de texto que identifican una fila (hasta 3): «ITCRM · RPI», «ARDL · (1,2) · ITCRM». */
+  const colsEtiqueta = () => {
+    const nums = numericas(), jf = colFecha();
+    return t.columnas.map((_, k) => k).filter((k) => !nums[k] && k !== jf).slice(0, 3);
   };
   function visibles() {
     const idx = [];
@@ -426,8 +489,8 @@ function montarTabla(cont, conjunto, opciones = {}) {
     const vis = visibles();
     const filas = filasSel.size ? vis.filter((i) => filasSel.has(i)) : vis;
     const nums = numericas();
-    const jEt = colEtiqueta(), jF = colFecha();
-    const etiq = (i) => (jEt >= 0 ? String(t.filas[i][jEt]) : jF >= 0 ? t.filas[i][jF] : `fila ${i + 1}`);
+    const jEt = colsEtiqueta(), jF = colFecha();
+    const etiq = (i) => (jEt.length ? jEt.map((j) => String(t.filas[i][j])).join(' · ') : jF >= 0 ? t.filas[i][jF] : `fila ${i + 1}`);
     if (colsSel.length) {
       const cols = colsSel.filter((j) => nums[j]);
       return {
@@ -453,6 +516,14 @@ function montarTabla(cont, conjunto, opciones = {}) {
     return null;
   }
 
+  /** Lo que se manda: una entrada por columna elegida (o por fila elegida, a lo ancho). */
+  function items() {
+    const sel = seleccion(); if (!sel) return [];
+    const f = filtroTexto();
+    if (sel.modo === 'columnas') return sel.cols.map((j, k) => ({ nombre: `${t.columnas[j]} · ${t.nombre}${f}`.slice(0, 80), etiquetas: sel.etiquetas, fechas: sel.fechas, valores: sel.valores[k], procedencia: `${opciones.origen || ''} · ${t.nombre} · columna ${t.columnas[j]}${f}`.slice(0, 480) }));
+    return sel.filas.map((_, k) => ({ nombre: `${sel.nombresFilas[k]} · ${t.nombre}`.slice(0, 80), etiquetas: sel.etiquetas, fechas: null, valores: sel.valores[k], procedencia: `${opciones.origen || ''} · ${t.nombre} · fila ${sel.nombresFilas[k]}`.slice(0, 480) }));
+  }
+
   function render() {
     const vis = visibles();
     const nums = numericas();
@@ -460,7 +531,7 @@ function montarTabla(cont, conjunto, opciones = {}) {
     pagina = Math.min(pagina, paginas - 1);
     const muestra = vis.slice(pagina * POR_PAGINA, (pagina + 1) * POR_PAGINA);
     const sel = seleccion();
-    const nsel = sel ? (sel.modo === 'columnas' ? sel.filas.length : sel.filas.length) : 0;
+    const its = items();
     const colsOpc = t.columnas.map((c, j) => `<option value="${j}">${escT(c)}</option>`).join('');
     const numOpc = t.columnas.map((c, j) => (nums[j] ? `<option value="${j}">${escT(c)}</option>` : '')).join('');
     cont.innerHTML = `
@@ -475,23 +546,25 @@ function montarTabla(cont, conjunto, opciones = {}) {
         <button type="button" class="tv-b" data-tv="agrupar">Agrupar</button>
       </div>
       <div class="tv-scroll"><table class="tv-t">
-        <thead><tr><th class="tv-i">#</th>${t.columnas.map((c, j) => `<th data-col="${j}" class="${colsSel.includes(j) ? 'sel' : ''} ${nums[j] ? 'num' : ''}" title="Clic: seleccionar la columna${nums[j] ? '' : ' (no numérica)'}">${escT(c)}${colsSel.includes(j) ? ` <b>${colsSel.indexOf(j) === 0 ? 'x' : 'y'}</b>` : ''}</th>`).join('')}</tr>
+        <thead><tr><th class="tv-i"><input type="checkbox" data-tv="todas" title="Elegir todas las filas visibles" aria-label="Elegir todas las filas visibles" ${muestra.length && muestra.every((i) => filasSel.has(i)) ? 'checked' : ''}></th>${t.columnas.map((c, j) => `<th data-col="${j}" class="${colsSel.includes(j) ? 'sel' : ''} ${nums[j] ? 'num' : ''}" title="${nums[j] ? 'Elegir esta columna para mandarla a una ficha o a un gráfico' : 'Columna de texto: sirve para filtrar y agrupar'}">${nums[j] ? `<input type="checkbox" tabindex="-1" ${colsSel.includes(j) ? 'checked' : ''} aria-label="Elegir ${escT(c)}"> ` : ''}${escT(c)}${colsSel.length > 1 && colsSel.includes(j) ? ` <b>${colsSel.indexOf(j) === 0 ? 'x' : colsSel.indexOf(j) === 1 ? 'y' : colsSel.indexOf(j) + 1}</b>` : ''}</th>`).join('')}</tr>
         <tr class="tv-f"><th></th>${t.columnas.map((c, j) => `<th><input data-filtro="${j}" value="${escT(filtros[j] || '')}" placeholder="${nums[j] ? 'ej. <0.05' : 'ej. =ARDL'}" aria-label="Filtrar ${escT(c)}"></th>`).join('')}</tr></thead>
-        <tbody>${muestra.map((i) => `<tr data-fila="${i}" class="${filasSel.has(i) ? 'sel' : ''}"><td class="tv-i">${i + 1}</td>${t.filas[i].map((v, j) => `<td class="${typeof v === 'number' ? 'n' : ''} ${colsSel.includes(j) ? 'csel' : ''}">${typeof v === 'number' ? numT(v) : escT(Array.isArray(v) ? v.join(', ') : v)}</td>`).join('')}</tr>`).join('')}</tbody>
+        <tbody>${muestra.map((i) => `<tr data-fila="${i}" class="${filasSel.has(i) ? 'sel' : ''}"><td class="tv-i"><input type="checkbox" tabindex="-1" ${filasSel.has(i) ? 'checked' : ''} aria-label="Elegir la fila ${i + 1}"> ${i + 1}</td>${t.filas[i].map((v, j) => `<td class="${typeof v === 'number' ? 'n' : ''} ${colsSel.includes(j) ? 'csel' : ''}">${typeof v === 'number' ? numT(v) : escT(Array.isArray(v) ? v.join(', ') : v)}</td>`).join('')}</tr>`).join('')}</tbody>
       </table></div>
       ${paginas > 1 ? `<div class="tv-pag"><button type="button" class="tv-b" data-tv="ant" ${pagina ? '' : 'disabled'}>‹</button><span>página ${pagina + 1} de ${paginas}</span><button type="button" class="tv-b" data-tv="sig" ${pagina < paginas - 1 ? '' : 'disabled'}>›</button></div>` : ''}
       <div class="tv-sel ${sel ? 'on' : ''}">
-        ${sel ? `<span><b>Selección:</b> ${sel.modo === 'columnas' ? `columna${sel.cols.length > 1 ? 's' : ''} «${escT(sel.nombre)}»` : `${sel.filas.length} fila${sel.filas.length > 1 ? 's' : ''} (a lo ancho)`} · ${nsel.toLocaleString('es-AR')} ${sel.modo === 'columnas' ? 'valores' : 'vectores'}${escT(filtroTexto())}</span>
+        <span class="tv-mandar"><b>Mandar:</b> ${t.columnas.map((c, j) => (nums[j] ? `<button type="button" class="tv-chip" data-ccol="${j}" aria-pressed="${colsSel.includes(j)}">${colsSel.includes(j) ? '☑' : '☐'} ${escT(c)}</button>` : '')).join('')}${filasSel.size ? `<span class="tv-chip on">☑ ${filasSel.size} fila${filasSel.size > 1 ? 's' : ''}</span>` : ''}</span>
+        ${sel ? `<span><b>${its.length}</b> ${sel.modo === 'columnas' ? `columna${its.length > 1 ? 's' : ''} × ${sel.filas.length.toLocaleString('es-AR')} valores${filasSel.size ? ' (sólo las filas tildadas)' : ''}` : `fila${its.length > 1 ? 's' : ''} a lo ancho × ${sel.cols.length} valores`}${escT(filtroTexto())}</span>
         <span class="tv-acc">
+          ${opciones.alGraficar ? `<button type="button" class="tv-b pri" data-tv="graficar" title="Crea una ficha por ${sel.modo === 'columnas' ? 'columna' : 'fila'} y un gráfico nuevo en la Mesa">→ Gráfico</button>` : ''}
+          ${opciones.alGuardarVector || opciones.alGuardarSerie ? `<button type="button" class="tv-b pri" data-tv="fichas" title="Una ficha por ${sel.modo === 'columnas' ? 'columna' : 'fila'}${sel.fechas ? ' (con fechas: serie temporal)' : ' (vector de resultados)'}">→ ${its.length > 1 ? its.length + ' fichas' : 'Ficha'}</button>` : ''}
+          <span class="tv-sep2">ver acá:</span>
           <button type="button" class="tv-b" data-ver="hist">Histograma</button>
           <button type="button" class="tv-b" data-ver="barras">Barras</button>
           ${sel.fechas || sel.modo === 'columnas' ? '<button type="button" class="tv-b" data-ver="lineas">Líneas</button>' : ''}
-          ${sel.modo === 'columnas' && sel.cols.length === 2 ? '<button type="button" class="tv-b" data-ver="disp">Dispersión</button>' : ''}
-          ${sel.fechas && opciones.alGuardarSerie ? '<button type="button" class="tv-b pri" data-tv="serie">Guardar como serie</button>' : ''}
-          ${opciones.alGuardarVector ? '<button type="button" class="tv-b pri" data-tv="vector">Guardar como vector</button>' : ''}
+          ${sel.modo === 'columnas' && sel.cols.length >= 2 ? '<button type="button" class="tv-b" data-ver="disp">Dispersión (x, y)</button>' : ''}
           <button type="button" class="tv-b" data-tv="copiar">Copiar</button>
           <button type="button" class="tv-b" data-tv="limpiar">Limpiar</button>
-        </span>` : '<span class="tv-ayuda">Clic en un encabezado = columna (hasta 2) · clic en una fila = fila (shift = rango) · filtrá con <code>&lt;0.05</code>, <code>=ARDL</code>, <code>&gt;0</code> o texto.</span>'}
+        </span>` : '<span class="tv-ayuda">Tildá columnas (cada una = una serie o vector) o filas (cada una = un vector a lo ancho, útil en matrices). Si tildás columnas y filas, van sólo esas filas. Filtrá con <code>&lt;0.05</code>, <code>=ARDL</code>, <code>&gt;0</code> o texto.</span>'}
       </div>
       ${mensaje ? `<div class="tv-msg">${escT(mensaje)}</div>` : ''}
       ${vista && sel ? `<div class="tv-graf">${graficar(vista, sel)}</div>` : ''}`;
@@ -552,8 +625,9 @@ function montarTabla(cont, conjunto, opciones = {}) {
 
   /* ── eventos ── */
   cont.addEventListener('click', async (e) => {
-    const th = e.target.closest('th[data-col]');
-    if (th) { const j = +th.dataset.col; colsSel = colsSel.includes(j) ? colsSel.filter((x) => x !== j) : [...colsSel, j].slice(-2); mensaje = ''; render(); return; }
+    const th = e.target.closest('th[data-col], [data-ccol]');
+    if (th) { const j = +(th.dataset.col ?? th.dataset.ccol); if (!numericas()[j]) return; colsSel = colsSel.includes(j) ? colsSel.filter((x) => x !== j) : [...colsSel, j]; mensaje = ''; render(); return; }
+    if (e.target.dataset?.tv === 'todas') { const vis = visibles().slice(pagina * POR_PAGINA, (pagina + 1) * POR_PAGINA); const todas = vis.every((i) => filasSel.has(i)); vis.forEach((i) => (todas ? filasSel.delete(i) : filasSel.add(i))); render(); return; }
     const tr = e.target.closest('tr[data-fila]');
     if (tr) {
       const i = +tr.dataset.fila;
@@ -571,7 +645,8 @@ function montarTabla(cont, conjunto, opciones = {}) {
     else if (a === 'volver') { pila.pop(); reiniciar(pila[pila.length - 1]); render(); }
     else if (a === 'agrupar') agrupar();
     else if (a === 'copiar') copiar();
-    else if (a === 'serie' || a === 'vector') guardar(a);
+    else if (a === 'fichas') guardar();
+    else if (a === 'graficar') graficarEnMesa();
   });
   cont.addEventListener('change', (e) => {
     const f = e.target.dataset.filtro;
@@ -599,23 +674,22 @@ function montarTabla(cont, conjunto, opciones = {}) {
     catch { mensaje = 'El navegador no dejó copiar.'; }
     render();
   }
-  async function guardar(tipo) {
-    const sel = seleccion(); if (!sel) return;
-    const procedencia = `${opciones.origen || ''} · ${t.nombre} · ${sel.nombre}${filtroTexto()}`.slice(0, 480);
+  async function guardar() {
+    const its = items(); if (!its.length) return;
     try {
-      if (tipo === 'serie') {
-        const j = 0;
-        mensaje = await opciones.alGuardarSerie({ nombre: `${sel.nombre} · ${t.nombre}${filtroTexto()}`.slice(0, 80), fechas: sel.fechas, valores: sel.valores[j], procedencia });
-      } else {
-        const valores = sel.modo === 'columnas' ? sel.valores[0] : sel.valores[0];
-        const etiquetas = sel.modo === 'columnas' ? sel.etiquetas : sel.etiquetas;
-        mensaje = await opciones.alGuardarVector({ nombre: `${sel.nombre} · ${t.nombre}${filtroTexto()}`.slice(0, 80), etiquetas, valores, procedencia });
-      }
+      const msgs = [];
+      for (const it of its) msgs.push(await (it.fechas && opciones.alGuardarSerie ? opciones.alGuardarSerie(it) : opciones.alGuardarVector(it)));
+      mensaje = its.length > 1 ? `${its.length} fichas: ${msgs.join(' · ')}` : msgs[0];
     } catch (err) { mensaje = `No se pudo guardar: ${err.message}`; }
     render();
   }
+  async function graficarEnMesa() {
+    const its = items(); if (!its.length) return;
+    try { mensaje = await opciones.alGraficar(its); } catch (err) { mensaje = `No se pudo graficar: ${err.message}`; }
+    render();
+  }
   render();
-  return { seleccion };
+  return { seleccion, items };
 }
 
 /** Una matriz (mapa de calor) como tabla viva: primera columna = filas, resto = columnas. */
@@ -656,7 +730,13 @@ const CSS_TABLA_VIVA = `
 .tv-pag{display:flex;gap:8px;align-items:center;justify-content:flex-end;font-size:11.5px;color:var(--ink-dim);margin-top:5px}
 .tv-sel{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;margin-top:7px;padding:7px 9px;border-radius:6px;background:var(--surface-2);border:1px dashed var(--line);font-size:12px;color:var(--ink-2)}
 .tv-sel.on{border-style:solid;border-color:var(--accent-line);background:var(--accent-soft)}
-.tv-acc{display:flex;flex-wrap:wrap;gap:5px}
+.tv-acc{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.tv-mandar{display:flex;flex-wrap:wrap;gap:4px;align-items:center;flex-basis:100%}
+.tv-chip{font:inherit;font-size:11px;padding:2px 8px;border-radius:100px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);cursor:pointer;font-family:var(--mono)}
+.tv-chip[aria-pressed="true"],.tv-chip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.tv-sep2{font-size:10.5px;color:var(--ink-faint);margin-left:4px}
+.tv-t input[type=checkbox]{margin:0 3px 0 0;vertical-align:-2px;accent-color:var(--accent);pointer-events:none}
+.tv-t th.tv-i input{pointer-events:auto}
 .tv-ayuda{color:var(--ink-dim);font-size:11.5px}
 .tv-ayuda code{font-family:var(--mono);font-size:10.5px}
 .tv-msg{margin-top:6px;font-size:11.5px;color:var(--ok)}
@@ -693,11 +773,11 @@ function toast(t) {
 }
 
 /* ═════════════ estado ═════════════ */
-const st = { series: [], sel: new Set(), vista: "lineas", rango: null, res: null, pines: [], doc: [], cuenta: 0, colorSig: 0, nodosRes: [] };
+const st = { series: [], sel: new Set(), res: null, pines: [], doc: [], cuenta: 0, colorSig: 0, paneles: [], activo: null, deshacer: [], rehacer: [] };
 
 function nuevaSerie(o) {
   const id = "s" + (++st.cuenta);
-  const s = { id, graf: false, sellos: [], color: COLS[st.colorSig++ % COLS.length], ...o };
+  const s = { id, sellos: [], color: COLS[st.colorSig++ % COLS.length], ...o };
   if (!s.alias) s.alias = slug(s.nombre) + (st.series.some((x) => x.alias === slug(s.nombre)) ? st.cuenta : "");
   st.series.push(s);
   return s;
@@ -769,79 +849,194 @@ function ols(y, X) {
   return { b, fit, res, r2 };
 }
 
+/* ═════════════ transformaciones con PARÁMETROS (las mismas de cueva/metodos/recetas.py) ═════════════
+   Una transformación vive en dos lugares: como ficha nueva (receta) o como CHIP sobre una capa del
+   gráfico, que se saca con ✕ sin tocar los datos. */
+const nn = (...v) => v.every((x) => x != null && isFinite(x));
+const sl = (x, a, b) => (x ? x.slice(a, b) : null);
+const SUB = "₀₁₂₃₄₅₆₇₈₉";
+const sub = (k) => String(k).replace(/\d/g, (d) => SUB[d]).replace("-", "₋");
+function zs(y) { const v = y.filter((x) => nn(x)); const m = media(v), d = desvio(v) || 1; return y.map((x) => (nn(x) ? (x - m) / d : null)); }
+const OPSJ = {
+  log: { nombre: "Logaritmo", p: {}, t: (a) => `log ${a}`, f: (s) => ({ x: s.x, y: s.y.map((v) => (v > 0 ? Math.log(v) : null)) }) },
+  dif: { nombre: "Diferencia Δ", p: { k: { def: 1, min: 1, max: 36, et: "rezagos k" } }, t: (a, p) => `Δ${p.k > 1 ? sub(p.k) : ""} ${a}`, f: (s, p) => ({ x: sl(s.x, p.k), y: s.y.slice(p.k).map((v, i) => (nn(v, s.y[i]) ? v - s.y[i] : null)) }) },
+  dif2: { nombre: "Diferencia segunda Δ²", p: {}, t: (a) => `Δ² ${a}`, f: (s) => ({ x: sl(s.x, 2), y: s.y.slice(2).map((v, i) => (nn(v, s.y[i + 1], s.y[i]) ? v - 2 * s.y[i + 1] + s.y[i] : null)) }) },
+  pct: { nombre: "Variación %", p: { k: { def: 12, min: 1, max: 36, et: "períodos k (12 = interanual)" } }, t: (a, p) => `%Δ${sub(p.k)} ${a}`, f: (s, p) => ({ x: sl(s.x, p.k), y: s.y.slice(p.k).map((v, i) => (nn(v, s.y[i]) && s.y[i] ? (v / s.y[i] - 1) * 100 : null)) }), unidad: "%" },
+  dif_log: { nombre: "Δ log (tasa continua)", p: { k: { def: 1, min: 1, max: 36, et: "rezagos k" } }, t: (a, p) => `Δ${p.k > 1 ? sub(p.k) : ""} log ${a}`, f: (s, p) => ({ x: sl(s.x, p.k), y: s.y.slice(p.k).map((v, i) => (v > 0 && s.y[i] > 0 ? Math.log(v / s.y[i]) : null)) }) },
+  base100: { nombre: "Base 100", p: { fecha: { def: "", tipo: "fecha", et: "fecha base (vacío = primera)" } }, t: (a, p) => `${a} (base ${p.fecha || "inicio"} = 100)`, f: (s, p) => { let k = 0; if (p.fecha && s.x) { k = s.x.findIndex((f) => f >= p.fecha); if (k < 0) k = 0; } const b = s.y.slice(k).find((v) => nn(v) && v !== 0) ?? 1; return { x: s.x, y: s.y.map((v) => (nn(v) ? (v / b) * 100 : null)) }; }, unidad: "índice" },
+  mm: { nombre: "Media móvil", p: { k: { def: 12, min: 2, max: 120, et: "ventana k" }, centrada: { def: "no", tipo: "opcion", op: ["no", "sí"], et: "centrada" } }, t: (a, p) => `mm${sub(p.k)}${p.centrada === "sí" ? "c" : ""}(${a})`, f: (s, p) => { const k = p.k, y = s.y.map((_, i) => { if (i < k - 1) return null; const w = s.y.slice(i - k + 1, i + 1); return w.every((v) => nn(v)) ? media(w) : null; }); if (p.centrada === "sí") { const d = Math.floor((k - 1) / 2); return { x: s.x, y: y.slice(d).concat(new Array(d).fill(null)) }; } return { x: s.x, y }; } },
+  desvio_movil: { nombre: "Desvío móvil (volatilidad)", p: { k: { def: 12, min: 3, max: 120, et: "ventana k" } }, t: (a, p) => `σ${sub(p.k)}(${a})`, f: (s, p) => ({ x: s.x, y: s.y.map((_, i) => (i < p.k - 1 ? null : desvio(s.y.slice(i - p.k + 1, i + 1).filter((v) => nn(v))))) }) },
+  z: { nombre: "Estandarizar (z)", p: {}, t: (a) => `z(${a})`, f: (s) => ({ x: s.x, y: zs(s.y) }), unidad: "desvíos" },
+  winsor: { nombre: "Recortar colas (winsor)", p: { q: { def: 0.01, min: 0.001, max: 0.25, paso: 0.005, et: "cola q (0,01 = 1 %)" } }, t: (a, p) => `winsor(${a}, ${num(p.q * 100, 1)} %)`, f: (s, p) => { const v = s.y.filter((x) => nn(x)); const lo = quantil(v, p.q), hi = quantil(v, 1 - p.q); return { x: s.x, y: s.y.map((x) => (nn(x) ? Math.min(hi, Math.max(lo, x)) : null)) }; } },
+  rezago: { nombre: "Rezago / adelanto", p: { k: { def: 1, min: -36, max: 36, et: "k (negativo = adelanto)" } }, t: (a, p) => `${a}${p.k >= 0 ? "₍ₜ₋" + sub(p.k) + "₎" : "₍ₜ₊" + sub(-p.k) + "₎"}`, f: (s, p) => { const k = p.k; if (!s.x) return s; if (k >= 0) return { x: s.x.slice(k), y: s.y.slice(0, s.y.length - k) }; return { x: s.x.slice(0, s.x.length + k), y: s.y.slice(-k) }; } },
+  hp: { nombre: "Filtro HP", p: { lamb: { def: 129600, min: 1, max: 1e8, et: "λ (mensual 129600 · trim. 1600 · anual 6,25)" }, parte: { def: "ciclo", tipo: "opcion", op: ["ciclo", "tendencia"], et: "parte" } }, t: (a, p) => `HP-${p.parte}(${a}, λ=${num(p.lamb)})`, f: (s, p) => { const ok = s.y.map((v) => nn(v)); const y = s.y.filter((_, i) => ok[i]), x = s.x ? s.x.filter((_, i) => ok[i]) : null; const t = hp(y, p.lamb); return { x, y: p.parte === "tendencia" ? t : y.map((v, i) => v - t[i]) }; } },
+  sin_tendencia: { nombre: "Quitar tendencia lineal", p: {}, t: (a) => `${a} − tendencia`, f: (s) => { const ok = s.y.map((v) => nn(v)); const y = s.y.filter((_, i) => ok[i]); const r = ols(y, y.map((_, i) => [1, i])); return { x: s.x ? s.x.filter((_, i) => ok[i]) : null, y: r.res }; } },
+  recorte: { nombre: "Recortar fechas", p: { desde: { def: "", tipo: "fecha", et: "desde (AAAA-MM)" }, hasta: { def: "", tipo: "fecha", et: "hasta (AAAA-MM)" } }, t: (a, p) => `${a}[${p.desde || "…"} : ${p.hasta || "…"}]`, f: (s, p) => { if (!s.x) return s; const idx = s.x.map((f, i) => ((!p.desde || f.slice(0, p.desde.length) >= p.desde) && (!p.hasta || f.slice(0, p.hasta.length) <= p.hasta) ? i : -1)).filter((i) => i >= 0); return { x: idx.map((i) => s.x[i]), y: idx.map((i) => s.y[i]) }; } },
+};
+const defs = (op) => Object.fromEntries(Object.entries(OPSJ[op].p).map(([k, v]) => [k, v.def]));
+function aplicarOp(o, t) { return OPSJ[t.op].f(o, { ...defs(t.op), ...(t.p || {}) }); }
+function textoOp(base, t) { return OPSJ[t.op].t(base, { ...defs(t.op), ...(t.p || {}) }); }
+
+/* una REFERENCIA = ficha + cadena de transformaciones no destructivas */
+const ref = (sid, transf = []) => ({ sid, transf });
+const _cacheRef = new Map();
+function evalRef(r) {
+  const s = r && byId(r.sid); if (!s) return null;
+  const clave = s.id + JSON.stringify(r.transf);
+  const c = _cacheRef.get(clave); if (c && c.s === s) return c.o;
+  let o = { x: s.x, y: s.y };
+  r.transf.forEach((t) => { o = aplicarOp(o, t); });
+  o = { ...o, nombre: refTexto(r), color: s.color, unidad: r.transf.length ? (OPSJ[r.transf[r.transf.length - 1].op].unidad || s.unidad) : s.unidad };
+  _cacheRef.set(clave, { s, o });
+  return o;
+}
+function refTexto(r) { const s = byId(r.sid); return r.transf.reduce((a, t) => textoOp(a, t), s ? s.alias : "?"); }
+function fijarRef(r) {
+  const s = byId(r.sid), o = evalRef(r); if (!s || !o) return null;
+  const ult = r.transf[r.transf.length - 1];
+  return hija([s], `${OPSJ[ult.op].nombre}: ${s.nombre}`.slice(0, 80), ult.op, refTexto(r), o.x, o.y, { unidad: o.unidad });
+}
+
 /* ═════════════ herramientas (ordenadas por VERBO) ═════════════ */
 const CLASES = [
   { id: "traer", nombre: "Traer", q: "nada → serie", desc: "Entran series a la mesa." },
-  { id: "transformar", nombre: "Transformar", q: "1 serie → 1 serie", desc: "Sin estimar nada: cambian la escala o la forma." },
-  { id: "combinar", nombre: "Combinar", q: "series → serie", desc: "La hija tiene varios padres." },
+  { id: "transformar", nombre: "Transformar", q: "1 serie → 1 serie", desc: "Con parámetros. Crean una ficha o se aplican como capa del gráfico (se sacan con ✕)." },
+  { id: "combinar", nombre: "Combinar", q: "series → serie", desc: "La hija tiene varios padres. Para algo más complejo, el código de abajo." },
   { id: "descomponer", nombre: "Descomponer", q: "serie → componentes", desc: "Separan tendencia, ciclo, ruido." },
   { id: "diagnosticar", nombre: "Diagnosticar", q: "serie → veredicto", desc: "Pegan un sello en la ficha; no crean series." },
-  { id: "mirar", nombre: "Mirar", q: "series → vista", desc: "Cambian el gráfico, nunca los datos." },
+  { id: "mirar", nombre: "Mirar", q: "series → gráfico", desc: "Agregan un gráfico nuevo con las fichas seleccionadas." },
   { id: "modelar", nombre: "Modelar", q: "series → modelo + series", desc: "Ficha de parámetros, resultados y series de salida." },
   { id: "simular", nombre: "Simular", q: "→ muchas series", desc: "Escenarios y abanicos." },
   { id: "evaluar", nombre: "Evaluar", q: "modelos → comparación", desc: "Ponen los resultados a competir." },
 ];
-const T = (clase, id, nombre, aridad, fn, desc) => ({ clase, id, nombre, aridad, fn, desc });
+const T = (clase, id, nombre, aridad, fn, desc, extra = {}) => ({ clase, id, nombre, aridad, fn, desc, ...extra });
 const P = (clase, nombre, metodo) => ({ clase, id: "p_" + slug(nombre), nombre, plat: metodo });
+const O = (clase, op, nombre) => ({ clase, id: "op_" + op, nombre: nombre || OPSJ[op].nombre, aridad: 1, op });
 
 function hija(padres, nombre, op, texto, x, y, extra = {}) {
-  const s = nuevaSerie({ nombre, tipo: "derivada", x, y, unidad: extra.unidad ?? padres[0].unidad, receta: { op, insumos: padres.map((p) => p.id), texto }, ...extra });
-  s.graf = true;
-  return s;
+  return nuevaSerie({ nombre, tipo: "derivada", x, y, unidad: extra.unidad ?? padres[0]?.unidad ?? "", receta: { op, insumos: padres.map((p) => p.id), texto }, ...extra });
 }
+const comb = (op, nombre, f, unidad) => (a, b) => { const z = alinear(a, b); return hija([a, b], nombre(a, b), op, nombre(a.alias ? { nombre: a.alias } : a, { nombre: b.alias }), z.x, z.ya.map((v, i) => f(v, z.yb[i])), unidad ? { unidad } : {}); };
+const DIAG = {
+  orden: { p: {}, f: (s) => { const o = s.orden || (acf(s.y, 1) > 0.95 ? "probable I(1)" : "probable I(0)"); s.sellos.push({ t: o, w: /1/.test(o) }); } },
+  acf: { p: { k: { def: 12, min: 2, max: 48, et: "rezago largo" } }, f: (s, p) => { const v = s.y.filter((x) => nn(x)); const a1 = acf(v, 1), ak = acf(v, p.k); s.sellos.push({ t: `ACF(1)=${num(a1, 2)} · ACF(${p.k})=${num(ak, 2)}`, w: ak > 0.5 }); } },
+  quiebre: { p: { min: { def: 12, min: 3, max: 60, et: "tramo mínimo (períodos)" } }, f: (s, p) => { const y = s.y.filter((x) => nn(x)), n = y.length; let mejor = [Infinity, 0]; for (let k = p.min; k < n - p.min; k++) { const a = y.slice(0, k), b = y.slice(k); const ma = media(a), mb = media(b); const ssr = a.reduce((t, v) => t + (v - ma) ** 2, 0) + b.reduce((t, v) => t + (v - mb) ** 2, 0); if (ssr < mejor[0]) mejor = [ssr, k]; } s.sellos.push({ t: s.x ? `quiebre ${s.x[mejor[1]].slice(0, 7)}` : `quiebre en la obs. ${mejor[1]}`, w: true }); } },
+  normal: { p: {}, f: (s) => { const v = s.y.filter((x) => nn(x)); const m = media(v), d = desvio(v); const sk = media(v.map((x) => ((x - m) / d) ** 3)), ku = media(v.map((x) => ((x - m) / d) ** 4)) - 3; s.sellos.push({ t: `asim. ${num(sk, 2)} · curt. ${num(ku, 2)}`, w: Math.abs(ku) > 1 }); } },
+};
 const HERR = [
-  T("traer", "recorte", "Recortar un tramo", "graf", null, "Arrastrá sobre el gráfico"),
+  T("traer", "recorte", "Recortar un tramo", "graf", null, "Arrastrá sobre un gráfico de tiempo"),
   P("traer", "Catálogo (719 series)", "series del catálogo"), P("traer", "Subir CSV propio", "Mis series"),
-  T("transformar", "log", "Logaritmo", 1, (s) => hija([s], "log " + s.nombre, "log", `log(${s.alias})`, s.x, s.y.map((v) => (v > 0 ? Math.log(v) : null)), { unidad: "log" })),
-  T("transformar", "dif", "Diferencia Δ", 1, (s) => hija([s], "Δ " + s.nombre, "Δ", `dif(${s.alias})`, s.x.slice(1), s.y.slice(1).map((v, i) => v - s.y[i]))),
-  T("transformar", "ia", "Variación interanual %", 1, (s) => hija([s], s.nombre + " i.a.", "i.a.", `100·(${s.alias}/lag(${s.alias},12) − 1)`, s.x.slice(12), s.y.slice(12).map((v, i) => (s.y[i] ? (v / s.y[i] - 1) * 100 : null)), { unidad: "% i.a." })),
-  T("transformar", "base100", "Base 100", 1, (s) => hija([s], s.nombre + " (base 100)", "base 100", `100·${s.alias}/${s.alias}[${s.x[0]}]`, s.x, s.y.map((v) => (v / s.y[0]) * 100), { unidad: "índice" })),
-  T("transformar", "mm", "Media móvil 12", 1, (s) => hija([s], s.nombre + " mm12", "mm12", `mm(${s.alias},12)`, s.x.slice(11), s.y.slice(11).map((_, i) => media(s.y.slice(i, i + 12))))),
-  T("transformar", "z", "Estandarizar (z)", 1, (s) => { const m = media(s.y), d = desvio(s.y); return hija([s], s.nombre + " (z)", "z", `z(${s.alias})`, s.x, s.y.map((v) => (v - m) / d), { unidad: "desvíos" }); }),
-  T("transformar", "outliers", "Sacar outliers (1 % colas)", 1, (s) => { const lo = quantil(s.y, 0.01), hi = quantil(s.y, 0.99); return hija([s], s.nombre + " sin outliers", "winsor", `winsor(${s.alias}, 1 %)`, s.x, s.y.map((v) => Math.min(hi, Math.max(lo, v)))); }),
-  T("transformar", "lag", "Rezagar 1 período", 1, (s) => hija([s], s.nombre + " (t−1)", "rezago", `lag(${s.alias},1)`, s.x.slice(1), s.y.slice(0, -1))),
+  O("transformar", "log"), O("transformar", "dif"), O("transformar", "dif2"), O("transformar", "pct"), O("transformar", "dif_log"), O("transformar", "base100"),
+  O("transformar", "mm"), O("transformar", "desvio_movil"), O("transformar", "z"), O("transformar", "winsor"), O("transformar", "rezago"), O("transformar", "recorte"),
   P("transformar", "Cambiar frecuencia", "insumos.panel"), P("transformar", "Deflactar por otra serie", "explorar"),
-  T("combinar", "resta", "A − B (spread)", 2, (a, b) => { const z = alinear(a, b); return hija([a, b], `${a.nombre} − ${b.nombre}`, "A−B", `${a.alias} − ${b.alias}`, z.x, z.ya.map((v, i) => v - z.yb[i])); }),
-  T("combinar", "cociente", "A ÷ B (ratio)", 2, (a, b) => { const z = alinear(a, b); return hija([a, b], `${a.nombre} / ${b.nombre}`, "A÷B", `${a.alias} / ${b.alias}`, z.x, z.ya.map((v, i) => (z.yb[i] ? v / z.yb[i] : null)), { unidad: "ratio" }); }),
-  T("combinar", "suma", "A + B", 2, (a, b) => { const z = alinear(a, b); return hija([a, b], `${a.nombre} + ${b.nombre}`, "A+B", `${a.alias} + ${b.alias}`, z.x, z.ya.map((v, i) => v + z.yb[i])); }),
+  T("combinar", "resta", "A − B (spread)", 2, comb("A−B", (a, b) => `${a.nombre} − ${b.nombre}`, (u, v) => u - v)),
+  T("combinar", "cociente", "A ÷ B (ratio)", 2, comb("A÷B", (a, b) => `${a.nombre} / ${b.nombre}`, (u, v) => (v ? u / v : null), "ratio")),
+  T("combinar", "suma", "A + B", 2, comb("A+B", (a, b) => `${a.nombre} + ${b.nombre}`, (u, v) => u + v)),
+  T("combinar", "producto", "A × B", 2, comb("A×B", (a, b) => `${a.nombre} × ${b.nombre}`, (u, v) => u * v)),
   T("combinar", "residuo", "Residuo de A sobre B", 2, (a, b) => { const z = alinear(a, b); const r = ols(z.ya, z.yb.map((v) => [1, v])); return hija([a, b], `${a.nombre} | sin ${b.nombre}`, "residuo", `resid(${a.alias} ~ ${b.alias}) · β=${num(r.b[1])}`, z.x, r.res); }),
-  P("combinar", "Empalmar dos tramos", "empalme"), P("combinar", "Índice ponderado", "explorar"),
-  T("descomponer", "hp", "Filtro HP (tendencia + ciclo)", 1, (s) => { const t = hp(s.y, 129600); hija([s], s.nombre + " · tendencia HP", "HP tend.", `hp(${s.alias}, λ=129600).tendencia`, s.x, t); return hija([s], s.nombre + " · ciclo HP", "HP ciclo", `hp(${s.alias}, λ=129600).ciclo`, s.x, s.y.map((v, i) => v - t[i])); }),
-  T("descomponer", "detrend", "Quitar tendencia lineal", 1, (s) => { const r = ols(s.y, s.y.map((_, i) => [1, i])); return hija([s], s.nombre + " sin tendencia", "detrend", `${s.alias} − tendencia lineal`, s.x, r.res); }),
+  T("combinar", "codigo", "Fórmula libre (código Python)", "codigo", null, "Abre el editor de código"),
+  P("combinar", "Empalmar dos tramos", "empalme"),
+  O("descomponer", "hp", "Filtro HP (tendencia o ciclo)"), O("descomponer", "sin_tendencia"),
   P("descomponer", "Filtro de Hamilton", "filtro_hamilton"), P("descomponer", "STL (estacionalidad)", "descomposicion_stl"), P("descomponer", "Kalman / componentes no observados", "componentes_no_observados"), P("descomponer", "Chow-Lin (mensualizar)", "desagregacion_temporal"),
-  T("diagnosticar", "orden", "Orden de integración", 1, (s) => { const o = s.orden || (acf(s.y, 1) > 0.95 ? "probable I(1)" : "probable I(0)"); s.sellos.push({ t: o, w: /1/.test(o) }); }),
-  T("diagnosticar", "acf", "Persistencia (ACF)", 1, (s) => { const a1 = acf(s.y, 1), a12 = acf(s.y, 12); s.sellos.push({ t: `ACF(1)=${num(a1, 2)} · ACF(12)=${num(a12, 2)}`, w: a12 > 0.5 }); }),
-  T("diagnosticar", "quiebre", "Quiebre de media (1)", 1, (s) => { const y = s.y, n = y.length; let mejor = [Infinity, 0]; for (let k = 12; k < n - 12; k++) { const a = y.slice(0, k), b = y.slice(k); const ssr = a.reduce((t, v) => t + (v - media(a)) ** 2, 0) + b.reduce((t, v) => t + (v - media(b)) ** 2, 0); if (ssr < mejor[0]) mejor = [ssr, k]; } s.sellos.push({ t: `quiebre ${s.x[mejor[1]].slice(0, 7)}`, w: true }); }),
-  T("diagnosticar", "normal", "Colas (asimetría y curtosis)", 1, (s) => { const m = media(s.y), d = desvio(s.y); const sk = media(s.y.map((v) => ((v - m) / d) ** 3)), ku = media(s.y.map((v) => ((v - m) / d) ** 4)) - 3; s.sellos.push({ t: `asim. ${num(sk, 2)} · curt. ${num(ku, 2)}`, w: Math.abs(ku) > 1 }); }),
+  T("diagnosticar", "d_orden", "Orden de integración", 1, null, "", { diag: "orden" }), T("diagnosticar", "d_acf", "Persistencia (ACF)", 1, null, "", { diag: "acf" }),
+  T("diagnosticar", "d_quiebre", "Quiebre de media (1)", 1, null, "", { diag: "quiebre" }), T("diagnosticar", "d_normal", "Colas (asimetría y curtosis)", 1, null, "", { diag: "normal" }),
   P("diagnosticar", "Batería ADF/PP/KPSS/ZA", "raiz_unitaria"), P("diagnosticar", "Bai-Perron × Línea de Tiempo", "quiebres_estructurales"), P("diagnosticar", "Burbuja (GSADF)", "burbuja_gsadf"),
-  T("mirar", "v_lineas", "Líneas", "vista", "lineas"), T("mirar", "v_base", "Base 100", "vista", "base"), T("mirar", "v_z", "Estandarizado", "vista", "z"),
-  T("mirar", "v_disp", "Dispersión (2 series)", "vista", "dispersion"), T("mirar", "v_hist", "Histograma", "vista", "hist"), T("mirar", "v_box", "Caja (box plot)", "vista", "box"),
-  P("mirar", "Superficie 3D", "vista 3D"), P("mirar", "Mapa de calendario", "estacionalidad_calendario"),
+  T("mirar", "g_tiempo", "Gráfico de tiempo (capas)", "panel", "tiempo"), T("mirar", "g_disp", "Dispersión X / Y", "panel", "dispersion"),
+  T("mirar", "g_clusters", "Clusters en color (k-medias)", "panel", "clusters"), T("mirar", "g_dist", "Distribución (histograma + caja)", "panel", "distribucion"),
+  T("mirar", "g_3d", "Gráfico 3D (X, Y, Z)", "panel", "3d"), T("mirar", "g_arbol", "Árbol de decisión", "panel", "arbol"),
+  P("mirar", "Mapa de calendario", "estacionalidad_calendario"),
   T("modelar", "iterar", "Iterar ARDL · VAR · VECM", "todo", null, "Combinaciones de 1-3 explicativas"),
   T("modelar", "mco", "Regresión MCO (dep = 1.ª sel.)", "n", null, ""),
+  T("modelar", "m_arbol", "Árbol de decisión (¿sube el mes que viene?)", "panel", "arbol"),
+  T("modelar", "m_clusters", "Clusters de períodos (k-medias)", "panel", "clusters"),
   P("modelar", "Familia GARCH", "garch_familia"), P("modelar", "Markov (regímenes)", "markov_switching"), P("modelar", "Kalman TVP", "tvp_kalman"), P("modelar", "Control sintético", "control_sintetico"), P("modelar", "XGBoost + SHAP", "ml_shap"), P("modelar", "LSTM / GRU", "red_lstm"),
   P("simular", "Monte Carlo de umbral", "montecarlo_umbral"), P("simular", "Bootstrap por bloques", "montecarlo_cartera"),
   T("evaluar", "granger", "Granger N × N", "todo", null, ""),
   P("evaluar", "Torneo de modelos", "torneo_modelos"), P("evaluar", "Curva de especificaciones", "curva_especificaciones"), P("evaluar", "¿Es suerte? (PBO)", "sobreajuste_backtest"),
 ];
 
-function aplicar(t, destino) {
+/* ─── formulario de parámetros (popover) ─── */
+function formParams(defsP, valores = {}) {
+  return Object.entries(defsP).map(([k, d]) => {
+    const v = valores[k] ?? d.def;
+    if (d.tipo === "opcion") return `<label>${esc(d.et)} <select data-p="${k}">${d.op.map((o) => `<option ${o === v ? "selected" : ""}>${esc(o)}</option>`).join("")}</select></label>`;
+    if (d.tipo === "fecha") return `<label>${esc(d.et)} <input type="text" data-p="${k}" value="${esc(v)}" placeholder="AAAA-MM" size="8"></label>`;
+    return `<label>${esc(d.et)} <input type="number" data-p="${k}" value="${v}" min="${d.min}" max="${d.max}" step="${d.paso || (Number.isInteger(d.def) ? 1 : "any")}"></label>`;
+  }).join("");
+}
+function leerParams(cont, defsP) {
+  const p = {};
+  cont.querySelectorAll("[data-p]").forEach((el) => {
+    const d = defsP[el.dataset.p];
+    if (d.tipo === "opcion" || d.tipo === "fecha") { p[el.dataset.p] = el.value.trim(); return; }
+    let v = parseFloat(String(el.value).replace(",", ".")); if (!isFinite(v)) v = d.def;
+    p[el.dataset.p] = Math.min(d.max, Math.max(d.min, Number.isInteger(d.def) ? Math.round(v) : v));
+  });
+  return p;
+}
+function cerrarPop() { document.getElementById("pop")?.remove(); }
+function abrirPop(ancla, html, alMontar) {
+  cerrarPop();
+  const el = document.createElement("div"); el.id = "pop"; el.className = "pop"; el.setAttribute("role", "dialog");
+  el.innerHTML = html; document.body.appendChild(el);
+  const r = ancla.getBoundingClientRect(), w = el.offsetWidth, h = el.offsetHeight;
+  let x = r.left + window.scrollX, y = r.bottom + window.scrollY + 6;
+  if (x + w > window.scrollX + innerWidth - 8) x = window.scrollX + innerWidth - w - 8;
+  if (r.bottom + h + 10 > innerHeight) y = r.top + window.scrollY - h - 6;
+  el.style.left = Math.max(8, x) + "px"; el.style.top = Math.max(window.scrollY + 8, y) + "px";
+  el.querySelector("input,select,button")?.focus();
+  alMontar?.(el);
+  return el;
+}
+document.addEventListener("pointerdown", (e) => { const p = document.getElementById("pop"); if (p && !p.contains(e.target) && !e.target.closest?.(".tool,[data-ca='mas'],[data-ca='color']")) cerrarPop(); });
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") cerrarPop(); });
+
+function objetivoDe(destino) {
+  let o = destino ? [destino, ...[...st.sel].map(byId).filter((s) => s && s !== destino)] : [...st.sel].map(byId).filter(Boolean);
+  return o;
+}
+function popTransformar(t, ancla, destino, panelDestino) {
+  const objetivo = objetivoDe(destino).filter((s) => s.x || !["rezago", "recorte", "base100"].includes(t.op));
+  const pa = panelDestino || panelActivo();
+  const capas = pa ? capasConRef(pa) : [];
+  const nombres = objetivo.map((s) => s.alias).join(", ");
+  abrirPop(ancla, `<b>${esc(OPSJ[t.op].nombre)}</b>
+    <div class="pop-f">${formParams(OPSJ[t.op].p) || '<span class="lbl">sin parámetros</span>'}</div>
+    <div class="pop-acc">
+      <button class="btn sm primary" type="button" data-pop="ficha" ${objetivo.length ? "" : "disabled"} title="${esc(nombres)}">Crear ficha${objetivo.length > 1 ? "s" : ""} (${objetivo.length ? esc(nombres.slice(0, 40)) : "seleccioná fichas"})</button>
+      <button class="btn sm" type="button" data-pop="capa" ${capas.length ? "" : "disabled"}>Aplicar en el gráfico «${esc(pa?.titulo || "")}» (se saca con ✕)</button>
+    </div>`, (el) => el.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-pop]"); if (!b) return;
+    const p = leerParams(el, OPSJ[t.op].p);
+    cambio();
+    if (b.dataset.pop === "ficha") { const hechas = objetivo.map((s) => fijarRef(ref(s.id, [{ op: t.op, p }]))).filter(Boolean); hechas.forEach((h) => mostrarFicha(h, pa)); toast(`${hechas.length} ficha(s) nueva(s): ${hechas.map((h) => h.alias).join(", ")}.`); }
+    else { const ids = new Set(objetivo.map((s) => s.id)); const sobre = capas.filter((c) => !ids.size || ids.has(c.r.sid)); (sobre.length ? sobre : capas).forEach((c) => c.r.transf.push({ op: t.op, p })); toast("Aplicada como chip en las capas del gráfico: tocá ✕ en el chip para sacarla."); }
+    cerrarPop(); render();
+  }));
+}
+function popDiag(t, ancla, destino) {
+  const d = DIAG[t.diag], objetivo = objetivoDe(destino);
+  if (!objetivo.length) { toast("Seleccioná una ficha (o soltá la herramienta sobre ella)."); return; }
+  if (!Object.keys(d.p).length) { cambio(); objetivo.forEach((s) => d.f(s)); render(); return; }
+  abrirPop(ancla, `<b>${esc(t.nombre)}</b><div class="pop-f">${formParams(d.p)}</div><div class="pop-acc"><button class="btn sm primary" type="button" data-pop="ok">Pegar sello en ${objetivo.length} ficha(s)</button></div>`, (el) => el.addEventListener("click", (e) => { if (!e.target.closest("[data-pop]")) return; cambio(); const p = leerParams(el, d.p); objetivo.forEach((s) => d.f(s, p)); cerrarPop(); render(); }));
+}
+
+function aplicar(t, destino, ancla, panelDestino) {
+  ancla = ancla || document.querySelector(`.tool[data-tool="${t.id}"]`) || document.body;
   if (t.plat) { toast(`En la plataforma: método «${t.plat}». En este mockup, sólo de muestra.`); return; }
-  if (t.aridad === "vista") { st.vista = t.fn; render(); return; }
-  if (t.id === "recorte") { toast("Arrastrá sobre el gráfico para elegir el tramo."); return; }
+  if (t.op) { popTransformar(t, ancla, destino, panelDestino); return; }
+  if (t.diag) { popDiag(t, ancla, destino); return; }
+  if (t.aridad === "panel") { cambio(); const p = nuevoPanel(t.fn, objetivoDe(destino)); render(); document.querySelector(`[data-panel="${p.id}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" }); return; }
+  if (t.aridad === "codigo") { $("#code").focus(); $("#code").scrollIntoView({ behavior: "smooth", block: "center" }); return; }
+  if (t.id === "recorte") { toast("Arrastrá sobre un gráfico de tiempo para elegir el tramo."); return; }
   if (t.id === "iterar") { correrUniverso(); return; }
-  if (t.id === "granger") { correrUniverso(); st.resVista = "granger"; render(); $("#res-card").scrollIntoView({ behavior: "smooth", block: "start" }); return; }
-  let objetivo = destino ? [destino, ...[...st.sel].map(byId).filter((s) => s && s !== destino)] : [...st.sel].map(byId).filter(Boolean);
-  objetivo = objetivo.filter((s) => s.x);
+  if (t.id === "granger") { correrUniverso(); st.resVista = "r_granger"; render(); $("#res-card").scrollIntoView({ behavior: "smooth", block: "start" }); return; }
+  const objetivo = objetivoDe(destino).filter((s) => s.x);
   if (t.id === "mco") { modeloMCO(objetivo); return; }
-  if (t.aridad === 1) {
-    if (!objetivo.length) { toast("Seleccioná una ficha (o soltá la herramienta sobre ella)."); return; }
-    objetivo.forEach((s) => t.fn(s));
-  } else if (t.aridad === 2) {
-    if (objetivo.length < 2) { toast("Hacen falta dos fichas: soltá la herramienta sobre A con B seleccionada."); return; }
-    t.fn(objetivo[0], objetivo[1]);
+  if (t.aridad === 2) {
+    if (objetivo.length < 2) { toast("Hacen falta dos fichas: seleccioná A y B (o soltá la herramienta sobre A con B seleccionada)."); return; }
+    cambio(); const h = t.fn(objetivo[0], objetivo[1]); mostrarFicha(h, panelDestino); render();
   }
-  render();
 }
 
 function modeloMCO(fs) {
@@ -853,9 +1048,12 @@ function modeloMCO(fs) {
   const insumos = [y, ...xs];
   const nombre = `MCO ${y.alias} ~ ${xs.map((s) => s.alias).join(" + ")}`;
   const texto = `${y.alias} = ${num(r.b[0])} ${xs.map((s, i) => `${r.b[i + 1] >= 0 ? "+" : "−"} ${num(Math.abs(r.b[i + 1]))}·${s.alias}`).join(" ")} · R²=${num(r.r2, 2)}`;
-  hija(insumos, nombre + " · ajustado", "MCO ajustado", texto, x, r.fit, { tipo: "resultado" });
-  hija(insumos, nombre + " · residuo", "MCO residuo", texto, x, r.res, { tipo: "resultado" });
-  toast("MCO: el ajuste y el residuo quedaron como fichas.");
+  cambio();
+  const aj = hija(insumos, nombre + " · ajustado", "MCO ajustado", texto, x, r.fit, { tipo: "resultado" });
+  const re = hija(insumos, nombre + " · residuo", "MCO residuo", texto, x, r.res, { tipo: "resultado" });
+  const p = nuevoPanel("tiempo", [y, aj]); p.capas[1].estilo = "guiones";
+  p.capas.push(capa({ r: ref(re.id), tipo: "barras", color: re.color, estilo: "solido", grosor: 1, eje: "der" })); p.titulo = `MCO: ${y.alias} observado, ajustado y residuo (barras, eje der.)`; p.manual = true;
+  toast("MCO: ajuste y residuo quedaron como fichas y en un gráfico nuevo.");
   render();
 }
 
@@ -898,14 +1096,25 @@ function montarConjunto() {
   st._tvMontada = sel.value;
   montarTabla($("#res-tv"), CONJ[sel.value](), {
     origen: "Universo de modelos del TF",
-    alGuardarSerie: async ({ nombre, fechas, valores, procedencia }) => { const s = nuevaSerie({ nombre, tipo: "resultado", x: fechas, y: valores, unidad: "", receta: { op: "selección", insumos: [], texto: procedencia } }); s._de = "res1"; s.graf = true; render(); return "Quedó como ficha temporal."; },
-    alGuardarVector: async ({ nombre, etiquetas, valores, procedencia }) => { const s = nuevaSerie({ nombre, tipo: "resultado", x: null, y: valores.map((v) => (v == null ? NaN : v)), etiquetas, unidad: "", receta: { op: "selección", insumos: [], texto: procedencia } }); s._de = "res1"; st.series.forEach((x) => (x.graf = false)); s.graf = true; st.vista = "hist"; render(); return "Quedó como ficha (vector de resultados): el gráfico de arriba la muestra como histograma."; },
+    alGuardarSerie: async ({ nombre, fechas, valores, procedencia }) => { cambio(); const s = nuevaSerie({ nombre, tipo: "resultado", x: fechas, y: valores, unidad: "", receta: { op: "selección", insumos: [], texto: procedencia } }); s._de = "res1"; mostrarFicha(s); render(); return `Ficha temporal «${s.alias}».`; },
+    alGuardarVector: async ({ nombre, etiquetas, valores, procedencia }) => { cambio(); const s = nuevaSerie({ nombre, tipo: "resultado", x: null, y: valores.map((v) => (v == null ? NaN : v)), etiquetas, unidad: "", receta: { op: "selección", insumos: [], texto: procedencia } }); s._de = "res1"; mostrarFicha(s); render(); return `Ficha «${s.alias}» (vector de resultados).`; },
+    alGraficar: async (items) => {
+      cambio();
+      const fs = items.map((it) => { const s = nuevaSerie({ nombre: it.nombre, tipo: "resultado", x: it.fechas || null, y: it.valores.map((v) => (v == null ? NaN : v)), etiquetas: it.etiquetas, unidad: "", receta: { op: "selección", insumos: [], texto: it.procedencia } }); s._de = "res1"; return s; });
+      let p;
+      if (fs.every((f) => f.x)) p = nuevoPanel("tiempo", fs);
+      else if (fs.length === 2) { p = nuevoPanel("dispersion", fs); p.capas[0].rx = ref(fs[0].id); p.capas[0].ry = ref(fs[1].id); p.capas[0].recta = false; retitular(p); }
+      else p = nuevoPanel("distribucion", fs);
+      p.ancho = 2; render(); document.querySelector(`[data-panel="${p.id}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return `${fs.length} ficha(s) y un gráfico nuevo arriba (${({ tiempo: "de tiempo", dispersion: "dispersión", distribucion: "distribución" })[p.modo]}).`;
+    },
   });
 }
 document.addEventListener("change", (e) => { if (e.target.id === "res-conj") { st._tvMontada = null; montarConjunto(); } });
 
 /* ═════════════ motor de gráficos (un solo motor para Mesa, Proyecto y Documento) ═════════════ */
-const W = 900, M = { l: 58, r: 20, t: 14, b: 30 };
+let W = 900; // ancho lógico del SVG; los paneles de media pantalla dibujan con 560 para que el texto no se achique
+const M = { l: 58, r: 20, t: 14, b: 30 };
 function ticks(lo, hi, n = 5) { if (!(hi > lo)) return [lo]; const paso = Math.pow(10, Math.floor(Math.log10((hi - lo) / n))); const m = [1, 2, 2.5, 5, 10].find((k) => (hi - lo) / (k * paso) <= n) * paso; const o = []; for (let v = Math.ceil(lo / m) * m; v <= hi + 1e-12; v += m) o.push(+v.toFixed(10)); return o; }
 function ext(arrs, cero) { let lo = Infinity, hi = -Infinity; arrs.forEach((a) => a.forEach((v) => { if (v != null && isFinite(v)) { lo = Math.min(lo, v); hi = Math.max(hi, v); } })); if (!isFinite(lo)) return [0, 1]; if (cero) { lo = Math.min(lo, 0); hi = Math.max(hi, 0); } if (lo === hi) { lo -= 1; hi += 1; } const p = (hi - lo) * 0.05; return [lo - p, hi + p]; }
 function ejeY(sy, y0, y1, H, ancho = W) { let g = ""; ticks(y0, y1).forEach((v) => { g += `<line class="grid" x1="${M.l}" x2="${ancho - M.r}" y1="${sy(v)}" y2="${sy(v)}"/><text x="${M.l - 6}" y="${sy(v) + 3}" text-anchor="end">${num(v)}</text>`; }); if (y0 < 0 && y1 > 0) g += `<line class="cero" x1="${M.l}" x2="${ancho - M.r}" y1="${sy(0)}" y2="${sy(0)}"/>`; return g; }
@@ -914,41 +1123,12 @@ const tms = (f) => Date.parse(f);
 function dibujar(svg, spec, ley) {
   const H = spec.alto || 330;
   svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
-  const f = { lineas: gLineas, base: gLineas, z: gLineas, dispersion: gDisp2, hist: gHist, box: gBox, r_disp: rDisp, r_barras: rBarras, r_hist: rHist, r_signo: rSigno, r_granger: rGranger, r_ranking: rRanking }[spec.vista];
+  if (spec.vista === "panel") return dibujarPanel(svg, spec.panel, ley, spec.alto, 640);
+  const f = { r_disp: rDisp, r_barras: rBarras, r_hist: rHist, r_signo: rSigno, r_granger: rGranger, r_ranking: rRanking }[spec.vista];
   const o = f ? f(spec, H) : { svg: "", ley: "" };
   svg.innerHTML = o.svg;
   if (ley) ley.innerHTML = o.ley || "";
   return o;
-}
-function seriesDe(spec) { return spec.ids.map(byId).filter(Boolean); }
-function gLineas(spec, H) {
-  let ss = seriesDe(spec).filter((s) => s.x);
-  if (!ss.length) return { svg: `<text x="${W / 2}" y="${H / 2}" text-anchor="middle">Prendé el ojo de alguna ficha para graficarla</text>` };
-  const tr = (s) => { const v = s.y; if (spec.vista === "base") { const b = v.find((x) => x != null && x !== 0); return v.map((x) => (x / b) * 100); } if (spec.vista === "z") { const m = media(v), d = desvio(v); return v.map((x) => (x - m) / d); } return v; };
-  const ys = ss.map(tr);
-  let x0 = Infinity, x1 = -Infinity;
-  ss.forEach((s) => { x0 = Math.min(x0, tms(s.x[0])); x1 = Math.max(x1, tms(s.x[s.x.length - 1])); });
-  if (spec.rango) { x0 = tms(spec.rango[0]); x1 = tms(spec.rango[1]); }
-  const dentro = (s, i) => { const t = tms(s.x[i]); return t >= x0 && t <= x1; };
-  const [y0, y1] = ext(ys.map((y, k) => y.filter((_, i) => dentro(ss[k], i))));
-  const sx = (t) => M.l + ((t - x0) / (x1 - x0 || 1)) * (W - M.l - M.r);
-  const sy = (v) => H - M.b - ((v - y0) / (y1 - y0)) * (H - M.t - M.b);
-  let g = ejeY(sy, y0, y1, H);
-  const a0 = new Date(x0).getUTCFullYear(), a1 = new Date(x1).getUTCFullYear();
-  const paso = Math.max(1, Math.ceil((a1 - a0 + 1) / 10));
-  for (let a = a0; a <= a1; a += paso) { const t = Date.UTC(a, 0, 1); if (t >= x0 && t <= x1) g += `<line class="grid" x1="${sx(t)}" x2="${sx(t)}" y1="${M.t}" y2="${H - M.b}" stroke-dasharray="2 4"/><text x="${sx(t)}" y="${H - 9}" text-anchor="middle">${a}</text>`; }
-  ss.forEach((s, k) => {
-    let d = "", pl = false;
-    s.x.forEach((f, i) => { const v = ys[k][i]; if (v == null || !isFinite(v) || !dentro(s, i)) { pl = false; return; } d += `${pl ? "L" : "M"}${sx(tms(f)).toFixed(1)},${sy(v).toFixed(1)}`; pl = true; });
-    g += `<path d="${d}" fill="none" stroke="var(${s.color})" stroke-width="1.7"/>`;
-  });
-  return { svg: g, ley: ss.map((s) => `<span><i style="background:var(${s.color})"></i>${esc(s.nombre)}</span>`).join(""), x0, x1, sx, ss };
-}
-function gDisp2(spec, H) {
-  const ss = seriesDe(spec).filter((s) => s.x).slice(0, 2);
-  if (ss.length < 2) return { svg: `<text x="${W / 2}" y="${H / 2}" text-anchor="middle">La dispersión necesita dos series graficadas</text>` };
-  const z = alinear(ss[0], ss[1]);
-  return nube(z.yb, z.ya, ss[1].nombre, ss[0].nombre, H, z.x, true);
 }
 function nube(xs, ys, ex, ey, H, etq, recta) {
   const [x0, x1] = ext([xs]), [y0, y1] = ext([ys]);
@@ -986,9 +1166,6 @@ function cajas(grupos, H, etqY) {
   gs.forEach((gg, i) => { const o = q[i], cx = M.l + ancho * (i + 0.5), bw = Math.min(70, ancho * 0.45); g += `<line x1="${cx}" x2="${cx}" y1="${sy(o.lo)}" y2="${sy(o.hi)}" stroke="var(--ink-faint)"/><rect x="${cx - bw / 2}" y="${sy(o.q3)}" width="${bw}" height="${Math.max(1, sy(o.q1) - sy(o.q3))}" fill="color-mix(in srgb, var(${gg.color}) 30%, transparent)" stroke="var(${gg.color})"/><line x1="${cx - bw / 2}" x2="${cx + bw / 2}" y1="${sy(o.q2)}" y2="${sy(o.q2)}" stroke="var(${gg.color})" stroke-width="2.5"/><text x="${cx}" y="${H - 9}" text-anchor="middle">${esc(gg.nombre.length > 22 ? gg.nombre.slice(0, 21) + "…" : gg.nombre)}</text>`; });
   return { svg: g, ley: etqY ? `<span>${esc(etqY)} · bigotes 1,5×IQR</span>` : "" };
 }
-function gHist(spec, H) { return histograma(seriesDe(spec).map((s) => ({ nombre: s.nombre, color: s.color, v: s.y.filter((v) => v != null && isFinite(v)) })), H); }
-function gBox(spec, H) { return cajas(seriesDe(spec).map((s) => ({ nombre: s.nombre, color: s.color, v: s.y.filter((v) => v != null && isFinite(v)) })), H); }
-
 /* resultados */
 function rDisp(spec, H) {
   const ef = efectosDe(spec.v, spec.filtro);
@@ -1058,22 +1235,554 @@ function rRanking(spec, H) {
   return { svg: "", html, ley: "" };
 }
 
+/* ═════════════ LIENZO: varios gráficos, cada uno con CAPAS que se mezclan ═════════════
+   Un panel tiene un MODO (el sistema de coordenadas) y capas compatibles con ese modo:
+   - tiempo:       líneas · áreas · barras · puntos · escalones, eje izquierdo o derecho
+   - dispersion:   nubes X/Y (color fijo, por tiempo, por otra serie, por régimen o por CLUSTER),
+                   recta MCO, trayectoria unida, varios pares en el mismo plano
+   - distribucion: histograma · caja · densidad · marcas, mezclables sobre el mismo eje
+   - 3d:           X, Y, Z rotable con el mouse, puntos o trayectoria, color por tiempo o cluster
+   - arbol:        árbol de decisión navegable (clic en un nodo = sus períodos)
+   Nada de esto toca los datos: las transformaciones de una capa son chips que se sacan. */
+const MODOS = [["tiempo", "Tiempo"], ["dispersion", "Dispersión"], ["distribucion", "Distribución"], ["3d", "3D"], ["arbol", "Árbol"]];
+const PALETA = ["--s1", "--s2", "--s3", "--s4", "--s5", "--s6", "--ink-dim"];
+const colorCss = (c) => (c && c.startsWith("--") ? `var(${c})` : c || "var(--s1)");
+const DASH = { solido: "", guiones: "7 4", puntos: "1.5 3.5" };
+let _np = 0, _nc = 0;
+const panelActivo = () => st.paneles.find((p) => p.id === st.activo) || st.paneles[0];
+const temporales = () => st.series.filter((s) => s.x);
+const capa = (o) => ({ id: "c" + ++_nc, visible: true, ...o });
+
+function nuevoPanel(modo, fichas = [], extra = {}) {
+  const fs = fichas.length ? fichas : st.series.filter((s) => st.sel.has(s.id));
+  const tem = fs.filter((s) => s.x), todas = temporales();
+  const elegir = (k) => (tem[k] || todas[k] || todas[0])?.id;
+  const p = { id: "p" + ++_np, modo: modo === "clusters" ? "dispersion" : modo, titulo: "", escala: "nivel", rango: null, ancho: 1, capas: [], opc: {}, ...extra };
+  if (p.modo === "tiempo") (fs.length ? fs : todas.slice(0, 1)).forEach((s, i) => p.capas.push(capa({ r: ref(s.id), tipo: "linea", color: s.color, estilo: "solido", grosor: 1.7, eje: "izq" })));
+  if (p.modo === "dispersion") p.capas.push(capa({ rx: ref(elegir(1)), ry: ref(elegir(0)), color: "--s1", colorPor: modo === "clusters" ? "cluster" : "fijo", k: 3, recta: modo !== "clusters", unir: false, cref: null }));
+  if (p.modo === "distribucion") (fs.length ? fs : todas.slice(0, 1)).forEach((s) => { p.capas.push(capa({ r: ref(s.id), tipo: "hist", color: s.color })); p.capas.push(capa({ r: ref(s.id), tipo: "caja", color: s.color })); });
+  if (p.modo === "3d") p.opc = { rx: ref(elegir(1)), ry: ref(elegir(2)), rz: ref(elegir(0)), colorPor: "tiempo", k: 3, forma: "ambos", yaw: -0.7, pitch: 0.35 };
+  if (p.modo === "arbol") { const y = elegir(0); p.opc = { ry: ref(y), xs: todas.filter((s) => s.id !== y).slice(0, 4).map((s) => ref(s.id)), objetivo: "sube", h: 1, prof: 3, min: 12, nodo: 0 }; }
+  retitular(p);
+  st.paneles.push(p); st.activo = p.id;
+  return p;
+}
+function retitular(p) { if (!p.manual) p.titulo = tituloAuto(p); }
+function tituloAuto(p) {
+  const n = (r) => (r ? refTexto(r) : "?");
+  if (p.modo === "tiempo") return p.capas.map((c) => n(c.r)).join(" · ").slice(0, 70) || "Tiempo";
+  if (p.modo === "dispersion") { const c = p.capas[0]; return c ? `${n(c.ry)} vs ${n(c.rx)}${c.colorPor === "cluster" ? ` · ${c.k} clusters` : ""}` : "Dispersión"; }
+  if (p.modo === "distribucion") return "Distribución de " + [...new Set(p.capas.map((c) => n(c.r)))].join(", ");
+  if (p.modo === "3d") return `3D: ${n(p.opc.rx)} · ${n(p.opc.ry)} · ${n(p.opc.rz)}`;
+  if (p.modo === "arbol") return `Árbol: ¿${p.opc.objetivo === "sube" ? "sube" : "cuánto vale"} ${n(p.opc.ry)} en t+${p.opc.h}?`;
+  return "";
+}
+function capasConRef(p) {
+  if (p.modo === "tiempo" || p.modo === "distribucion") return p.capas.map((c) => ({ c, r: c.r }));
+  if (p.modo === "dispersion") return p.capas.flatMap((c) => [{ c, r: c.rx }, { c, r: c.ry }]);
+  if (p.modo === "3d") return [{ r: p.opc.rx }, { r: p.opc.ry }, { r: p.opc.rz }];
+  if (p.modo === "arbol") return [{ r: p.opc.ry }, ...p.opc.xs.map((r) => ({ r }))];
+  return [];
+}
+/** Una ficha nueva (de herramienta, código o resultados) aparece en el gráfico que corresponde. */
+function mostrarFicha(s, panel) {
+  if (!s) return;
+  let p = panel || panelActivo();
+  if (s.x) {
+    if (!p || p.modo !== "tiempo") p = st.paneles.find((q) => q.modo === "tiempo") || nuevoPanel("tiempo", [s]);
+    if (!p.capas.some((c) => c.r.sid === s.id && !c.r.transf.length)) p.capas.push(capa({ r: ref(s.id), tipo: "linea", color: s.color, estilo: "solido", grosor: 1.7, eje: "izq" }));
+  } else {
+    p = st.paneles.find((q) => q.modo === "distribucion" && q._vectores) || nuevoPanel("distribucion", [], { _vectores: true });
+    p.capas.push(capa({ r: ref(s.id), tipo: "hist", color: s.color }), capa({ r: ref(s.id), tipo: "caja", color: s.color }));
+  }
+  retitular(p);
+  st.activo = p.id;
+}
+const enAlgunPanel = (s) => st.paneles.some((p) => capasConRef(p).some((x) => x.r && x.r.sid === s.id));
+
+/* ─── deshacer / rehacer (fotos del estado de la mesa) ─── */
+function foto() { return { paneles: structuredClone(st.paneles), series: st.series.map((s) => ({ ...s, sellos: s.sellos.slice() })), sel: [...st.sel], activo: st.activo, res: st.res }; }
+function restaurar(f) { st.paneles = f.paneles; st.series = f.series; st.sel = new Set(f.sel); st.activo = f.activo; st.res = f.res; }
+function cambio() { st.deshacer.push(foto()); if (st.deshacer.length > 80) st.deshacer.shift(); st.rehacer = []; }
+function deshacer() { if (!st.deshacer.length) { toast("Nada para deshacer."); return; } st.rehacer.push(foto()); restaurar(st.deshacer.pop()); render(); }
+function rehacer() { if (!st.rehacer.length) { toast("Nada para rehacer."); return; } st.deshacer.push(foto()); restaurar(st.rehacer.pop()); render(); }
+document.addEventListener("keydown", (e) => {
+  if (!(e.ctrlKey || e.metaKey) || e.target.closest?.("input,textarea,[contenteditable]")) return;
+  if (e.key.toLowerCase() === "z" && !e.shiftKey) { e.preventDefault(); deshacer(); }
+  else if (e.key.toLowerCase() === "y" || (e.key.toLowerCase() === "z" && e.shiftKey)) { e.preventDefault(); rehacer(); }
+});
+
+/* ─── cálculos para los modos ─── */
+function alinearN(os) {
+  // alinea varias series: por fecha si todas tienen fechas; si no, por posición
+  if (os.every((o) => o.x)) {
+    const ms = os.map((o) => new Map(o.x.map((f, i) => [f, o.y[i]])));
+    const x = os[0].x.filter((f) => ms.every((m) => nn(m.get(f))));
+    return { x, ys: ms.map((m) => x.map((f) => m.get(f))) };
+  }
+  const n = Math.min(...os.map((o) => o.y.length));
+  const idx = [...Array(n).keys()].filter((i) => os.every((o) => nn(o.y[i])));
+  return { x: os.every((o) => o.x) ? idx.map((i) => os[0].x[i]) : null, ys: os.map((o) => idx.map((i) => o.y[i])), etq: idx.map((i) => (os.find((o) => o.x)?.x?.[i] ?? `obs. ${i + 1}`)) };
+}
+function kmedias(pts, k, semilla = 7) {
+  // k-medias sobre puntos ya estandarizados; arranque k-means++ con semilla fija (reproducible)
+  let s = semilla; const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+  const d2 = (a, b) => a.reduce((t, v, j) => t + (v - b[j]) ** 2, 0);
+  const cen = [pts[Math.floor(rnd() * pts.length)]];
+  while (cen.length < k) { const ds = pts.map((p) => Math.min(...cen.map((c) => d2(p, c)))); let r = rnd() * ds.reduce((a, b) => a + b, 0); let i = 0; while (r > ds[i] && i < ds.length - 1) { r -= ds[i]; i++; } cen.push(pts[i]); }
+  let et = new Array(pts.length).fill(0);
+  for (let it = 0; it < 60; it++) {
+    const nuevo = pts.map((p) => { let m = 0, b = Infinity; cen.forEach((c, j) => { const d = d2(p, c); if (d < b) { b = d; m = j; } }); return m; });
+    const cambia = nuevo.some((v, i) => v !== et[i]); et = nuevo;
+    cen.forEach((_, j) => { const g = pts.filter((_, i) => et[i] === j); if (g.length) cen[j] = g[0].map((_, d) => media(g.map((p) => p[d]))); });
+    if (!cambia && it) break;
+  }
+  // ordenar clusters por la media de la 1.ª coordenada (etiquetas estables)
+  const orden = cen.map((c, j) => [c[0], j]).sort((a, b) => a[0] - b[0]).map((x) => x[1]);
+  const re = new Map(orden.map((j, i) => [j, i]));
+  return { et: et.map((j) => re.get(j)), cen: orden.map((j) => cen[j]) };
+}
+const COL_CL = ["--s1", "--s3", "--s4", "--s2", "--s5", "--s6"];
+const mezcla = (t) => `color-mix(in srgb, var(--s3) ${Math.round(t * 100)}%, var(--s1))`;
+
+/* ─── árbol de decisión (CART propio: Gini o varianza, umbrales por cuantiles) ─── */
+function datosArbol(o) {
+  const ry = evalRef(o.ry), xs = o.xs.map(evalRef).filter(Boolean);
+  if (!ry || !ry.x || !xs.length || !xs.every((x) => x.x)) return null;
+  const al = alinearN([ry, ...xs]);
+  const h = o.h, n = al.x.length - h;
+  if (n < 30) return null;
+  const filas = [];
+  for (let t = 0; t < n; t++) {
+    const yv = o.objetivo === "sube" ? (al.ys[0][t + h] > al.ys[0][t] ? 1 : 0) : al.ys[0][t + h];
+    filas.push({ f: al.x[t], x: al.ys.slice(1).map((c) => c[t]), y: yv });
+  }
+  return { filas, nombres: xs.map((x) => x.nombre), ny: ry.nombre };
+}
+function crecerArbol(filas, o, nombres) {
+  const clas = o.objetivo === "sube";
+  const imp = (ys) => { if (!ys.length) return 0; const m = media(ys); return clas ? 1 - m * m - (1 - m) * (1 - m) : ys.reduce((t, v) => t + (v - m) ** 2, 0) / ys.length; };
+  const nodos = [];
+  const hacer = (idx, prof, regla) => {
+    const ys = idx.map((i) => filas[i].y);
+    const nodo = { id: nodos.length, idx, prof, regla, valor: media(ys), n: idx.length, hijos: null };
+    nodos.push(nodo);
+    if (prof >= o.prof || idx.length < 2 * o.min) return nodo;
+    let mejor = null; const base = imp(ys) * ys.length;
+    nombres.forEach((nm, j) => {
+      const vs = idx.map((i) => filas[i].x[j]).sort((a, b) => a - b);
+      const cand = [...new Set([...Array(19).keys()].map((q) => quantil(vs, (q + 1) / 20)))];
+      cand.forEach((u) => {
+        const a = idx.filter((i) => filas[i].x[j] <= u), b = idx.filter((i) => filas[i].x[j] > u);
+        if (a.length < o.min || b.length < o.min) return;
+        const g = base - imp(a.map((i) => filas[i].y)) * a.length - imp(b.map((i) => filas[i].y)) * b.length;
+        if (!mejor || g > mejor.g) mejor = { g, j, u, a, b };
+      });
+    });
+    if (!mejor || mejor.g <= 1e-9) return nodo;
+    nodo.corte = { j: mejor.j, u: mejor.u, nombre: nombres[mejor.j] };
+    nodo.hijos = [hacer(mejor.a, prof + 1, `${nombres[mejor.j]} ≤ ${num(mejor.u)}`), hacer(mejor.b, prof + 1, `${nombres[mejor.j]} > ${num(mejor.u)}`)];
+    return nodo;
+  };
+  hacer(filas.map((_, i) => i), 0, "todos los períodos");
+  const hojas = nodos.filter((n) => !n.hijos);
+  const pred = new Array(filas.length); hojas.forEach((hh) => hh.idx.forEach((i) => (pred[i] = hh.valor)));
+  const acierto = clas ? media(filas.map((f, i) => ((pred[i] >= 0.5 ? 1 : 0) === f.y ? 1 : 0))) : null;
+  const r2 = clas ? null : 1 - filas.reduce((t, f, i) => t + (f.y - pred[i]) ** 2, 0) / filas.reduce((t, f) => t + (f.y - media(filas.map((x) => x.y))) ** 2, 0);
+  return { nodos, pred, acierto, r2, base: media(filas.map((f) => f.y)) };
+}
+function caminoA(nodos, id) { const out = []; let cur = nodos.find((n) => n.id === id); const padre = (c) => nodos.find((n) => n.hijos && n.hijos.includes(c)); while (cur) { out.unshift(cur.regla); cur = padre(cur); } return out.slice(1); }
+
+/* ─── dibujo de cada modo (devuelven {svg, ley, alto, ...}) ─── */
+const vacio = (H, t) => ({ svg: `<text x="${W / 2}" y="${H / 2}" text-anchor="middle">${esc(t)}</text>` });
+function escalar(y, escala) { if (escala === "z") return zs(y); if (escala === "base") { const b = y.find((v) => nn(v) && v !== 0); return y.map((v) => (nn(v) ? (v / b) * 100 : null)); } return y; }
+
+function pTiempo(p, H) {
+  const cs = p.capas.filter((c) => c.visible).map((c) => ({ c, o: evalRef(c.r) })).filter((z) => z.o && z.o.x && z.o.x.length);
+  if (!cs.length) return vacio(H, "Sin capas visibles: sumá una serie desde el panel de capas o con «graficar» en una ficha");
+  cs.forEach((z) => (z.y = escalar(z.o.y, p.escala)));
+  let x0 = Infinity, x1 = -Infinity;
+  cs.forEach((z) => { x0 = Math.min(x0, tms(z.o.x[0])); x1 = Math.max(x1, tms(z.o.x[z.o.x.length - 1])); });
+  if (p.rango) { x0 = tms(p.rango[0]); x1 = tms(p.rango[1]); }
+  const der = cs.some((z) => z.c.eje === "der");
+  const R = der ? 58 : M.r;
+  const dentro = (z, i) => { const t = tms(z.o.x[i]); return t >= x0 && t <= x1; };
+  const rango = (lado) => ext(cs.filter((z) => (z.c.eje === "der") === (lado === "der")).map((z) => z.y.filter((_, i) => dentro(z, i))), cs.some((z) => z.c.tipo === "barras" && (z.c.eje === "der") === (lado === "der")));
+  const [a0, a1] = rango("izq"), [b0, b1] = der ? rango("der") : [0, 1];
+  const sx = (t) => M.l + ((t - x0) / (x1 - x0 || 1)) * (W - M.l - R);
+  const syI = (v) => H - M.b - ((v - a0) / (a1 - a0)) * (H - M.t - M.b), syD = (v) => H - M.b - ((v - b0) / (b1 - b0)) * (H - M.t - M.b);
+  let g = cs.some((z) => z.c.eje !== "der") ? ejeY(syI, a0, a1, H, W - R + M.r) : "";
+  if (der) ticks(b0, b1).forEach((v) => { g += `<text x="${W - R + 6}" y="${syD(v) + 3}">${num(v)}</text>`; });
+  const an0 = new Date(x0).getUTCFullYear(), an1 = new Date(x1).getUTCFullYear(), paso = Math.max(1, Math.ceil((an1 - an0 + 1) / 10));
+  for (let a = an0; a <= an1; a += paso) { const t = Date.UTC(a, 0, 1); if (t >= x0 && t <= x1) g += `<line class="grid" x1="${sx(t)}" x2="${sx(t)}" y1="${M.t}" y2="${H - M.b}" stroke-dasharray="2 4"/><text x="${sx(t)}" y="${H - 9}" text-anchor="middle">${a}</text>`; }
+  // barras primero (fondo), después áreas, después líneas y puntos
+  const orden = { barras: 0, area: 1, escalon: 2, linea: 2, puntos: 3 };
+  const nb = cs.filter((z) => z.c.tipo === "barras").length; let kb = 0;
+  cs.slice().sort((a, b) => orden[a.c.tipo] - orden[b.c.tipo]).forEach((z) => {
+    const c = z.c, sy = c.eje === "der" ? syD : syI, col = colorCss(c.color);
+    const pts = z.o.x.map((f, i) => [f, z.y[i], i]).filter(([, v, i]) => nn(v) && dentro(z, i));
+    if (c.tipo === "barras") {
+      const n = Math.max(1, pts.length), bw = Math.max(1, ((W - M.l - R) / n) * 0.8 / nb), y0 = sy(Math.max(Math.min(0, c.eje === "der" ? b1 : a1), c.eje === "der" ? b0 : a0));
+      pts.forEach(([f, v]) => { const x = sx(tms(f)) - (bw * nb) / 2 + kb * bw, y = sy(v); g += `<rect x="${x.toFixed(1)}" y="${Math.min(y, y0).toFixed(1)}" width="${bw.toFixed(2)}" height="${Math.max(0.5, Math.abs(y - y0)).toFixed(1)}" fill="${col}" opacity=".75"/>`; });
+      kb++; return;
+    }
+    if (c.tipo === "puntos") { pts.forEach(([f, v]) => { g += `<circle cx="${sx(tms(f)).toFixed(1)}" cy="${sy(v).toFixed(1)}" r="${(c.grosor || 1.7) + 0.8}" fill="${col}" opacity=".8"/>`; }); return; }
+    let d = "", pl = false, prevY = null;
+    z.o.x.forEach((f, i) => {
+      const v = z.y[i]; if (!nn(v) || !dentro(z, i)) { pl = false; return; }
+      const X = sx(tms(f)).toFixed(1), Y = sy(v).toFixed(1);
+      if (c.tipo === "escalon" && pl) d += `H${X}V${Y}`; else d += `${pl ? "L" : "M"}${X},${Y}`;
+      pl = true; prevY = Y;
+    });
+    if (c.tipo === "area" && pts.length) {
+      const base = sy(Math.max(Math.min(0, c.eje === "der" ? b1 : a1), c.eje === "der" ? b0 : a0)).toFixed(1);
+      const pp = pts.map(([f, v]) => `${sx(tms(f)).toFixed(1)},${sy(v).toFixed(1)}`);
+      g += `<path d="M${pp[0].split(",")[0]},${base}L${pp.join("L")}L${pp[pp.length - 1].split(",")[0]},${base}Z" fill="${col}" opacity=".16"/>`;
+    }
+    g += `<path d="${d}" fill="none" stroke="${col}" stroke-width="${c.grosor || 1.7}" stroke-dasharray="${DASH[c.estilo] || ""}" stroke-linejoin="round"/>`;
+  });
+  const ley = cs.map((z) => `<span><i style="background:${colorCss(z.c.color)}"></i>${esc(z.o.nombre)}${der ? ` <small>(${z.c.eje === "der" ? "eje der." : "eje izq."})</small>` : ""}</span>`).join("") + (p.escala !== "nivel" ? `<span>escala: ${p.escala === "z" ? "estandarizada" : "base 100"}</span>` : "");
+  return { svg: g, ley, x0, x1, R, cs };
+}
+
+function pDispersion(p, H) {
+  const cs = p.capas.filter((c) => c.visible).map((c) => { const ox = evalRef(c.rx), oy = evalRef(c.ry); if (!ox || !oy) return null; const os = [ox, oy]; const oc = c.colorPor.startsWith("serie") || c.colorPor === "regimen" ? evalRef(c.cref) : null; if (oc) os.push(oc); const al = alinearN(os); return { c, ox, oy, oc, al }; }).filter((z) => z && z.al.ys[0].length >= 3);
+  if (!cs.length) return vacio(H, "Elegí X e Y en el panel de capas (hacen falta datos en común)");
+  const [x0, x1] = ext(cs.map((z) => z.al.ys[0])), [y0, y1] = ext(cs.map((z) => z.al.ys[1]));
+  const sx = (v) => M.l + ((v - x0) / (x1 - x0)) * (W - M.l - M.r), sy = (v) => H - M.b - ((v - y0) / (y1 - y0)) * (H - M.t - M.b);
+  let g = ejeY(sy, y0, y1, H);
+  ticks(x0, x1, 7).forEach((v) => { g += `<text x="${sx(v)}" y="${H - 9}" text-anchor="middle">${num(v)}</text>`; });
+  if (x0 < 0 && x1 > 0) g += `<line class="cero" x1="${sx(0)}" x2="${sx(0)}" y1="${M.t}" y2="${H - M.b}"/>`;
+  let ley = "";
+  const extra = { clusters: [] };
+  cs.forEach((z, kz) => {
+    const { c, al } = z, X = al.ys[0], Y = al.ys[1], n = X.length, fechas = al.x || al.etq;
+    let colores = new Array(n).fill(colorCss(c.color));
+    if (c.colorPor === "tiempo") colores = X.map((_, i) => mezcla(i / Math.max(1, n - 1)));
+    if (c.colorPor === "cluster") {
+      const zx = zs(X), zy = zs(Y); const km = kmedias(X.map((_, i) => [zx[i], zy[i]]), c.k);
+      colores = km.et.map((e) => `var(${COL_CL[e % COL_CL.length]})`);
+      extra.clusters.push({ capa: c.id, et: km.et, fechas: al.x, n: km.et.length });
+      const mx = media(X), dx = desvio(X), my = media(Y), dy = desvio(Y);
+      ley += km.cen.map((cc, j) => `<span><i style="background:var(${COL_CL[j % COL_CL.length]});height:9px;width:9px;border-radius:50%"></i>cluster ${j + 1}: ${km.et.filter((e) => e === j).length} obs. · centro (${num(mx + cc[0] * dx)}, ${num(my + cc[1] * dy)})</span>`).join("");
+      km.cen.forEach((cc, j) => { g += `<text x="${sx(mx + cc[0] * dx)}" y="${sy(my + cc[1] * dy) - 8}" text-anchor="middle" style="font-weight:600;fill:var(--ink)">${j + 1}</text><path d="M${sx(mx + cc[0] * dx) - 5},${sy(my + cc[1] * dy)}h10M${sx(mx + cc[0] * dx)},${sy(my + cc[1] * dy) - 5}v10" stroke="var(--ink)" stroke-width="1.6"/>`; });
+    }
+    if ((c.colorPor === "serie" || c.colorPor === "regimen") && z.oc) {
+      const V = al.ys[2], med = quantil(V.slice(), 0.5), o = V.slice().sort((a, b) => a - b);
+      colores = c.colorPor === "regimen" ? V.map((v) => (v > med ? "var(--s3)" : "var(--s1)")) : V.map((v) => mezcla(o.indexOf(v) / Math.max(1, n - 1)));
+      ley += c.colorPor === "regimen" ? `<span><i style="background:var(--s3)"></i>${esc(z.oc.nombre)} sobre su mediana (${num(med)})</span><span><i style="background:var(--s1)"></i>debajo</span>` : `<span>color: ${esc(z.oc.nombre)} (azul bajo → rojo alto)</span>`;
+    }
+    if (c.unir) { g += `<path d="${X.map((v, i) => `${i ? "L" : "M"}${sx(v).toFixed(1)},${sy(Y[i]).toFixed(1)}`).join("")}" fill="none" stroke="${colorCss(c.color)}" stroke-width="1" opacity=".45"/>`; }
+    X.forEach((v, i) => { g += `<circle cx="${sx(v).toFixed(1)}" cy="${sy(Y[i]).toFixed(1)}" r="3" fill="${colores[i]}" opacity=".72"><title>${esc(fechas ? fechas[i] : "")} · x ${num(v)} · y ${num(Y[i])}</title></circle>`; });
+    if (c.unir && al.x) { let ult = ""; al.x.forEach((f, i) => { const a = f.slice(0, 4); if (a !== ult && +a % 2 === 0) { g += `<text x="${sx(X[i]) + 4}" y="${sy(Y[i]) - 4}" style="font-size:8.5px">${a}</text>`; } ult = a; }); }
+    if (c.recta) { const r = ols(Y, X.map((v) => [1, v])); const xa = Math.min(...X), xb = Math.max(...X); g += `<line x1="${sx(xa)}" y1="${sy(r.b[0] + r.b[1] * xa)}" x2="${sx(xb)}" y2="${sy(r.b[0] + r.b[1] * xb)}" stroke="${colorCss(c.color)}" stroke-width="1.6" stroke-dasharray="6 4"/>`; ley += `<span>— MCO: y = ${num(r.b[0])} ${r.b[1] >= 0 ? "+" : "−"} ${num(Math.abs(r.b[1]))}·x · R² ${num(r.r2, 2)}</span>`; }
+    ley = `<span><i style="background:${c.colorPor === "fijo" ? colorCss(c.color) : "var(--ink-faint)"}"></i>y: ${esc(z.oy.nombre)} · x: ${esc(z.ox.nombre)} · n ${n}</span>` + ley;
+    if (c.colorPor === "tiempo") ley += `<span>color: tiempo (azul = inicio, rojo = final)</span>`;
+  });
+  return { svg: g, ley, ...extra };
+}
+
+function pDistribucion(p, H) {
+  const cs = p.capas.filter((c) => c.visible).map((c) => ({ c, o: evalRef(c.r) })).filter((z) => z.o).map((z) => ({ ...z, v: escalar(z.o.y, p.escala).filter((x) => nn(x)) })).filter((z) => z.v.length >= 3);
+  if (!cs.length) return vacio(H, "Sumá una capa (histograma, caja, densidad o marcas)");
+  const todos = cs.flatMap((z) => z.v);
+  const lo = quantil(todos, 0.005), hi = quantil(todos, 0.995);
+  const cajas = cs.filter((z) => z.c.tipo === "caja"), bandaC = cajas.length ? cajas.length * 18 + 8 : 0;
+  const top = M.t + bandaC;
+  const nb = p.opc.bins || 30, w = (hi - lo) / nb || 1;
+  const hs = cs.filter((z) => z.c.tipo === "hist").map((z) => { const c = new Array(nb).fill(0); z.v.forEach((v) => { if (v < lo || v > hi) return; c[Math.min(nb - 1, Math.max(0, Math.floor((v - lo) / w)))]++; }); return { z, pc: c.map((x) => (x / z.v.length) * 100) }; });
+  const kde = (v, x) => { const h = 1.06 * desvio(v) * Math.pow(v.length, -0.2) || 1; return v.reduce((t, u) => t + Math.exp(-0.5 * ((x - u) / h) ** 2), 0) / (v.length * h * Math.sqrt(2 * Math.PI)); };
+  const ds = cs.filter((z) => z.c.tipo === "densidad").map((z) => ({ z, pts: [...Array(81).keys()].map((i) => { const x = lo + ((hi - lo) * i) / 80; return [x, kde(z.v, x) * w * 100]; }) }));
+  const ymax = Math.max(1, ...hs.flatMap((h) => h.pc), ...ds.flatMap((d) => d.pts.map((q) => q[1]))) * 1.08;
+  const sx = (v) => M.l + ((v - lo) / (hi - lo || 1)) * (W - M.l - M.r), sy = (v) => H - M.b - (v / ymax) * (H - top - M.b);
+  let g = "";
+  ticks(0, ymax).forEach((v) => { g += `<line class="grid" x1="${M.l}" x2="${W - M.r}" y1="${sy(v)}" y2="${sy(v)}"/><text x="${M.l - 6}" y="${sy(v) + 3}" text-anchor="end">${num(v)}</text>`; });
+  ticks(lo, hi, 7).forEach((v) => { g += `<text x="${sx(v)}" y="${H - 9}" text-anchor="middle">${num(v)}</text>`; });
+  if (lo < 0 && hi > 0) g += `<line class="cero" x1="${sx(0)}" x2="${sx(0)}" y1="${M.t}" y2="${H - M.b}"/>`;
+  const bw = (W - M.l - M.r) / nb / Math.max(1, hs.length);
+  hs.forEach((h, k) => h.pc.forEach((v, i) => { if (v) g += `<rect x="${(sx(lo + i * w) + k * bw).toFixed(1)}" y="${sy(v).toFixed(1)}" width="${Math.max(1, bw - 1).toFixed(1)}" height="${(H - M.b - sy(v)).toFixed(1)}" fill="${colorCss(h.z.c.color)}" opacity=".7"><title>${num(lo + i * w)} a ${num(lo + (i + 1) * w)}: ${num(v, 1)} %</title></rect>`; }));
+  ds.forEach((d) => { g += `<path d="${d.pts.map(([x, y], i) => `${i ? "L" : "M"}${sx(x).toFixed(1)},${sy(y).toFixed(1)}`).join("")}" fill="none" stroke="${colorCss(d.z.c.color)}" stroke-width="2"/>`; });
+  cs.filter((z) => z.c.tipo === "marcas").forEach((z) => z.v.forEach((v) => { if (v >= lo && v <= hi) g += `<line x1="${sx(v).toFixed(1)}" x2="${sx(v).toFixed(1)}" y1="${H - M.b}" y2="${H - M.b - 7}" stroke="${colorCss(z.c.color)}" opacity=".5"/>`; }));
+  cajas.forEach((z, k) => {
+    const v = z.v, q1 = quantil(v, 0.25), q2 = quantil(v, 0.5), q3 = quantil(v, 0.75), iqr = q3 - q1;
+    const a = Math.max(Math.min(...v), q1 - 1.5 * iqr), b = Math.min(Math.max(...v), q3 + 1.5 * iqr), y = M.t + 4 + k * 18, col = colorCss(z.c.color);
+    g += `<line x1="${sx(Math.max(lo, a))}" x2="${sx(Math.min(hi, b))}" y1="${y + 6}" y2="${y + 6}" stroke="var(--ink-faint)"/><rect x="${sx(q1)}" y="${y}" width="${Math.max(1, sx(q3) - sx(q1))}" height="12" fill="color-mix(in srgb, ${col} 30%, transparent)" stroke="${col}"><title>${esc(z.o.nombre)}: Q1 ${num(q1)} · mediana ${num(q2)} · Q3 ${num(q3)}</title></rect><line x1="${sx(q2)}" x2="${sx(q2)}" y1="${y}" y2="${y + 12}" stroke="${col}" stroke-width="2.5"/>`;
+    v.filter((x) => (x < a || x > b) && x >= lo && x <= hi).forEach((x) => { g += `<circle cx="${sx(x)}" cy="${y + 6}" r="1.8" fill="${col}"/>`; });
+  });
+  g += `<text x="${M.l}" y="${top - 2}">% de casos</text>`;
+  const ley = cs.map((z) => `<span><i style="background:${colorCss(z.c.color)}"></i>${esc(z.o.nombre)} · ${({ hist: "histograma", caja: "caja", densidad: "densidad", marcas: "marcas" })[z.c.tipo]} (n=${z.v.length}, media ${num(media(z.v))}, desvío ${num(desvio(z.v))})</span>`).join("");
+  return { svg: g, ley };
+}
+
+function p3d(p, H) {
+  const o = p.opc, os = [o.rx, o.ry, o.rz].map(evalRef);
+  if (os.some((x) => !x)) return vacio(H, "Elegí X, Y y Z");
+  const al = alinearN(os); const n = al.ys[0].length;
+  if (n < 3) return vacio(H, "Las tres series casi no comparten fechas");
+  const nz = al.ys.map((v) => { const lo = Math.min(...v), hi = Math.max(...v); return { lo, hi, f: (x) => ((x - lo) / (hi - lo || 1)) * 2 - 1 }; });
+  const P3 = al.ys[0].map((_, i) => nz.map((z, d) => z.f(al.ys[d][i])));
+  const cy = Math.cos(o.yaw), syw = Math.sin(o.yaw), cp = Math.cos(o.pitch), sp = Math.sin(o.pitch);
+  const esc3 = Math.min(W, H) * 0.36, cx0 = W / 2, cy0 = H / 2 + 6;
+  const pr = ([x, y, z]) => { const X = x * cy - y * syw, Y1 = x * syw + y * cy; const Y = z * cp - Y1 * sp, D = z * sp + Y1 * cp; return [cx0 + X * esc3, cy0 - Y * esc3, D]; };
+  let colores = new Array(n).fill("var(--s1)"), ley = "";
+  if (o.colorPor === "tiempo") { colores = P3.map((_, i) => mezcla(i / Math.max(1, n - 1))); ley += "<span>color: tiempo (azul = inicio, rojo = final)</span>"; }
+  if (o.colorPor === "cluster") { const km = kmedias(al.ys[0].map((_, i) => al.ys.map((v) => zs(v)[i])), o.k); colores = km.et.map((e) => `var(${COL_CL[e % COL_CL.length]})`); ley += km.cen.map((_, j) => `<span><i style="background:var(${COL_CL[j]});width:9px;height:9px;border-radius:50%"></i>cluster ${j + 1}: ${km.et.filter((e) => e === j).length}</span>`).join(""); }
+  let g = "";
+  const vert = [[-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1], [-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]].map(pr);
+  [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]].forEach(([a, b]) => { g += `<line x1="${vert[a][0]}" y1="${vert[a][1]}" x2="${vert[b][0]}" y2="${vert[b][1]}" stroke="var(--line)" stroke-dasharray="${a < 4 && b < 4 ? "" : "3 3"}"/>`; });
+  const eje = (a, b, t) => { const A = pr(a), B = pr(b); g += `<line x1="${A[0]}" y1="${A[1]}" x2="${B[0]}" y2="${B[1]}" stroke="var(--ink-faint)" stroke-width="1.4"/><text x="${B[0] + (B[0] - A[0]) * 0.08}" y="${B[1] + (B[1] - A[1]) * 0.08}" text-anchor="middle" style="fill:var(--ink-2);font-family:var(--sans);font-size:11px">${esc(t)}</text>`; };
+  eje([-1, -1, -1], [1, -1, -1], "X " + os[0].nombre.slice(0, 24)); eje([-1, -1, -1], [-1, 1, -1], "Y " + os[1].nombre.slice(0, 24)); eje([-1, -1, -1], [-1, -1, 1], "Z " + os[2].nombre.slice(0, 24));
+  const pp = P3.map(pr);
+  if (o.forma !== "puntos") g += `<path d="${pp.map((q, i) => `${i ? "L" : "M"}${q[0].toFixed(1)},${q[1].toFixed(1)}`).join("")}" fill="none" stroke="var(--ink-faint)" stroke-width="1" opacity=".55"/>`;
+  if (o.forma !== "trayectoria") pp.map((q, i) => [q, i]).sort((a, b) => a[0][2] - b[0][2]).forEach(([q, i]) => { g += `<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="${(2.4 + q[2] * 0.9).toFixed(2)}" fill="${colores[i]}" opacity=".8"><title>${esc(al.x ? al.x[i] : al.etq?.[i] || "")}: x ${num(al.ys[0][i])} · y ${num(al.ys[1][i])} · z ${num(al.ys[2][i])}</title></circle>`; });
+  g += `<text x="${W - 10}" y="${H - 8}" text-anchor="end">arrastrá para rotar · n ${n}</text>`;
+  return { svg: g, ley };
+}
+
+function pArbol(p, H) {
+  const o = p.opc, d = datosArbol(o);
+  if (!d) return vacio(H, "El árbol necesita una Y temporal y al menos una X con 30+ fechas en común");
+  const ar = crecerArbol(d.filas, o, d.nombres); p._arbol = { ...ar, filas: d.filas, ny: d.ny };
+  const prof = Math.max(...ar.nodos.map((n) => n.prof));
+  const hojas = ar.nodos.filter((n) => !n.hijos);
+  const NW = Math.min(150, (W - 20) / Math.max(1, hojas.length) - 8), NH = 50, GY = 26, alto = 16 + (prof + 1) * (NH + GY) + 70;
+  const pos = {}; let k = 0;
+  const ubicar = (n) => { if (!n.hijos) { pos[n.id] = 10 + k++ * ((W - 20) / hojas.length) + ((W - 20) / hojas.length - NW) / 2; return pos[n.id]; } const xs = n.hijos.map(ubicar); pos[n.id] = (xs[0] + xs[1]) / 2; return pos[n.id]; };
+  ubicar(ar.nodos[0]);
+  const clas = o.objetivo === "sube";
+  const sel = ar.nodos.find((n) => n.id === o.nodo) || ar.nodos[0];
+  let g = "";
+  ar.nodos.forEach((n) => { if (!n.hijos) return; n.hijos.forEach((h, j) => { const x1 = pos[n.id] + NW / 2, y1 = 10 + n.prof * (NH + GY) + NH, x2 = pos[h.id] + NW / 2, y2 = 10 + h.prof * (NH + GY); g += `<path d="M${x1},${y1}C${x1},${y1 + GY / 2} ${x2},${y2 - GY / 2} ${x2},${y2}" fill="none" stroke="var(--ink-faint)"/><text x="${(x1 + x2) / 2 + (j ? 4 : -4)}" y="${(y1 + y2) / 2}" text-anchor="${j ? "start" : "end"}" style="font-size:9px">${j ? ">" : "≤"} ${num(n.corte.u)}</text>`; }); });
+  ar.nodos.forEach((n) => {
+    const x = pos[n.id], y = 10 + n.prof * (NH + GY), v = n.valor;
+    const fill = clas ? `color-mix(in srgb, var(--s4) ${Math.round(v * 70)}%, color-mix(in srgb, var(--s3) ${Math.round((1 - v) * 55)}%, var(--surface)))` : "var(--surface-2)";
+    const lin1 = n.hijos ? `${n.corte.nombre.slice(0, 20)}` : "hoja";
+    g += `<g class="nodo-a" data-nodo="${n.id}" style="cursor:pointer"><rect x="${x}" y="${y}" width="${NW}" height="${NH}" rx="6" fill="${fill}" stroke="${n.id === sel.id ? "var(--accent)" : "var(--line)"}" stroke-width="${n.id === sel.id ? 2.5 : 1}"/><text x="${x + 7}" y="${y + 15}" style="fill:var(--ink);font-family:var(--sans);font-size:10.5px;font-weight:600">${esc(lin1)}</text><text x="${x + 7}" y="${y + 30}" style="fill:var(--ink-2)">${clas ? `P(sube) ${num(v * 100, 0)} %` : `media ${num(v)}`}</text><text x="${x + 7}" y="${y + 43}">n ${n.n}</text><title>${esc([...caminoA(ar.nodos, n.id)].join(" y ") || "todos")}</title></g>`;
+  });
+  // franja de tiempo: períodos del nodo seleccionado
+  const fs = d.filas.map((f) => f.f), y0 = alto - 50, enNodo = new Set(sel.idx);
+  const t0 = tms(fs[0]), t1 = tms(fs[fs.length - 1]), sx = (t) => M.l + ((t - t0) / (t1 - t0 || 1)) * (W - M.l - M.r);
+  g += `<text x="${M.l}" y="${y0 - 6}" style="fill:var(--ink-2);font-family:var(--sans);font-size:11px">Períodos del nodo elegido (${sel.n} de ${fs.length})</text><rect x="${M.l}" y="${y0}" width="${W - M.l - M.r}" height="18" fill="var(--sunken)" rx="3"/>`;
+  fs.forEach((f, i) => { if (enNodo.has(i)) g += `<rect x="${sx(tms(f)).toFixed(1)}" y="${y0}" width="${Math.max(1.2, (W - M.l - M.r) / fs.length).toFixed(2)}" height="18" fill="var(--accent)"/>`; });
+  const a0 = new Date(t0).getUTCFullYear(), a1 = new Date(t1).getUTCFullYear(); for (let a = a0; a <= a1; a += Math.max(1, Math.ceil((a1 - a0) / 10))) g += `<text x="${sx(Date.UTC(a, 0, 1))}" y="${y0 + 32}" text-anchor="middle">${a}</text>`;
+  const regla = caminoA(ar.nodos, sel.id);
+  const ley = `<span><b>Nodo:</b> ${esc(regla.join(" y ") || "todos los períodos")} → ${clas ? `subió en el ${num(sel.valor * 100, 0)} % de los casos` : `valor medio ${num(sel.valor)}`} (n ${sel.n})</span><span>${clas ? `acierto en muestra ${num(ar.acierto * 100, 0)} % · tasa base ${num(ar.base * 100, 0)} %` : `R² en muestra ${num(ar.r2, 2)}`} · <span style="color:var(--warn)">en muestra: la plataforma lo valida con origen móvil y contra la tasa base</span></span>`;
+  return { svg: g, ley, alto };
+}
+
+function dibujarPanel(svg, p, ley, alto, ancho) {
+  const H = alto || p.alto || (p.ancho === 2 ? 330 : 300);
+  const f = { tiempo: pTiempo, dispersion: pDispersion, distribucion: pDistribucion, "3d": p3d, arbol: pArbol }[p.modo];
+  const W0 = W; W = ancho || (p.ancho === 2 ? 900 : 560); p._W = W;
+  let o; try { o = f(p, H); } finally { W = W0; }
+  svg.setAttribute("viewBox", `0 0 ${p._W} ${o.alto || H}`);
+  svg.innerHTML = o.svg;
+  if (ley) ley.innerHTML = o.ley || "";
+  return o;
+}
+
+/* ─── panel de capas ─── */
+const optFichas = (sel, soloTemp) => st.series.filter((s) => !soloTemp || s.x).map((s) => `<option value="${s.id}" ${s.id === sel ? "selected" : ""}>${esc(s.alias)} — ${esc(s.nombre.slice(0, 38))}</option>`).join("");
+const opt = (pares, v) => pares.map(([k, t]) => `<option value="${k}" ${k === v ? "selected" : ""}>${esc(t)}</option>`).join("");
+const OPS_CAPA = Object.entries(OPSJ).map(([k, o]) => [k, o.nombre]);
+function htmlRef(r, donde, et) {
+  // selector de serie + chips de transformaciones (con ✕) + «+ transf.» + fijar
+  return `<div class="ref" data-ref="${donde}">${et ? `<span class="lbl">${et}</span>` : ""}<select data-campo="${donde}.sid" aria-label="Serie">${optFichas(r?.sid, false)}</select>
+    <div class="chips">${(r?.transf || []).map((t, i) => `<span class="chipt" title="${esc(JSON.stringify(t.p || {}))}">${esc(OPSJ[t.op].nombre)}${Object.keys(t.p || {}).length ? " · " + esc(Object.values(t.p).filter((x) => x !== "").join(", ")) : ""}<button type="button" data-ca="sacar-t" data-ref2="${donde}" data-i="${i}" aria-label="Sacar transformación">✕</button></span>`).join("")}
+      <button type="button" class="chipt mas" data-ca="mas" data-ref2="${donde}">+ transf.</button>${r?.transf?.length ? `<button type="button" class="chipt fijar" data-ca="fijar" data-ref2="${donde}" title="Crear una ficha con esta receta">fijar ficha</button>` : ""}</div></div>`;
+}
+function htmlColor(c, donde) { return `<button type="button" class="sw" data-ca="color" data-ref2="${donde}" style="background:${colorCss(c)}" aria-label="Cambiar color"></button>`; }
+function htmlCapas(p) {
+  const fila = (c, cuerpo) => `<div class="capa ${c.visible ? "" : "off"}" data-capa="${c.id}"><div class="capa-hd"><input type="checkbox" data-campo="${c.id}.visible" ${c.visible ? "checked" : ""} aria-label="Mostrar capa">${htmlColor(c.color, c.id)}${cuerpo.hd}<button type="button" class="x" data-ca="quitar" data-c="${c.id}" aria-label="Quitar capa">✕</button></div>${cuerpo.bd}</div>`;
+  if (p.modo === "tiempo") return `<div class="capa-op"><span class="lbl">escala</span><div class="seg mini">${[["nivel", "Nivel"], ["base", "Base 100"], ["z", "z"]].map(([k, t]) => `<button type="button" data-pa="escala" data-v="${k}" aria-pressed="${p.escala === k}">${t}</button>`).join("")}</div></div>` +
+    p.capas.map((c) => fila(c, { hd: `<select data-campo="${c.id}.tipo">${opt([["linea", "línea"], ["area", "área"], ["barras", "barras"], ["puntos", "puntos"], ["escalon", "escalón"]], c.tipo)}</select><select data-campo="${c.id}.eje">${opt([["izq", "eje izq."], ["der", "eje der."]], c.eje)}</select>`, bd: htmlRef(c.r, c.id + ".r") + `<div class="capa-op"><select data-campo="${c.id}.estilo">${opt([["solido", "sólido"], ["guiones", "guiones"], ["puntos", "punteado"]], c.estilo)}</select><label>grosor <input type="range" min="0.6" max="4" step="0.2" value="${c.grosor}" data-campo="${c.id}.grosor"></label></div>` })).join("") +
+    `<div class="capa-add"><select data-pa="nueva-sid" aria-label="Serie para la capa nueva"><option value="">+ capa: elegir ficha…</option>${optFichas(null, true)}</select></div>`;
+  if (p.modo === "dispersion") return p.capas.map((c) => fila(c, { hd: `<span class="lbl" style="flex:1">par</span>`, bd: htmlRef(c.ry, c.id + ".ry", "Y") + htmlRef(c.rx, c.id + ".rx", "X") +
+      `<div class="capa-op"><label>color <select data-campo="${c.id}.colorPor">${opt([["fijo", "fijo"], ["tiempo", "por tiempo"], ["cluster", "por cluster (k-medias)"], ["serie", "por otra serie"], ["regimen", "régimen: sobre/bajo mediana"]], c.colorPor)}</select></label>${c.colorPor === "cluster" ? `<label>k <input type="number" min="2" max="6" value="${c.k}" data-campo="${c.id}.k"></label>` : ""}</div>` +
+      (c.colorPor === "serie" || c.colorPor === "regimen" ? htmlRef(c.cref || ref(st.series[0].id), c.id + ".cref", "color") : "") +
+      `<div class="capa-op"><label><input type="checkbox" data-campo="${c.id}.recta" ${c.recta ? "checked" : ""}> recta MCO</label><label><input type="checkbox" data-campo="${c.id}.unir" ${c.unir ? "checked" : ""}> unir en orden (trayectoria)</label></div>` +
+      (c.colorPor === "cluster" ? `<div class="capa-op"><button class="btn sm" type="button" data-ca="cluster-serie" data-c="${c.id}">→ clusters como ficha (serie de etiquetas)</button></div>` : "") })).join("") +
+    `<div class="capa-add"><button class="btn sm" type="button" data-pa="nuevo-par">+ otro par X/Y en el mismo plano</button></div>`;
+  if (p.modo === "distribucion") return p.capas.map((c) => fila(c, { hd: `<select data-campo="${c.id}.tipo">${opt([["hist", "histograma"], ["caja", "caja"], ["densidad", "densidad"], ["marcas", "marcas"]], c.tipo)}</select>`, bd: htmlRef(c.r, c.id + ".r") })).join("") +
+    `<div class="capa-add"><select data-pa="nueva-sid" aria-label="Serie para la capa nueva"><option value="">+ capa: elegir ficha…</option>${optFichas(null, false)}</select><label class="lbl">bins <input type="number" min="5" max="80" value="${p.opc.bins || 30}" data-pa="bins" style="width:54px"></label></div>`;
+  if (p.modo === "3d") { const o = p.opc; return htmlRef(o.rx, "o.rx", "X") + htmlRef(o.ry, "o.ry", "Y") + htmlRef(o.rz, "o.rz", "Z") + `<div class="capa-op"><label>color <select data-campo="o.colorPor">${opt([["tiempo", "por tiempo"], ["cluster", "por cluster"], ["fijo", "fijo"]], o.colorPor)}</select></label>${o.colorPor === "cluster" ? `<label>k <input type="number" min="2" max="6" value="${o.k}" data-campo="o.k"></label>` : ""}<label>forma <select data-campo="o.forma">${opt([["ambos", "puntos + trayectoria"], ["puntos", "puntos"], ["trayectoria", "trayectoria"]], o.forma)}</select></label></div><div class="capa-op"><button class="btn sm" type="button" data-pa="rot0">Vista inicial</button></div>`; }
+  if (p.modo === "arbol") {
+    const o = p.opc, a = p._arbol;
+    return htmlRef(o.ry, "o.ry", "Y (lo que se predice)") + `<div class="capa-op"><label>objetivo <select data-campo="o.objetivo">${opt([["sube", "¿sube en t+h? (clasificación)"], ["nivel", "valor en t+h (regresión)"]], o.objetivo)}</select></label><label>h <input type="number" min="1" max="24" value="${o.h}" data-campo="o.h"></label></div>
+      <div class="capa-op"><label>profundidad <input type="number" min="1" max="5" value="${o.prof}" data-campo="o.prof"></label><label>mín. por hoja <input type="number" min="3" max="60" value="${o.min}" data-campo="o.min"></label></div>
+      <span class="lbl">X (predictoras, en t)</span>${o.xs.map((r, i) => `<div class="capa"><div class="capa-hd"><span class="lbl" style="flex:1">X${i + 1}</span><button type="button" class="x" data-ca="quitar-x" data-i="${i}" aria-label="Quitar X">✕</button></div>${htmlRef(r, "o.xs." + i)}</div>`).join("")}
+      <div class="capa-add"><select data-pa="nueva-x"><option value="">+ X: elegir ficha…</option>${optFichas(null, true)}</select></div>
+      ${a ? `<div class="capa-op"><button class="btn sm" type="button" data-pa="arbol-dummy">→ ficha: dummy del nodo elegido</button><button class="btn sm" type="button" data-pa="arbol-pred">→ ficha: predicción del árbol</button></div>` : ""}`;
+  }
+  return "";
+}
+
+function htmlPanel(p) {
+  const act = p.id === st.activo;
+  return `<div class="card panel ${p.ancho === 2 ? "ancho" : ""} ${act ? "activo" : ""}" data-panel="${p.id}">
+    <div class="card-hd"><input class="ptit" value="${esc(p.titulo)}" data-pa="titulo" aria-label="Título del gráfico"><span class="sp"></span>
+      <div class="seg mini" role="group" aria-label="Tipo de gráfico">${MODOS.map(([k, t]) => `<button type="button" data-pa="modo" data-v="${k}" aria-pressed="${p.modo === k}">${t}</button>`).join("")}</div>
+      <button class="btn sm" type="button" data-pa="ancho" title="Ancho completo / mitad (dos gráficos lado a lado)">${p.ancho === 2 ? "⇥ mitad" : "⇤⇥ ancho"}</button>
+      <button class="btn sm" type="button" data-pa="subir" title="Subir">↑</button><button class="btn sm" type="button" data-pa="dup" title="Duplicar">⧉</button>
+      <button class="btn sm" type="button" data-pa="pin" title="Llevar al Proyecto">📌</button><button class="btn sm" type="button" data-pa="cerrar" title="Cerrar gráfico">✕</button></div>
+    <div class="pbd"><div class="pgraf"><div class="graf-wrap"><svg class="g" data-svg="${p.id}" role="img" aria-label="${esc(p.titulo)}"></svg></div><div class="ley" data-ley="${p.id}"></div></div>
+      <div class="capas" data-capas="${p.id}"><div class="lbl" style="margin-bottom:4px">${p.modo === "arbol" ? "Variables del árbol" : p.modo === "3d" ? "Ejes" : "Capas"} · ${act ? "gráfico activo" : "tocá para activarlo"}</div>${htmlCapas(p)}</div></div></div>`;
+}
+
+function renderPaneles() {
+  const cont = $("#paneles");
+  if (!st.paneles.length) { cont.innerHTML = `<div class="vacio">No hay gráficos. «＋ Gráfico» agrega uno; también las herramientas de «Mirar».</div>`; return; }
+  cont.innerHTML = st.paneles.map(htmlPanel).join("");
+  st.paneles.forEach((p) => {
+    const svg = cont.querySelector(`svg[data-svg="${p.id}"]`);
+    const o = dibujarPanel(svg, p, cont.querySelector(`[data-ley="${p.id}"]`));
+    p._o = o;
+    if (p.modo === "arbol") cont.querySelector(`[data-capas="${p.id}"]`).innerHTML = `<div class="lbl" style="margin-bottom:4px">Variables del árbol · ${p.id === st.activo ? "gráfico activo" : "tocá para activarlo"}</div>${htmlCapas(p)}`; // el árbol se crece al dibujar
+  });
+  $("#b-deshacer").disabled = !st.deshacer.length; $("#b-rehacer").disabled = !st.rehacer.length;
+}
+
+/* ─── eventos del lienzo ─── */
+function getRef(p, donde) {
+  // «c3.r», «c3.rx», «o.rx», «o.xs.2»
+  const [a, b, c] = donde.split(".");
+  if (a === "o") return b === "xs" ? p.opc.xs[+c] : p.opc[b];
+  const ca = p.capas.find((x) => x.id === a); return ca && ca[b];
+}
+function setRef(p, donde, r) {
+  const [a, b, c] = donde.split(".");
+  if (a === "o") { if (b === "xs") p.opc.xs[+c] = r; else p.opc[b] = r; return; }
+  const ca = p.capas.find((x) => x.id === a); if (ca) ca[b] = r;
+}
+const panelDe = (el) => st.paneles.find((p) => p.id === el.closest("[data-panel]")?.dataset.panel);
+
+$("#paneles").addEventListener("pointerdown", (e) => { const p = panelDe(e.target); if (p && st.activo !== p.id) { st.activo = p.id; document.querySelectorAll(".panel").forEach((x) => x.classList.toggle("activo", x.dataset.panel === p.id)); } });
+$("#paneles").addEventListener("click", (e) => {
+  const p = panelDe(e.target); if (!p) return;
+  const nodo = e.target.closest("[data-nodo]");
+  if (nodo) { p.opc.nodo = +nodo.dataset.nodo; render(); return; }
+  const b = e.target.closest("[data-pa],[data-ca]"); if (!b || b.tagName === "SELECT" || b.tagName === "INPUT") return;
+  const a = b.dataset.pa, ca = b.dataset.ca;
+  if (a === "modo") { if (p.modo === b.dataset.v) return; cambio(); const fs = [...new Set(capasConRef(p).map((x) => x.r?.sid).filter(Boolean))].map(byId); const q = nuevoPanel(b.dataset.v, fs); st.paneles.pop(); Object.assign(p, { modo: q.modo, capas: q.capas, opc: q.opc, titulo: q.titulo }); st.activo = p.id; render(); return; }
+  if (a === "escala") { cambio(); p.escala = b.dataset.v; render(); return; }
+  if (a === "ancho") { cambio(); p.ancho = p.ancho === 2 ? 1 : 2; render(); return; }
+  if (a === "subir") { const i = st.paneles.indexOf(p); if (i > 0) { cambio(); st.paneles.splice(i, 1); st.paneles.splice(i - 1, 0, p); render(); } return; }
+  if (a === "dup") { cambio(); const q = structuredClone({ ...p, _o: null, _arbol: null }); q.id = "p" + ++_np; q.capas.forEach((c) => (c.id = "c" + ++_nc)); q.titulo += " (copia)"; st.paneles.splice(st.paneles.indexOf(p) + 1, 0, q); st.activo = q.id; render(); return; }
+  if (a === "cerrar") { cambio(); st.paneles = st.paneles.filter((x) => x !== p); if (st.activo === p.id) st.activo = st.paneles[0]?.id; render(); toast("Gráfico cerrado (Ctrl+Z lo vuelve)."); return; }
+  if (a === "pin") { pinear({ vista: "panel", panel: structuredClone({ ...p, _o: null, _arbol: null }) }, p.titulo, [...new Set(capasConRef(p).map((x) => x.r?.sid).filter(Boolean))]); return; }
+  if (a === "nuevo-par") { cambio(); const t = temporales(); p.capas.push(capa({ rx: ref(t[2 % t.length].id), ry: ref(t[0].id), color: PALETA[p.capas.length % PALETA.length], colorPor: "fijo", k: 3, recta: true, unir: false, cref: null })); render(); return; }
+  if (a === "rot0") { p.opc.yaw = -0.7; p.opc.pitch = 0.35; render(); return; }
+  if (a === "arbol-dummy" || a === "arbol-pred") {
+    const ar = p._arbol, o = p.opc; if (!ar) return; cambio();
+    const ry = byId(o.ry.sid), padres = [ry, ...o.xs.map((r) => byId(r.sid))].filter(Boolean);
+    if (a === "arbol-dummy") { const sel = ar.nodos.find((n) => n.id === o.nodo) || ar.nodos[0]; const en = new Set(sel.idx); const regla = caminoA(ar.nodos, sel.id).join(" y ") || "todos"; mostrarFicha(hija(padres, `Dummy: ${regla}`.slice(0, 80), "árbol", `1 si ${regla} (árbol de ${ar.ny})`, ar.filas.map((f) => f.f), ar.filas.map((_, i) => (en.has(i) ? 1 : 0)), { unidad: "0/1", tipo: "resultado" })); }
+    else mostrarFicha(hija(padres, `Predicción del árbol: ${o.objetivo === "sube" ? "P(sube)" : ar.ny + " en t+" + o.h}`.slice(0, 80), "árbol", `árbol prof. ${o.prof}, mín. ${o.min} · ${o.objetivo} t+${o.h}`, ar.filas.map((f) => f.f), ar.pred, { unidad: o.objetivo === "sube" ? "prob." : "", tipo: "resultado" }));
+    render(); toast("Quedó como ficha y como capa del gráfico de tiempo."); return;
+  }
+  if (ca === "quitar") { cambio(); p.capas = p.capas.filter((c) => c.id !== b.dataset.c); render(); return; }
+  if (ca === "quitar-x") { cambio(); p.opc.xs.splice(+b.dataset.i, 1); render(); return; }
+  if (ca === "sacar-t") { cambio(); getRef(p, b.dataset.ref2).transf.splice(+b.dataset.i, 1); retitular(p); render(); return; }
+  if (ca === "fijar") { cambio(); const r = getRef(p, b.dataset.ref2); const h = fijarRef(r); if (h) { setRef(p, b.dataset.ref2, ref(h.id)); toast(`Ficha «${h.alias}» creada con la receta ${h.receta.texto}.`); } render(); return; }
+  if (ca === "cluster-serie") { const c = p.capas.find((x) => x.id === b.dataset.c); const cl = p._o?.clusters?.find((x) => x.capa === c.id); if (!cl || !cl.fechas) { toast("Los clusters necesitan series con fechas para volverse ficha temporal."); return; } cambio(); const h = hija([byId(c.ry.sid), byId(c.rx.sid)], `Cluster (k=${c.k}) de ${refTexto(c.ry)} y ${refTexto(c.rx)}`, "k-medias", `kmedias(z(${refTexto(c.ry)}), z(${refTexto(c.rx)}), k=${c.k})`, cl.fechas, cl.et.map((e) => e + 1), { unidad: "cluster", tipo: "resultado" }); mostrarFicha(h); const tp = st.paneles.find((q) => q.modo === "tiempo"); const cp = tp?.capas.find((x) => x.r.sid === h.id); if (cp) { cp.tipo = "escalon"; cp.eje = "der"; } render(); toast("Clusters como ficha: en el gráfico de tiempo se ven los regímenes (escalones, eje derecho)."); return; }
+  if (ca === "mas") {
+    const donde = b.dataset.ref2;
+    abrirPop(b, `<b>Transformar esta capa</b><div class="pop-f"><label>operación <select data-op>${opt(OPS_CAPA, "dif")}</select></label><div data-pf>${formParams(OPSJ.dif.p)}</div></div><div class="pop-acc"><button class="btn sm primary" type="button" data-pop="ok">Aplicar (chip)</button></div>`, (el) => {
+      el.querySelector("[data-op]").addEventListener("change", (ev) => { el.querySelector("[data-pf]").innerHTML = formParams(OPSJ[ev.target.value].p); });
+      el.addEventListener("click", (ev) => { if (!ev.target.closest("[data-pop]")) return; const op = el.querySelector("[data-op]").value; cambio(); getRef(p, donde).transf.push({ op, p: leerParams(el.querySelector("[data-pf]"), OPSJ[op].p) }); retitular(p); cerrarPop(); render(); });
+    });
+    return;
+  }
+  if (ca === "color") {
+    const donde = b.dataset.ref2;
+    abrirPop(b, `<b>Color</b><div class="pop-sw">${PALETA.map((c) => `<button type="button" class="sw" data-col="${c}" style="background:var(${c})" aria-label="${c}"></button>`).join("")}<input type="color" data-col-libre value="#26607f" aria-label="Color libre"></div>`, (el) => {
+      const poner = (c) => { cambio(); const ca2 = p.capas.find((x) => x.id === donde); if (ca2) ca2.color = c; render(); };
+      el.addEventListener("click", (ev) => { const s = ev.target.closest("[data-col]"); if (s) { poner(s.dataset.col); cerrarPop(); } });
+      el.querySelector("[data-col-libre]").addEventListener("change", (ev) => { poner(ev.target.value); cerrarPop(); });
+    });
+  }
+});
+$("#paneles").addEventListener("change", (e) => {
+  const p = panelDe(e.target); if (!p) return;
+  const el = e.target;
+  if (el.dataset.pa === "titulo") { p.titulo = el.value; p.manual = true; return; }
+  if (el.dataset.pa === "nueva-sid" && el.value) { cambio(); const s = byId(el.value); if (p.modo === "tiempo") p.capas.push(capa({ r: ref(s.id), tipo: "linea", color: s.color, estilo: "solido", grosor: 1.7, eje: "izq" })); else p.capas.push(capa({ r: ref(s.id), tipo: "hist", color: s.color })); retitular(p); render(); return; }
+  if (el.dataset.pa === "nueva-x" && el.value) { cambio(); p.opc.xs.push(ref(el.value)); render(); return; }
+  if (el.dataset.pa === "bins") { p.opc.bins = Math.max(5, Math.min(80, +el.value || 30)); render(); return; }
+  const campo = el.dataset.campo; if (!campo) return;
+  cambio();
+  const partes = campo.split("."), prop = partes[partes.length - 1];
+  const valor = el.type === "checkbox" ? el.checked : el.type === "number" || el.type === "range" ? +el.value : el.value;
+  if (prop === "sid") { const donde = partes.slice(0, -1).join("."); setRef(p, donde, ref(valor)); }
+  else if (partes[0] === "o") p.opc[prop] = valor;
+  else { const c = p.capas.find((x) => x.id === partes[0]); if (c) { c[prop] = valor; if (prop === "colorPor" && (valor === "serie" || valor === "regimen") && !c.cref) c.cref = ref((temporales()[3] || temporales()[0]).id); } }
+  if (prop !== "visible" && prop !== "grosor") retitular(p);
+  render();
+});
+$("#paneles").addEventListener("input", (e) => { if (e.target.type === "range") { const p = panelDe(e.target); const [cid] = e.target.dataset.campo.split("."); const c = p.capas.find((x) => x.id === cid); c.grosor = +e.target.value; dibujarPanel(document.querySelector(`svg[data-svg="${p.id}"]`), p, null); } });
+
+/* arrastrar sobre un gráfico de tiempo = recortar o hacer zoom (todos los de tiempo sincronizados) ·
+   arrastrar en 3D = rotar · pasar el mouse = valores */
+(function interaccion() {
+  const cont = $("#paneles");
+  let ini = null, rect = null, flot = null, tip = null, rot = null, svgAct = null;
+  const anchoDe = (svg) => st.paneles.find((q) => q.id === svg.dataset.svg)?._W || 900;
+  const xsvg = (svg, ev) => { const r = svg.getBoundingClientRect(); return ((ev.clientX - r.left) / r.width) * anchoDe(svg); };
+  const tDe = (o, x, Wp) => o.x0 + ((x - M.l) / (Wp - M.l - o.R)) * (o.x1 - o.x0);
+  cont.addEventListener("pointerdown", (ev) => {
+    const svg = ev.target.closest("svg[data-svg]"); if (!svg) return;
+    const p = st.paneles.find((q) => q.id === svg.dataset.svg); if (!p) return;
+    if (p.modo === "3d") { rot = { p, svg, x: ev.clientX, y: ev.clientY, yaw: p.opc.yaw, pitch: p.opc.pitch }; try { svg.setPointerCapture(ev.pointerId); } catch (e) { /* sin captura */ } return; }
+    if (p.modo !== "tiempo" || !p._o?.x0) return;
+    flot?.remove(); svgAct = svg;
+    ini = Math.max(M.l, Math.min(p._W - p._o.R, xsvg(svg, ev)));
+    rect = document.createElementNS("http://www.w3.org/2000/svg", "rect"); rect.setAttribute("class", "brush"); rect.setAttribute("y", M.t); rect.setAttribute("height", (p.ancho === 2 ? 330 : 300) - M.t - M.b); svg.appendChild(rect);
+    try { svg.setPointerCapture(ev.pointerId); } catch (e) { /* sin captura: igual funciona */ }
+  });
+  cont.addEventListener("pointermove", (ev) => {
+    if (rot) { rot.p.opc.yaw = rot.yaw + (ev.clientX - rot.x) * 0.01; rot.p.opc.pitch = Math.max(-1.4, Math.min(1.4, rot.pitch + (ev.clientY - rot.y) * 0.01)); dibujarPanel(rot.svg, rot.p, null); return; }
+    const svg = ev.target.closest("svg[data-svg]"); if (!svg) { tip?.remove(); return; }
+    const p = st.paneles.find((q) => q.id === svg.dataset.svg);
+    if (!p || p.modo !== "tiempo" || !p._o?.cs) return;
+    const x = Math.max(M.l, Math.min(p._W - p._o.R, xsvg(svg, ev)));
+    if (rect && svg === svgAct) { rect.setAttribute("x", Math.min(ini, x)); rect.setAttribute("width", Math.abs(x - ini)); return; }
+    const t = tDe(p._o, x, p._W), wrap = svg.parentElement;
+    tip ||= Object.assign(document.createElement("div"), { className: "tip" }); if (tip.parentElement !== wrap) wrap.appendChild(tip);
+    tip.innerHTML = p._o.cs.map((z) => { let k = 0, d = Infinity; z.o.x.forEach((f, i) => { const dd = Math.abs(tms(f) - t); if (dd < d) { d = dd; k = i; } }); return `<div><i style="background:${colorCss(z.c.color)}"></i>${esc(z.o.nombre)} · ${z.o.x[k].slice(0, 7)}: <b>${num(z.y[k])}</b></div>`; }).join("");
+    const r = svg.getBoundingClientRect(); const px = ev.clientX - r.left; tip.style.left = px > r.width * 0.6 ? "auto" : px + 14 + "px"; tip.style.right = px > r.width * 0.6 ? r.width - px + 14 + "px" : "auto"; tip.style.top = ev.clientY - r.top + 12 + "px";
+  });
+  cont.addEventListener("pointerleave", () => tip?.remove(), true);
+  cont.addEventListener("pointerup", (ev) => {
+    if (rot) { rot = null; return; }
+    if (!rect) return;
+    const svg = svgAct, p = st.paneles.find((q) => q.id === svg.dataset.svg);
+    const x = Math.max(M.l, Math.min(p._W - p._o.R, xsvg(svg, ev)));
+    const a = Math.min(ini, x), b = Math.max(ini, x);
+    rect.remove(); rect = null;
+    if (b - a < 12) return;
+    const f0 = new Date(tDe(p._o, a, p._W)).toISOString().slice(0, 10), f1 = new Date(tDe(p._o, b, p._W)).toISOString().slice(0, 10);
+    flot = document.createElement("div"); flot.className = "flot";
+    flot.style.left = Math.max(8, (a / p._W) * svg.getBoundingClientRect().width) + "px"; flot.style.top = "8px";
+    flot.innerHTML = `<b class="mono">${f0.slice(0, 7)} → ${f1.slice(0, 7)}</b><button class="btn sm primary" type="button" data-f="cortar">✂ Fichas con el tramo</button><button class="btn sm" type="button" data-f="zoom">🔍 Zoom (todos los de tiempo)</button><button class="btn sm" type="button" data-f="no">✕</button>`;
+    svg.parentElement.appendChild(flot);
+    flot.addEventListener("click", (e2) => {
+      const k = e2.target.dataset.f; if (!k) return;
+      cambio();
+      if (k === "cortar") { let n = 0; p.capas.filter((c) => c.visible).forEach((c) => { const o = evalRef(c.r); if (!o?.x) return; const idx = o.x.map((f, i) => (f >= f0 && f <= f1 ? i : -1)).filter((i) => i >= 0); if (idx.length < 3) return; const s = byId(c.r.sid); const h = hija([s], `${o.nombre} · ${f0.slice(0, 7)}–${f1.slice(0, 7)}`, "recorte", `${o.nombre}[${f0.slice(0, 7)} : ${f1.slice(0, 7)}]`, idx.map((i) => o.x[i]), idx.map((i) => o.y[i]), { tipo: "recorte" }); st.sel.add(h.id); n++; }); toast(`${n} ficha(s) nueva(s) con el tramo (tipo recorte).`); }
+      if (k === "zoom") st.paneles.filter((q) => q.modo === "tiempo").forEach((q) => (q.rango = [f0, f1]));
+      flot.remove(); render();
+    });
+  });
+  cont.addEventListener("dblclick", (ev) => { const svg = ev.target.closest("svg[data-svg]"); if (!svg) return; cambio(); st.paneles.filter((q) => q.modo === "tiempo").forEach((q) => (q.rango = null)); render(); });
+})();
+
 /* ═════════════ render ═════════════ */
-const VISTAS = [["lineas", "Líneas"], ["base", "Base 100"], ["z", "Estandarizado"], ["dispersion", "Dispersión"], ["hist", "Histograma"], ["box", "Caja"]];
 const RVISTAS = [["r_tabla", "Tablas"], ["r_barras", "% significativos"], ["r_disp", "Coef. vs p-valor"], ["r_hist", "Distribución"], ["r_signo", "Caja por modelo"], ["r_ranking", "Ranking BIC"], ["r_granger", "Granger N×N"]];
 st.resVista = "r_tabla";
 
-function specGraf() { return { vista: st.vista, ids: st.series.filter((s) => s.graf).map((s) => s.id), rango: st.rango }; }
 function specRes() { return { vista: st.resVista, v: +$("#res-var").value, filtro: $("#res-filtro").checked, alpha: +$("#res-alpha").value }; }
 
 function render() {
-  // segmentos
-  $("#seg-vista").innerHTML = VISTAS.map(([k, t]) => `<button type="button" data-v="${k}" aria-pressed="${st.vista === k}">${t}</button>`).join("");
-  // gráfico principal
-  const sg = specGraf();
-  const o = dibujar($("#graf"), sg, $("#graf-ley"));
-  st._graf = o;
-  $("#graf-tit").textContent = st.rango ? `Gráfico · tramo ${st.rango[0].slice(0, 7)} a ${st.rango[1].slice(0, 7)}` : "Gráfico";
+  renderPaneles();
   // fichas
   $("#fichas").innerHTML = st.series.map(htmlFicha).join("");
   $("#n-sel").textContent = `${st.sel.size} seleccionada${st.sel.size === 1 ? "" : "s"}`;
@@ -1117,7 +1826,7 @@ function htmlFicha(s) {
     ${chispa(s)}
     <div class="meta"><span>${esc(rango)}</span><span>n ${v.length}</span><span>último ${num(ult)}</span>${s.unidad ? `<span>${esc(s.unidad)}</span>` : ""}</div>
     ${s.sellos.length ? `<div class="sellos">${s.sellos.map((x) => `<span class="sello ${x.w ? "w" : ""}">${esc(x.t)}</span>`).join("")}</div>` : ""}
-    <div class="acc"><button type="button" data-a="ver" aria-pressed="${s.graf}">${s.graf ? "◉ graficada" : "○ graficar"}</button><button type="button" data-a="origen">↗ linaje</button>${s.tipo !== "catalogo" ? `<button type="button" data-a="quitar">✕</button>` : ""}</div>
+    <div class="acc"><button type="button" data-a="ver" aria-pressed="${enAlgunPanel(s)}" title="Sumar / sacar del gráfico activo">${enAlgunPanel(s) ? "◉ en gráfico" : "○ graficar"}</button><button type="button" data-a="origen">↗ linaje</button>${s.tipo !== "catalogo" ? `<button type="button" data-a="quitar">✕</button>` : ""}</div>
   </div>`;
 }
 
@@ -1174,62 +1883,216 @@ function renderDoc() {
   $("#doc-pines").innerHTML = st.pines.map((p) => `<div class="p"><span class="bo" style="background:var(${p.color})"></span><span class="tx" title="${esc(p.titulo)}">${esc(p.titulo)}</span><button class="btn sm" type="button" data-insertar="${p.id}">Insertar</button></div>`).join("") || `<div class="vacio">Sin figuras: clavalas desde la Mesa.</div>`;
 }
 
-/* ═════════════ expresiones (gramática cerrada, sin eval) ═════════════ */
-function evaluarExpr(txt) {
-  const tok = txt.match(/\d+(?:[.,]\d+)?|[A-Za-z_][A-Za-z0-9_]*|[-+*/^(),×÷−]/g) || [];
-  let i = 0;
-  const ver = () => tok[i], tomar = (t) => { if (t && tok[i] !== t) throw new Error(`Esperaba «${t}» y encontré «${tok[i] ?? "fin"}»`); return tok[i++]; };
-  const usados = new Set();
-  const op = (a, b, f) => { if (typeof a === "number" && typeof b === "number") return f(a, b); const A = typeof a === "number" ? null : a, B = typeof b === "number" ? null : b; if (A && B) { const m = new Map(B.x.map((x, k) => [x, B.y[k]])); const x = A.x.filter((d) => m.has(d)); const ma = new Map(A.x.map((d, k) => [d, A.y[k]])); return { x, y: x.map((d) => f(ma.get(d), m.get(d))) }; } const s = A || B; return { x: s.x, y: s.y.map((v) => (A ? f(v, b) : f(a, v))) }; };
-  const FN = {
-    log: (s) => ({ x: s.x, y: s.y.map((v) => (v > 0 ? Math.log(v) : null)) }), exp: (s) => ({ x: s.x, y: s.y.map(Math.exp) }), abs: (s) => ({ x: s.x, y: s.y.map(Math.abs) }),
-    dif: (s, k = 1) => ({ x: s.x.slice(k), y: s.y.slice(k).map((v, j) => v - s.y[j]) }), lag: (s, k = 1) => ({ x: s.x.slice(k), y: s.y.slice(0, -k) }),
-    mm: (s, k = 12) => ({ x: s.x.slice(k - 1), y: s.y.slice(k - 1).map((_, j) => media(s.y.slice(j, j + k))) }), z: (s) => { const m = media(s.y), d = desvio(s.y); return { x: s.x, y: s.y.map((v) => (v - m) / d) }; },
-  };
-  function prim() {
-    const t = ver();
-    if (t === "(") { tomar("("); const v = expr(); tomar(")"); return v; }
-    if (t === "-" || t === "−") { tomar(); return op(-1, prim(), (a, b) => a * b); }
-    if (/^\d/.test(t)) { i++; return parseFloat(t.replace(",", ".")); }
-    if (/^[A-Za-z_]/.test(t)) {
-      i++;
-      if (ver() === "(") { if (!FN[t]) throw new Error(`Función desconocida: ${t}`); tomar("("); const args = [expr()]; while (ver() === ",") { tomar(","); args.push(expr()); } tomar(")"); return FN[t](...args); }
-      const s = st.series.find((x) => x.alias === t && x.x); if (!s) throw new Error(`No hay ninguna ficha con alias «${t}»`); usados.add(s.id); return { x: s.x, y: s.y };
-    }
-    throw new Error(`No entiendo «${t ?? "fin"}»`);
+/* ═════════════ código: Python RESTRINGIDO (espejo de cueva/metodos/codigo.py) ═════════════
+   Se tokeniza y se interpreta con una gramática cerrada: sin eval, sin imports, sin bucles.
+   Las fichas son variables (por su alias); las operaciones, funciones; los métodos de pandas
+   de la lista blanca, métodos. Cada variable asignada que da una serie se vuelve ficha. */
+class Serie { constructor(x, y) { this.x = x; this.y = y; } }
+class Ventana { constructor(s, k, tipo, kw) { this.s = s; this.k = k; this.tipo = tipo; this.kw = kw; } }
+const PROHIBIDAS = new Set(["import", "from", "def", "class", "lambda", "for", "while", "with", "try", "exec", "eval", "open", "global", "nonlocal", "yield", "return", "del", "assert", "raise", "print", "input", "getattr", "setattr", "compile", "globals", "locals", "vars", "dir"]);
+function tokenizarPy(src) {
+  const re = /[ \t\r]*(?:(#[^\n]*)|(\n)|(\d+\.?\d*(?:[eE][-+]?\d+)?|\.\d+)|("(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*')|([A-Za-z_][A-Za-z0-9_]*)|(\*\*|\/\/|==|!=|<=|>=|[-+*/%<>()[\],.=:&|~]))/y;
+  const out = []; let linea = 1, prof = 0, m; re.lastIndex = 0;
+  while (re.lastIndex < src.length) {
+    const ant = re.lastIndex; m = re.exec(src);
+    if (!m || re.lastIndex === ant) { const resto = src.slice(ant).trimStart(); if (!resto) break; throw new Error(`Línea ${linea}: carácter no permitido «${resto[0]}»`); }
+    if (m[1]) continue;
+    if (m[2]) { if (prof === 0) out.push({ t: "nl", linea }); linea++; continue; }
+    if (m[3]) out.push({ t: "num", v: parseFloat(m[3]), linea });
+    else if (m[4]) out.push({ t: "str", v: m[4].slice(1, -1), linea });
+    else if (m[5]) { if (m[5].startsWith("_")) throw new Error(`Línea ${linea}: los nombres con «_» al principio no están permitidos`); if (PROHIBIDAS.has(m[5])) throw new Error(`Línea ${linea}: «${m[5]}» no está permitido (sin imports, bucles, funciones propias ni lambdas)`); out.push({ t: ["and", "or", "not", "True", "False", "None", "in", "is", "if", "else"].includes(m[5]) ? "kw" : "name", v: m[5], linea }); }
+    else if (m[6]) { if ("([".includes(m[6])) prof++; if (")]".includes(m[6])) prof = Math.max(0, prof - 1); out.push({ t: "op", v: m[6], linea }); }
   }
-  function pot() { let a = prim(); while (ver() === "^") { tomar(); a = op(a, prim(), (x, y) => x ** y); } return a; }
-  function term() { let a = pot(); while (["*", "/", "×", "÷"].includes(ver())) { const o = tomar(); a = op(a, pot(), o === "*" || o === "×" ? (x, y) => x * y : (x, y) => (y ? x / y : null)); } return a; }
-  function expr() { let a = term(); while (["+", "-", "−"].includes(ver())) { const o = tomar(); a = op(a, term(), o === "+" ? (x, y) => x + y : (x, y) => x - y); } return a; }
-  const r = expr();
-  if (i < tok.length) throw new Error(`Sobra «${tok[i]}»`);
-  if (typeof r === "number") throw new Error("La expresión no usa ninguna serie");
-  return { ...r, usados: [...usados] };
+  out.push({ t: "nl", linea });
+  return out;
+}
+function ejecutarPy(src) {
+  if (src.length > 6000) throw new Error("El código supera 6000 caracteres");
+  const tk = tokenizarPy(src);
+  let i = 0, pasos = 0;
+  const entorno = new Map(), salida = new Map(), usadas = new Set();
+  const ver = () => tk[i], es = (v) => tk[i] && (tk[i].t === "op" || tk[i].t === "kw") && tk[i].v === v;
+  const tomar = (v) => { if (v && !es(v)) throw new Error(`Línea ${tk[i]?.linea}: esperaba «${v}» y encontré «${tk[i]?.v ?? "fin de línea"}»`); return tk[i++]; };
+  const L = () => tk[Math.min(i, tk.length - 1)].linea;
+  const err = (t) => { throw new Error(`Línea ${L()}: ${t}`); };
+  const esS = (v) => v instanceof Serie;
+  const vale = (v) => v != null && isFinite(v);
+  function bin(a, b, f) {
+    if (++pasos > 20000) err("demasiadas operaciones");
+    if (typeof a === "string" || typeof b === "string") err("no se opera con textos");
+    if (!esS(a) && !esS(b)) return f(a, b);
+    if (esS(a) && esS(b)) {
+      if (a.x && b.x) { const m = new Map(b.x.map((x, k) => [x, b.y[k]])); const x = a.x.filter((d) => m.has(d)); const ma = new Map(a.x.map((d, k) => [d, a.y[k]])); return new Serie(x, x.map((d) => { const u = ma.get(d), v = m.get(d); return vale(u) && vale(v) ? f(u, v) : null; })); }
+      const n = Math.min(a.y.length, b.y.length); return new Serie(a.x ? a.x.slice(0, n) : b.x ? b.x.slice(0, n) : null, a.y.slice(0, n).map((u, k) => (vale(u) && vale(b.y[k]) ? f(u, b.y[k]) : null)));
+    }
+    const s = esS(a) ? a : b;
+    return new Serie(s.x, s.y.map((v) => (vale(v) ? (esS(a) ? f(v, b) : f(a, v)) : null)));
+  }
+  const limpiarV = (v) => (vale(v) ? v : null);
+  const mapS = (s, f) => new Serie(s.x, s.y.map((v) => (vale(v) ? limpiarV(f(v)) : null)));
+  const serieDe = (v, d) => { if (!esS(v)) err(`${d}: se esperaba una serie`); return v; };
+  const op = (id) => (s, kw = {}) => { serieDe(s, id); const o = aplicarOp({ x: s.x, y: s.y }, { op: id, p: kw }); return new Serie(o.x, o.y); };
+  const conKw = (f, nombres) => (args, kw) => { const pos = {}; nombres.forEach((n, k) => { if (args[k + 1] !== undefined) pos[n] = args[k + 1]; }); return f(args[0], { ...pos, ...kw }); };
+  const regresion = (y, xs, parte) => { serieDe(y, "y"); if (!xs.length) err("residuo/ajustado necesitan al menos una explicativa"); xs.forEach((x) => serieDe(x, "x")); const al = alinearN([{ x: y.x, y: y.y }, ...xs.map((x) => ({ x: x.x, y: x.y }))]); const r = ols(al.ys[0], al.ys[0].map((_, k) => [1, ...al.ys.slice(1).map((c) => c[k])])); return new Serie(al.x, parte === "residuo" ? r.res : r.fit); };
+  const FUN = {
+    log: conKw(op("log"), []), dif: conKw(op("dif"), ["k"]), dif2: conKw(op("dif2"), []), pct: conKw(op("pct"), ["k"]), dif_log: conKw(op("dif_log"), ["k"]),
+    base100: conKw(op("base100"), ["fecha"]), mm: conKw(op("mm"), ["k"]), z: conKw(op("z"), []), winsor: conKw(op("winsor"), ["q"]),
+    rezago: conKw(op("rezago"), ["k"]), lag: conKw(op("rezago"), ["k"]), hp: conKw(op("hp"), ["lamb", "parte"]), sin_tendencia: conKw(op("sin_tendencia"), []),
+    recorte: conKw(op("recorte"), ["desde", "hasta"]), desvio_movil: conKw(op("desvio_movil"), ["k"]),
+    suma: (a) => bin(a[0], a[1], (u, v) => u + v), resta: (a) => bin(a[0], a[1], (u, v) => u - v), producto: (a) => bin(a[0], a[1], (u, v) => u * v), cociente: (a) => bin(a[0], a[1], (u, v) => (v ? u / v : null)),
+    residuo: (a) => regresion(a[0], a.slice(1), "residuo"), ajustado: (a) => regresion(a[0], a.slice(1), "ajustado"),
+    corr_movil: (a, kw) => { const k = kw.k ?? a[2] ?? 12; const al = alinearN([serieDe(a[0], "a"), serieDe(a[1], "b")]); return new Serie(al.x, al.ys[0].map((_, t) => { if (t < k - 1) return null; const u = al.ys[0].slice(t - k + 1, t + 1), v = al.ys[1].slice(t - k + 1, t + 1); const mu = media(u), mv = media(v); const c = u.reduce((s, x, j) => s + (x - mu) * (v[j] - mv), 0); return c / Math.sqrt(u.reduce((s, x) => s + (x - mu) ** 2, 0) * v.reduce((s, x) => s + (x - mv) ** 2, 0)); })); },
+    dummy: (a, kw) => { const s = serieDe(a[0], "x"); const desde = kw.desde ?? a[1] ?? "", hasta = kw.hasta ?? a[2] ?? ""; if (!s.x) err("dummy necesita fechas"); return new Serie(s.x, s.x.map((f) => ((!desde || f.slice(0, desde.length) >= desde) && (!hasta || f.slice(0, hasta.length) <= hasta) ? 1 : 0))); },
+    serie: (a) => { const s = st.series.find((x) => x.alias === a[0] || x.id === a[0]); if (!s) err(`no hay ficha «${a[0]}»`); usadas.add(s.id); return new Serie(s.x, s.y); },
+    abs: (a) => (esS(a[0]) ? mapS(a[0], Math.abs) : Math.abs(a[0])), min: (a) => Math.min(...a), max: (a) => Math.max(...a), round: (a) => (esS(a[0]) ? mapS(a[0], (v) => +v.toFixed(a[1] ?? 0)) : +(+a[0]).toFixed(a[1] ?? 0)),
+    len: (a) => (esS(a[0]) ? a[0].y.length : err("len de algo que no es serie")), float: (a) => +a[0], int: (a) => Math.trunc(+a[0]),
+  };
+  const np1 = (f) => (a) => (esS(a[0]) ? mapS(a[0], f) : f(a[0]));
+  const NPJ = {
+    log: np1((v) => (v > 0 ? Math.log(v) : null)), log1p: np1((v) => (v > -1 ? Math.log1p(v) : null)), exp: np1(Math.exp), sqrt: np1((v) => (v >= 0 ? Math.sqrt(v) : null)), abs: np1(Math.abs), sign: np1(Math.sign),
+    where: (a) => { const [c, x, y] = a; serieDe(c, "where"); return new Serie(c.x, c.y.map((v, k) => { const pick = v ? x : y; if (esS(pick)) { if (pick.x && c.x) { const j = pick.x.indexOf(c.x[k]); return j >= 0 ? pick.y[j] : null; } return pick.y[k]; } return pick; })); },
+    maximum: (a) => bin(a[0], a[1], Math.max), minimum: (a) => bin(a[0], a[1], Math.min), clip: (a, kw) => mapS(serieDe(a[0], "clip"), (v) => Math.min(kw.hi ?? a[2] ?? Infinity, Math.max(kw.lo ?? a[1] ?? -Infinity, v))),
+    nan: NaN, pi: Math.PI,
+  };
+  const ventana = (s, k, f) => new Serie(s.x, s.y.map((_, t) => { if (t < k - 1) return null; const w = s.y.slice(t - k + 1, t + 1); return w.every(vale) ? f(w) : null; }));
+  const AGRE = { mean: media, std: desvio, sum: (w) => w.reduce((a, b) => a + b, 0), min: (w) => Math.min(...w), max: (w) => Math.max(...w), median: (w) => quantil(w, 0.5) };
+  function metodo(obj, nom, args, kw) {
+    if (obj instanceof Ventana) {
+      if (obj.tipo === "rolling") { if (!AGRE[nom]) err(`«.rolling(…).${nom}()» no está permitido`); return ventana(obj.s, obj.k, AGRE[nom]); }
+      if (nom !== "mean") err(`«.ewm(…).${nom}()» no está permitido (sólo mean)`);
+      const span = kw.span ?? args[0] ?? 12, al = kw.alpha ?? 2 / (span + 1); let m = null; return new Serie(obj.s.x, obj.s.y.map((v) => { if (!vale(v)) return m; m = m == null ? v : al * v + (1 - al) * m; return m; }));
+    }
+    if (obj === "np") { if (!(nom in NPJ)) err(`«np.${nom}» no está disponible`); return NPJ[nom](args, kw); }
+    if (!esS(obj)) err(`«.${nom}()» sobre algo que no es una serie`);
+    const k = kw.periods ?? kw.k ?? args[0];
+    const v = obj.y.filter(vale);
+    switch (nom) {
+      case "rolling": { const w = kw.window ?? args[0]; if (!(w >= 1 && w <= 600)) err("rolling(k): k entre 1 y 600"); return new Ventana(obj, Math.round(w), "rolling"); }
+      case "ewm": return new Ventana(obj, 0, "ewm", kw);
+      case "shift": { const kk = Math.round(k ?? 1); return obj.x ? FUN.rezago([obj, kk], {}) : new Serie(null, kk >= 0 ? new Array(kk).fill(null).concat(obj.y.slice(0, obj.y.length - kk)) : obj.y.slice(-kk).concat(new Array(-kk).fill(null))); }
+      case "diff": return FUN.dif([obj, Math.round(k ?? 1)], {});
+      case "pct_change": { const kk = Math.round(k ?? 1); return new Serie(obj.x ? obj.x.slice(kk) : null, obj.y.slice(kk).map((u, j) => (vale(u) && obj.y[j] ? u / obj.y[j] - 1 : null))); }
+      case "cumsum": { let a = 0; return mapS(obj, (u) => (a += u)); }
+      case "cumprod": { let a = 1; return mapS(obj, (u) => (a *= u)); }
+      case "abs": return mapS(obj, Math.abs);
+      case "log": return mapS(obj, (u) => (u > 0 ? Math.log(u) : null));
+      case "clip": return NPJ.clip([obj, ...args], kw);
+      case "round": return mapS(obj, (u) => +u.toFixed(args[0] ?? 0));
+      case "mean": return media(v); case "std": return desvio(v); case "min": return Math.min(...v); case "max": return Math.max(...v);
+      case "median": return quantil(v, 0.5); case "sum": return v.reduce((a, b) => a + b, 0); case "count": return v.length;
+      case "quantile": return quantil(v, kw.q ?? args[0] ?? 0.5);
+      default: err(`el método «.${nom}()» no está permitido`);
+    }
+  }
+  // ─── gramática ───
+  function atomo() {
+    const t = ver();
+    if (es("(")) { tomar("("); const v = expr(); tomar(")"); return v; }
+    if (t.t === "num") { i++; return t.v; }
+    if (t.t === "str") { i++; return t.v; }
+    if (t.t === "kw" && ["True", "False", "None"].includes(t.v)) { i++; return t.v === "True" ? 1 : t.v === "False" ? 0 : null; }
+    if (t.t === "name") {
+      i++;
+      if (t.v === "np") return "np";
+      if (entorno.has(t.v)) return entorno.get(t.v);
+      if (es("(")) { if (!FUN[t.v]) err(`función desconocida «${t.v}». Hay: ${Object.keys(FUN).join(", ")}`); return { fn: t.v }; }
+      const s = st.series.find((x) => x.alias === t.v);
+      if (!s) err(`«${t.v}» no es el alias de ninguna ficha ni una variable definida antes`);
+      usadas.add(s.id); return new Serie(s.x, s.y);
+    }
+    err(`no entiendo «${t.v ?? "fin de línea"}»`);
+  }
+  function argumentos() {
+    tomar("("); const args = [], kw = {};
+    while (!es(")")) {
+      if (ver().t === "name" && tk[i + 1]?.t === "op" && tk[i + 1].v === "=") { const n = tomar().v; tomar("="); kw[n] = expr(); }
+      else if (es("*")) err("«*args/**kwargs» no está permitido");
+      else args.push(expr());
+      if (!es(")")) tomar(",");
+    }
+    tomar(")"); return [args, kw];
+  }
+  function postfijo() {
+    let v = atomo();
+    for (;;) {
+      if (v && v.fn && es("(")) { const [a, kw] = argumentos(); v = FUN[v.fn](a, kw); continue; }
+      if (es(".")) {
+        tomar("."); const n = tomar().v; if (!n || n.startsWith("_")) err("los atributos con «_» no están permitidos");
+        if (!es("(")) { if (v === "np" && n in NPJ && typeof NPJ[n] === "number") { v = NPJ[n]; continue; } err(`«.${n}» sólo se usa como llamada: x.${n}(…)`); }
+        const [a, kw] = argumentos(); v = metodo(v, n, a, kw); continue;
+      }
+      if (es("[")) {
+        tomar("["); if (!esS(v)) err("sólo se recorta una serie");
+        const lo = es(":") ? null : expr(); let hi = null; if (es(":")) { tomar(":"); if (!es("]")) hi = expr(); } else err('se recorta por fechas: x["2010-01":"2020-12"]');
+        tomar("]");
+        if (typeof lo === "number" || typeof hi === "number") { v = new Serie(v.x ? v.x.slice(lo ?? 0, hi ?? undefined) : null, v.y.slice(lo ?? 0, hi ?? undefined)); continue; }
+        if (!v.x) err("recortar por fecha necesita una serie con fechas");
+        const idx = v.x.map((f, k) => ((!lo || f.slice(0, lo.length) >= lo) && (!hi || f.slice(0, hi.length) <= hi) ? k : -1)).filter((k) => k >= 0);
+        v = new Serie(idx.map((k) => v.x[k]), idx.map((k) => v.y[k])); continue;
+      }
+      return v;
+    }
+  }
+  function potencia() { const a = postfijo(); if (es("**")) { tomar(); const b = unario(); if (typeof b === "number" && Math.abs(b) > 100) err("exponente demasiado grande"); return bin(a, b, (x, y) => x ** y); } return a; }
+  function unario() { if (es("-")) { tomar(); return bin(-1, unario(), (a, b) => a * b); } if (es("+")) { tomar(); return unario(); } if (es("~")) { tomar(); const v = unario(); return esS(v) ? mapS(v, (u) => (u ? 0 : 1)) : v ? 0 : 1; } return potencia(); }
+  function termino() { let a = unario(); while (["*", "/", "//", "%"].some(es)) { const o = tomar().v; const b = unario(); a = bin(a, b, o === "*" ? (x, y) => x * y : o === "/" ? (x, y) => (y ? x / y : null) : o === "//" ? (x, y) => (y ? Math.floor(x / y) : null) : (x, y) => (y ? ((x % y) + y) % y : null)); } return a; }
+  function aritm() { let a = termino(); while (es("+") || es("-")) { const o = tomar().v; const b = termino(); a = bin(a, b, o === "+" ? (x, y) => x + y : (x, y) => x - y); } return a; }
+  function yBits() { let a = aritm(); while (es("&")) { tomar(); a = bin(a, aritm(), (x, y) => (x && y ? 1 : 0)); } return a; }
+  function oBits() { let a = yBits(); while (es("|")) { tomar(); a = bin(a, yBits(), (x, y) => (x || y ? 1 : 0)); } return a; }
+  const CMP = { "<": (a, b) => a < b, ">": (a, b) => a > b, "<=": (a, b) => a <= b, ">=": (a, b) => a >= b, "==": (a, b) => a === b, "!=": (a, b) => a !== b };
+  function comparacion() { const a = oBits(); if (Object.keys(CMP).some(es)) { const o = tomar().v; const b = oBits(); return bin(a, b, (x, y) => (CMP[o](x, y) ? 1 : 0)); } return a; }
+  function negacion() { if (es("not")) { tomar(); const v = negacion(); return esS(v) ? mapS(v, (u) => (u ? 0 : 1)) : v ? 0 : 1; } return comparacion(); }
+  function conj() { let a = negacion(); while (es("and")) { tomar(); a = bin(a, negacion(), (x, y) => (x && y ? 1 : 0)); } return a; }
+  function expr() { let a = conj(); while (es("or")) { tomar(); a = bin(a, conj(), (x, y) => (x || y ? 1 : 0)); } return a; }
+  const lineas = src.split("\n");
+  let sentencias = 0;
+  while (i < tk.length) {
+    if (ver().t === "nl") { i++; continue; }
+    if (++sentencias > 80) err("el código es demasiado largo");
+    const l0 = L();
+    if (ver().t === "name" && tk[i + 1]?.t === "op" && tk[i + 1].v === "=") {
+      const nombre = tomar().v; tomar("=");
+      if (nombre === "np" || FUN[nombre]) err(`«${nombre}» es un nombre reservado`);
+      const v = expr();
+      entorno.set(nombre, v);
+      if (esS(v)) salida.set(nombre, { s: v, linea: lineas[l0 - 1].trim() });
+    } else {
+      const v = expr(); entorno.set("_ultimo", v);
+      if (esS(v) && !salida.size) salida.set("resultado", { s: v, linea: lineas[l0 - 1].trim() });
+    }
+    if (ver().t !== "nl") err(`sobra «${ver().v}» (una sentencia por línea)`);
+  }
+  return { salida, usadas: [...usadas] };
 }
 
 /* ═════════════ eventos ═════════════ */
 document.addEventListener("click", (e) => {
   const b = e.target.closest("button, .ficha, .nodo");
   if (!b) return;
-  if (b.closest("#seg-vista") && b.dataset.v) { st.vista = b.dataset.v; render(); return; }
   if (b.closest("#seg-res") && b.dataset.v) { st.resVista = b.dataset.v; render(); return; }
   const f = b.closest(".ficha");
   if (f) {
     const s = byId(f.dataset.id);
     const a = e.target.closest("button")?.dataset.a;
-    if (a === "ver") s.graf = !s.graf;
-    else if (a === "quitar") { st.series = st.series.filter((x) => x !== s); st.sel.delete(s.id); }
+    if (a === "ver") {
+      cambio(); const p = panelActivo();
+      const quitar = p && capasConRef(p).some((x) => x.r?.sid === s.id);
+      if (quitar && (p.modo === "tiempo" || p.modo === "distribucion")) p.capas = p.capas.filter((c) => c.r.sid !== s.id);
+      else if (quitar) toast("Esa ficha es un eje de este gráfico: cambiala desde el panel de capas.");
+      else mostrarFicha(s, p);
+      if (p) retitular(p);
+    }
+    else if (a === "quitar") { cambio(); st.series = st.series.filter((x) => x !== s); st.sel.delete(s.id); st.paneles.forEach((p) => { if (p.modo === "tiempo" || p.modo === "distribucion") p.capas = p.capas.filter((c) => c.r.sid !== s.id); }); }
     else if (a === "origen") { st._resaltar = s.id; render(); $("#lin").scrollIntoView({ behavior: "smooth", block: "center" }); setTimeout(() => { st._resaltar = null; lineaje(); }, 2500); return; }
     else { st.sel.has(s.id) ? st.sel.delete(s.id) : st.sel.add(s.id); }
     render(); return;
   }
   const n = e.target.closest(".nodo");
   if (n) { if (n.dataset.id === "res1") { $("#res-card").scrollIntoView({ behavior: "smooth" }); return; } const s = byId(n.dataset.id); if (s) { st.sel.add(s.id); render(); document.querySelector(`.ficha[data-id="${s.id}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" }); } return; }
-  if (b.dataset.tool) { aplicar(HERR.find((t) => t.id === b.dataset.tool)); return; }
   if (b.dataset.clase) { const c = document.querySelector(`.tools[data-c="${b.dataset.clase}"]`); c.hidden = !c.hidden; return; }
   if (b.dataset.insertar) { st.doc.push({ t: "fig", pin: b.dataset.insertar }); location.hash = "#documento"; renderDoc(); guardar(); toast("Figura insertada en el documento."); return; }
   if (b.dataset.sacar) { st.pines = st.pines.filter((p) => p.id !== b.dataset.sacar); st.doc = st.doc.filter((d) => d.pin !== b.dataset.sacar); renderTablero(); render(); return; }
-  if (b.dataset.volver) { const p = st.pines.find((x) => x.id === b.dataset.volver); location.hash = "#mesa"; setTimeout(() => { if (p.spec.vista.startsWith("r_")) { st.resVista = p.spec.vista; render(); $("#res-card").scrollIntoView({ behavior: "smooth" }); } else { st.vista = p.spec.vista; st.rango = p.spec.rango; st.series.forEach((s) => (s.graf = p.spec.ids.includes(s.id))); p.origen.forEach((id) => st.sel.add(id)); render(); window.scrollTo({ top: 0, behavior: "smooth" }); } }, 30); return; }
+  if (b.dataset.volver) { const p = st.pines.find((x) => x.id === b.dataset.volver); location.hash = "#mesa"; setTimeout(() => { if (p.spec.vista.startsWith("r_")) { st.resVista = p.spec.vista; render(); $("#res-card").scrollIntoView({ behavior: "smooth" }); } else { cambio(); const q = structuredClone(p.spec.panel); q.id = "p" + ++_np; st.paneles.unshift(q); st.activo = q.id; p.origen.forEach((id) => st.sel.add(id)); render(); window.scrollTo({ top: 0, behavior: "smooth" }); toast("El gráfico volvió a la Mesa, arriba de todo."); } }, 30); return; }
 });
 document.addEventListener("keydown", (e) => { if ((e.key === "Enter" || e.key === " ") && e.target.classList?.contains("ficha")) { e.preventDefault(); e.target.click(); } });
 ["#res-var", "#res-filtro", "#res-alpha"].forEach((s) => $(s).addEventListener("change", render));
@@ -1239,92 +2102,68 @@ function traer() {
   const q = $("#buscar").value.trim().toLowerCase(); if (!q) return;
   const col = [D.dep, ...D.vars].find((c) => D.cortos[c].toLowerCase().includes(q) || c.includes(q));
   if (!col) { toast("No está en el panel del TF. En la plataforma buscaría en las 719 series del catálogo."); return; }
-  const s = delPanel(col); s.graf = true; st.sel.clear(); st.sel.add(s.id); $("#buscar").value = ""; render();
+  cambio(); const s = delPanel(col); mostrarFicha(s); st.sel.clear(); st.sel.add(s.id); $("#buscar").value = ""; render();
 }
-$("#pin-graf").addEventListener("click", () => { const sp = specGraf(); if (!sp.ids.length) { toast("No hay series graficadas."); return; } pinear(sp, `${VISTAS.find((v) => v[0] === sp.vista)[1]}: ${sp.ids.map((i) => byId(i).nombre).join(" · ")}`.slice(0, 120), sp.ids); });
+$("#nuevo-graf").addEventListener("change", (e) => { const v = e.target.value; if (!v) return; cambio(); const p = nuevoPanel(v); e.target.value = ""; render(); document.querySelector(`[data-panel="${p.id}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" }); });
+$("#b-deshacer").addEventListener("click", deshacer);
+$("#b-rehacer").addEventListener("click", rehacer);
 $("#res-pin").addEventListener("click", () => { if (st.resVista === "r_tabla") { toast("Graficá la selección (o elegí una vista de gráfico) y clavá eso."); return; } const sp = specRes(); const nv = RVISTAS.find((v) => v[0] === sp.vista)[1]; const varTxt = ["r_disp", "r_hist", "r_signo"].includes(sp.vista) ? ` · ${D.cortos[D.vars[sp.v]]}` : ""; pinear(sp, `${nv}${varTxt} (${sp.filtro ? "residuos limpios" : "todos"}, α=${sp.alpha})`, ["res1"]); });
 $("#res-serie").addEventListener("click", () => {
   const sp = specRes();
-  if (sp.vista === "r_tabla") { toast("En «Tablas», seleccioná columnas o filas y usá «Guardar como vector»."); return; }
+  if (sp.vista === "r_tabla") { toast("En «Tablas», tildá las columnas (o filas) que quieras y usá «→ Fichas» o «→ Gráfico»."); $("#res-tv").scrollIntoView({ behavior: "smooth", block: "center" }); return; }
+  cambio();
   if (["r_disp", "r_hist", "r_signo"].includes(sp.vista)) {
     const ef = efectosDe(sp.v, sp.filtro).filter((e) => sp.vista !== "r_signo" || e[3] < sp.alpha);
     const s = nuevaSerie({ nombre: `Coef. LP de ${D.cortos[D.vars[sp.v]]} en ${ef.length} modelos`, tipo: "resultado", x: null, y: ef.map((e) => e[2]), unidad: "coef.", receta: { op: "resultados", insumos: [], texto: `coef_lp(${slug(D.cortos[D.vars[sp.v]])}) en el universo${sp.filtro ? " · residuos limpios" : ""}` } });
-    st.series.forEach((x) => (x.graf = false)); s._de = "res1"; s.graf = true; st.vista = "hist";
-    toast("Los coeficientes ahora son una ficha: el gráfico pasó a Histograma.");
+    s._de = "res1"; mostrarFicha(s);
+    toast("Los coeficientes ahora son una ficha, en un gráfico de distribución (histograma + caja) arriba.");
   } else if (sp.vista === "r_ranking" && D.ajuste_mejor) {
     const a = D.ajuste_mejor, m = MODS[a.modelo];
     const t = `mejor ARDL ${m[2]} por BIC: ${m[1].map((i) => D.cortos[D.vars[i]]).join(", ")}`;
     const s1 = nuevaSerie({ nombre: "RPI ajustado (mejor ARDL)", tipo: "resultado", x: a.fechas, y: a.ajustado, unidad: "pb", receta: { op: "ajustado", insumos: [], texto: t } });
     const s2 = nuevaSerie({ nombre: "Residuo (mejor ARDL)", tipo: "resultado", x: a.fechas, y: a.residuo, unidad: "pb", receta: { op: "residuo", insumos: [], texto: t } });
-    st.series.forEach((x) => (x.graf = false)); s1._de = s2._de = "res1"; s1.graf = true; const rpi = st.series.find((s) => s.col === D.dep); if (rpi) rpi.graf = true; st.vista = "lineas";
+    s1._de = s2._de = "res1"; const rpi = st.series.find((s) => s.col === D.dep); const pn = nuevoPanel("tiempo", [rpi, s1].filter(Boolean)); pn.capas[pn.capas.length - 1].estilo = "guiones"; pn.capas.push(capa({ r: ref(s2.id), tipo: "barras", color: s2.color, estilo: "solido", grosor: 1, eje: "der" })); pn.ancho = 2; pn.titulo = "RPI, ajuste del mejor ARDL y residuo (barras, eje der.)"; pn.manual = true;
     toast("Ajustado y residuo del mejor ARDL quedaron como series temporales.");
   } else {
     const d = pctSig(sp.alpha, sp.filtro);
     const s = nuevaSerie({ nombre: `% significativos en VAR por variable`, tipo: "resultado", x: null, y: d.map((o) => o.VAR), unidad: "%", receta: { op: "resultados", insumos: [], texto: `pct_sig(VAR, α=${sp.alpha})` } });
-    st.series.forEach((x) => (x.graf = false)); s._de = "res1"; s.graf = true; st.vista = "box";
+    s._de = "res1"; mostrarFicha(s);
   }
   render(); window.scrollTo({ top: 0, behavior: "smooth" });
 });
-$("#expr-ok").addEventListener("click", () => {
+$("#code-ok").addEventListener("click", () => {
+  const out = $("#code-res");
   try {
-    const r = evaluarExpr($("#expr").value);
-    const nom = $("#expr-nom").value.trim() || "Serie calculada";
-    const padres = r.usados.map(byId);
-    const s = hija(padres, nom, "expresión", $("#expr").value.trim(), r.x, r.y, { tipo: "derivada", unidad: "" });
-    s.alias = slug(nom); render(); toast(`Serie «${nom}» creada con alias ${s.alias}.`);
-  } catch (err) { toast(err.message); }
+    const r = ejecutarPy($("#code").value);
+    if (!r.salida.size) { out.className = "code-res"; out.textContent = "Corrió, pero ninguna variable dio una serie."; return; }
+    cambio();
+    const padres = r.usadas.map(byId).filter(Boolean);
+    const hechas = [...r.salida.entries()].map(([nombre, { s, linea }]) => {
+      const prev = st.series.find((x) => x.alias === nombre && x.receta.op === "código");
+      if (prev) { prev.x = s.x; prev.y = s.y; prev.receta.texto = linea; _cacheRef.clear(); return prev; }
+      const h = hija(padres, nombre.replace(/_/g, " "), "código", linea, s.x, s.y, { unidad: "" }); h.alias = nombre; return h;
+    });
+    const p = st.paneles.find((q) => q.modo === "tiempo" && q._codigo) || nuevoPanel("tiempo", [], { _codigo: true });
+    p.capas = []; hechas.filter((h) => h.x).forEach((h) => mostrarFicha(h, p)); p.titulo = "Salida del código: " + hechas.map((h) => h.alias).join(", "); p.manual = true;
+    p.ancho = 2; hechas.filter((h) => !h.x).forEach((h) => mostrarFicha(h));
+    out.className = "code-res"; out.textContent = `✓ ${hechas.length} ficha(s): ${hechas.map((h) => h.alias).join(", ")} — también en un gráfico «Salida del código». Las capas se apagan una por una.`;
+    render();
+  } catch (err) { out.className = "code-res err"; out.textContent = "✕ " + err.message; }
 });
 $("#tema").addEventListener("click", () => { const r = document.documentElement; const oscuro = r.dataset.theme ? r.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches; r.dataset.theme = oscuro ? "light" : "dark"; render(); renderTablero(); });
+$("#code").addEventListener("keydown", (e) => { if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); $("#code-ok").click(); } if (e.key === "Tab") { e.preventDefault(); const t = e.target, a = t.selectionStart; t.value = t.value.slice(0, a) + "    " + t.value.slice(t.selectionEnd); t.selectionStart = t.selectionEnd = a + 4; } });
 
 /* arrastrar herramientas */
 document.addEventListener("dragstart", (e) => { const t = e.target.closest?.(".tool"); if (t) { e.dataTransfer.setData("text/plain", t.dataset.tool); e.dataTransfer.effectAllowed = "copy"; } });
-document.addEventListener("dragover", (e) => { const f = e.target.closest?.(".ficha, #graf-wrap"); if (f) { e.preventDefault(); f.classList.add("drop"); } });
-document.addEventListener("dragleave", (e) => { e.target.closest?.(".ficha")?.classList.remove("drop"); });
+document.addEventListener("dragover", (e) => { const f = e.target.closest?.(".ficha, .panel"); if (f) { e.preventDefault(); f.classList.add("drop"); } });
+document.addEventListener("dragleave", (e) => { e.target.closest?.(".ficha, .panel")?.classList.remove("drop"); });
 document.addEventListener("drop", (e) => {
-  const f = e.target.closest?.(".ficha, #graf-wrap"); if (!f) return;
+  const f = e.target.closest?.(".ficha, .panel"); if (!f) return;
   e.preventDefault(); f.classList.remove("drop");
   const t = HERR.find((x) => x.id === e.dataTransfer.getData("text/plain")); if (!t) return;
-  if (f.id === "graf-wrap") { if (t.aridad === "vista") { st.vista = t.fn; render(); } else { const sel = st.series.filter((s) => s.graf); sel.forEach((s) => st.sel.add(s.id)); aplicar(t); } return; }
-  aplicar(t, byId(f.dataset.id));
+  if (f.classList.contains("panel")) { const p = st.paneles.find((q) => q.id === f.dataset.panel); st.activo = p.id; aplicar(t, null, f.querySelector(".card-hd"), p); return; }
+  aplicar(t, byId(f.dataset.id), f);
 });
-
-/* recortar arrastrando sobre el gráfico */
-(function brush() {
-  const svg = $("#graf"), wrap = $("#graf-wrap");
-  let ini = null, rect = null, flot = null, tip = null;
-  const xsvg = (ev) => { const r = svg.getBoundingClientRect(); return ((ev.clientX - r.left) / r.width) * W; };
-  const tDe = (x) => { const o = st._graf; return o.x0 + ((x - M.l) / (W - M.l - M.r)) * (o.x1 - o.x0); };
-  svg.addEventListener("pointerdown", (ev) => { if (!st._graf?.x0 || !["lineas", "base", "z"].includes(st.vista)) return; flot?.remove(); ini = Math.max(M.l, Math.min(W - M.r, xsvg(ev))); rect = document.createElementNS("http://www.w3.org/2000/svg", "rect"); rect.setAttribute("class", "brush"); rect.setAttribute("y", M.t); rect.setAttribute("height", 330 - M.t - M.b); svg.appendChild(rect); try { svg.setPointerCapture(ev.pointerId); } catch (e) { /* sin captura: igual funciona */ } });
-  svg.addEventListener("pointermove", (ev) => {
-    const x = Math.max(M.l, Math.min(W - M.r, xsvg(ev)));
-    if (rect) { rect.setAttribute("x", Math.min(ini, x)); rect.setAttribute("width", Math.abs(x - ini)); return; }
-    const o = st._graf; if (!o?.ss) return;
-    const t = tDe(x);
-    tip ||= Object.assign(document.createElement("div"), { className: "tip" }); if (!tip.isConnected) wrap.appendChild(tip);
-    tip.innerHTML = o.ss.map((s) => { let k = 0, d = Infinity; s.x.forEach((f, i) => { const dd = Math.abs(tms(f) - t); if (dd < d) { d = dd; k = i; } }); return `<div><i style="background:var(${s.color})"></i>${esc(s.nombre)} · ${s.x[k].slice(0, 7)}: <b>${num(s.y[k])}</b></div>`; }).join("");
-    const r = svg.getBoundingClientRect(); const px = ev.clientX - r.left; tip.style.left = px > r.width * 0.6 ? "auto" : px + 14 + "px"; tip.style.right = px > r.width * 0.6 ? r.width - px + 14 + "px" : "auto"; tip.style.top = ev.clientY - r.top + 12 + "px";
-  });
-  svg.addEventListener("pointerleave", () => tip?.remove());
-  svg.addEventListener("pointerup", (ev) => {
-    if (!rect) return;
-    const x = Math.max(M.l, Math.min(W - M.r, xsvg(ev)));
-    const a = Math.min(ini, x), b = Math.max(ini, x);
-    rect.remove(); rect = null;
-    if (b - a < 12) return;
-    const f0 = new Date(tDe(a)).toISOString().slice(0, 10), f1 = new Date(tDe(b)).toISOString().slice(0, 10);
-    flot = document.createElement("div"); flot.className = "flot";
-    flot.style.left = Math.max(8, (a / W) * svg.getBoundingClientRect().width) + "px"; flot.style.top = "8px";
-    flot.innerHTML = `<b class="mono">${f0.slice(0, 7)} → ${f1.slice(0, 7)}</b><button class="btn sm primary" type="button" data-f="cortar">✂ Crear serie con el tramo</button><button class="btn sm" type="button" data-f="zoom">🔍 Hacer zoom</button><button class="btn sm" type="button" data-f="no">✕</button>`;
-    wrap.appendChild(flot);
-    flot.addEventListener("click", (e2) => {
-      const k = e2.target.dataset.f; if (!k) return;
-      if (k === "cortar") { const pad = st.series.filter((s) => s.graf && s.x); pad.forEach((s) => { const idx = s.x.map((f, i) => (f >= f0 && f <= f1 ? i : -1)).filter((i) => i >= 0); if (idx.length < 3) return; const h = hija([s], `${s.nombre} · ${f0.slice(0, 7)}–${f1.slice(0, 7)}`, "recorte", `${s.alias}[${f0.slice(0, 7)} : ${f1.slice(0, 7)}]`, idx.map((i) => s.x[i]), idx.map((i) => s.y[i]), { tipo: "recorte" }); h.graf = false; st.sel.add(h.id); }); toast("Cada serie graficada dejó su tramo como ficha nueva (tipo recorte)."); }
-      if (k === "zoom") st.rango = [f0, f1];
-      flot.remove(); render();
-    });
-  });
-  svg.addEventListener("dblclick", () => { st.rango = null; render(); });
-})();
 
 /* herramientas: lista */
 function renderHerr() {
@@ -1332,10 +2171,11 @@ function renderHerr() {
   $("#herr-lista").innerHTML = CLASES.map((c, k) => {
     const ts = HERR.filter((t) => t.clase === c.id && (!q || (t.nombre + " " + (t.plat || "") + " " + c.nombre).toLowerCase().includes(q)));
     if (!ts.length) return "";
-    return `<div class="clase"><button type="button" data-clase="${c.id}"><span class="num">${k + 1}</span><b>${c.nombre}</b><span class="q">${c.q}</span></button><div class="desc">${c.desc}</div><div class="tools" data-c="${c.id}">${ts.map((t) => `<div class="tool ${t.plat ? "plat" : ""}" draggable="${!t.plat}" data-tool="${t.id}" role="button" tabindex="0" title="${esc(t.plat ? "En la plataforma: " + t.plat : t.desc || "")}">${esc(t.nombre)}<span class="ar">${t.plat ? "plataforma" : t.aridad === 1 ? "1 serie" : t.aridad === 2 ? "A, B" : t.aridad === "vista" ? "vista" : t.aridad === "n" ? "dep + X" : t.aridad === "graf" ? "gráfico" : "panel"}</span></div>`).join("")}</div></div>`;
+    return `<div class="clase"><button type="button" data-clase="${c.id}"><span class="num">${k + 1}</span><b>${c.nombre}</b><span class="q">${c.q}</span></button><div class="desc">${c.desc}</div><div class="tools" data-c="${c.id}">${ts.map((t) => `<div class="tool ${t.plat ? "plat" : ""}" draggable="${!t.plat}" data-tool="${t.id}" role="button" tabindex="0" title="${esc(t.plat ? "En la plataforma: " + t.plat : t.desc || "")}">${esc(t.nombre)}<span class="ar">${t.plat ? "plataforma" : t.op && Object.keys(OPSJ[t.op].p).length ? "⚙ parámetros" : t.diag && Object.keys(DIAG[t.diag].p).length ? "⚙ parámetros" : t.aridad === 1 ? "1 serie" : t.aridad === 2 ? "A, B" : t.aridad === "panel" ? "gráfico nuevo" : t.aridad === "n" ? "dep + X" : t.aridad === "graf" ? "gráfico" : t.aridad === "codigo" ? "código" : "panel"}</span></div>`).join("")}</div></div>`;
   }).join("");
 }
-document.addEventListener("click", (e) => { const t = e.target.closest(".tool"); if (t) aplicar(HERR.find((x) => x.id === t.dataset.tool)); });
+document.addEventListener("click", (e) => { const t = e.target.closest(".tool"); if (t) aplicar(HERR.find((x) => x.id === t.dataset.tool), null, t); });
+document.addEventListener("keydown", (e) => { const t = e.target.closest?.(".tool"); if (t && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); aplicar(HERR.find((x) => x.id === t.dataset.tool), null, t); } });
 $("#herr-q").addEventListener("input", renderHerr);
 
 /* doc: edición */
@@ -1359,20 +2199,27 @@ function guardar() { try { localStorage.setItem("cueva_mockup_mesa_v1", JSON.str
 (function inicio() {
   $("#dl-panel").innerHTML = [D.dep, ...D.vars].map((c) => `<option value="${esc(D.cortos[c])}"></option>`).join("");
   $("#res-var").innerHTML = D.vars.map((c, i) => `<option value="${i}" ${c === "itcrm_multilateral" ? "selected" : ""}>${esc(D.cortos[c])}</option>`).join("");
-  const rpi = delPanel(D.dep); rpi.alias = "rpi"; rpi.graf = true;
-  const res = delPanel("reservas_brutas_bcra_pbi_usd"); res.alias = "reservas"; res.graf = true;
+  const rpi = delPanel(D.dep); rpi.alias = "rpi";
+  const res = delPanel("reservas_brutas_bcra_pbi_usd"); res.alias = "reservas";
   const deu = delPanel("deuda_externa_bruta_total_pbi_usd"); deu.alias = "deuda";
   const bre = delPanel("brecha_cambiaria_mep_oficial"); bre.alias = "brecha";
   const vix = delPanel("vix_cboe_volatility_index"); vix.alias = "vix";
-  st.vista = "z";
-  HERR.find((t) => t.id === "orden").fn(rpi); HERR.find((t) => t.id === "quiebre").fn(rpi);
-  const d = HERR.find((t) => t.id === "dif").fn(rpi); d.alias = "d_rpi"; d.graf = false;
+  DIAG.orden.f(rpi); DIAG.quiebre.f(rpi, { min: 12 });
+  // 1) tiempo: RPI (línea) + reservas (área, eje derecho) + Δ12 RPI como chip (barras)
+  const p1 = nuevoPanel("tiempo", [rpi, res]); p1.ancho = 2;
+  p1.capas[1].tipo = "area"; p1.capas[1].eje = "der";
+  p1.capas.push(capa({ r: ref(rpi.id, [{ op: "dif", p: { k: 12 } }]), tipo: "barras", color: "--s3", estilo: "solido", grosor: 1, eje: "izq", visible: false }));
+  p1.titulo = "RPI y reservas/PBI (eje der.) · capa apagada: Δ₁₂ RPI en barras"; p1.manual = true;
+  // 2) dispersión con clusters  3) distribución de Δ RPI: histograma + caja + densidad
+  const p2 = nuevoPanel("clusters", [rpi, res]); p2.capas[0].rx = ref(res.id); p2.capas[0].ry = ref(rpi.id); p2.titulo = tituloAuto(p2);
+  const p3 = nuevoPanel("distribucion", []); p3.capas = [capa({ r: ref(rpi.id, [{ op: "dif", p: { k: 1 } }]), tipo: "hist", color: "--s1" }), capa({ r: ref(rpi.id, [{ op: "dif", p: { k: 1 } }]), tipo: "densidad", color: "--s3" }), capa({ r: ref(rpi.id, [{ op: "dif", p: { k: 1 } }]), tipo: "caja", color: "--s1" })]; p3.titulo = "Distribución de Δ RPI: histograma + densidad + caja"; p3.manual = true;
+  st.activo = p1.id;
   correrUniverso();
   // proyecto y documento sembrados con ejemplos
-  const p1 = { id: "p1", titulo: "% de modelos con efecto significativo, por variable (residuos limpios, α=0,05)", spec: { vista: "r_barras", v: 6, filtro: true, alpha: 0.05 }, origen: ["res1"], color: "--s1" };
-  const p2 = { id: "p2", titulo: "Causalidad de Granger entre las 17 series (α=0,05)", spec: { vista: "r_granger", v: 0, filtro: true, alpha: 0.05 }, origen: ["res1"], color: "--s2" };
-  const p3 = { id: "p3", titulo: "RPI y reservas/PBI, estandarizados", spec: { vista: "z", ids: [rpi.id, res.id], rango: null }, origen: [rpi.id, res.id], color: "--s3" };
-  st.pines.push(p1, p2, p3);
+  const p1p = { id: "p1", titulo: "% de modelos con efecto significativo, por variable (residuos limpios, α=0,05)", spec: { vista: "r_barras", v: 6, filtro: true, alpha: 0.05 }, origen: ["res1"], color: "--s1" };
+  const p2p = { id: "p2", titulo: "Causalidad de Granger entre las 17 series (α=0,05)", spec: { vista: "r_granger", v: 0, filtro: true, alpha: 0.05 }, origen: ["res1"], color: "--s2" };
+  const p3p = { id: "p3", titulo: "RPI vs reservas/PBI: 3 clusters de períodos", spec: { vista: "panel", panel: structuredClone(p2) }, origen: [rpi.id, res.id], color: "--s3" };
+  st.pines.push(p1p, p2p, p3p);
   let prev = null; try { prev = JSON.parse(localStorage.getItem("cueva_mockup_mesa_v1") || "null"); } catch (e) { prev = null; }
   st.doc = prev?.doc?.length ? prev.doc : [
     { t: "h", v: "1. Introducción" },
@@ -1385,6 +2232,7 @@ function guardar() { try { localStorage.setItem("cueva_mockup_mesa_v1", JSON.str
   ];
   st.docTit = prev?.docTit || null;
   renderHerr();
+  st.deshacer = []; st.rehacer = [];
   render();
   ruta();
 })();
