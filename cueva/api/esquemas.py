@@ -62,6 +62,13 @@ class PreguntaAgente(BaseModel):
     pregunta: str = Field(min_length=1, max_length=4_000)
 
 
+class CodigoEvaluar(BaseModel):
+    """Código Python restringido (ver cueva.metodos.codigo); el tope de largo se valida allá."""
+
+    codigo: str = Field(min_length=1, max_length=6000)
+    freq: str = Field(default="mensual", pattern=r"^(mensual|trimestral|anual|diaria)$")
+
+
 class RecetaEvaluar(BaseModel):
     """Una receta (id de serie o árbol {op, de, p}) a evaluar; se valida en cueva.metodos.recetas."""
 

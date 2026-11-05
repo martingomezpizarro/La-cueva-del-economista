@@ -16,6 +16,7 @@ Endpoints (todos bajo /api/v1):
                                                     (también cualquier método del catálogo)
     GET    /api/v1/metodos                        → catálogo: verbos, familias, métodos y operaciones de recetas
     POST   /api/v1/recetas/evaluar                → evalúa una receta (serie derivada) {receta, freq}
+    POST   /api/v1/codigo/evaluar                 → corre Python restringido sobre series {codigo, freq}
     GET    /api/v1/metodos/{id}                   → declaración completa de un método
     GET    /api/v1/mis-series                     → series propias del usuario
     POST   /api/v1/mis-series                     → sube un CSV propio (precios, bases)
@@ -72,6 +73,7 @@ from cueva.sesiones import PidInvalido, ProyectoNoEncontrado, RepositorioProyect
 
 from .esquemas import (
     PID_PATTERN,
+    CodigoEvaluar,
     HerramientaEjecutar,
     InformeTexto,
     NotaCrear,
@@ -392,6 +394,42 @@ def crear_app() -> FastAPI:
                     "hojas": R.hojas(body.receta),
                     "fechas": [str(f.date()) for f in s.index],
                     "valores": s.values.tolist(),
+                }
+            )
+        )
+
+    @app.post("/api/v1/codigo/evaluar")
+    def evaluar_codigo(body: CodigoEvaluar):
+        """Corre código Python RESTRINGIDO (lista blanca, sin eval) y devuelve cada serie que
+        asigna, con su receta para guardarla en Mis series o pasarla a un método."""
+        from cueva.metodos import codigo as C
+        from cueva.metodos import recetas as R
+        from cueva.metodos.contrato import ErrorMetodo, limpiar
+
+        try:
+            res = C.ejecutar(body.codigo, body.freq)
+        except ErrorMetodo as e:
+            raise HTTPException(422, str(e)) from e
+        series = []
+        for nombre, s in res["series"].items():
+            rec = C.receta(body.codigo, nombre, res["usadas"])
+            series.append(
+                {
+                    "nombre": nombre,
+                    "receta": rec,
+                    "texto": R.texto(rec),
+                    "huella": R.huella(rec),
+                    "fechas": [str(f.date()) for f in s.index],
+                    "valores": s.values.tolist(),
+                }
+            )
+        ultimo = res["ultimo"]
+        return JSONResponse(
+            limpiar(
+                {
+                    "series": series,
+                    "usadas": res["usadas"],
+                    "ultimo": None if ultimo is None or hasattr(ultimo, "index") else str(ultimo)[:200],
                 }
             )
         )

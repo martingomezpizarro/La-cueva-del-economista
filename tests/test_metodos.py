@@ -680,3 +680,85 @@ def test_api_mis_resultados(banco):
         == 422
     )
     assert c.get("/api/v1/mis-resultados/../../etc").status_code == 404
+
+
+# ── Código Python restringido (cueva.metodos.codigo) ─────────────────────────
+CODIGO = """ratio = coint_y / coint_x
+mm = ratio.rolling(6).mean()
+ciclo = hp(np.log(positiva), lamb=1600)
+alta = (positiva.pct_change(12) > 0) * 1
+res = residuo(coint_y, coint_x)
+tramo = coint_y["2005-01":"2006-12"]
+d12 = dif(coint_y, k=12)
+mezcla = np.where(coint_y > coint_x, coint_y, coint_x)
+crisis = dummy(coint_y, "2008-09", "2009-06")
+"""
+
+
+def test_codigo_arma_series_con_funciones_y_metodos(banco):
+    from cueva.metodos import codigo as C
+
+    r = C.ejecutar(CODIGO)
+    s = r["series"]
+    assert set(s) == {"ratio", "mm", "ciclo", "alta", "res", "tramo", "d12", "mezcla", "crisis"}
+    y, x = S.cargar("coint_y", "mensual"), S.cargar("coint_x", "mensual")
+    assert np.allclose(s["ratio"].values, (y / x).dropna().values)
+    assert np.allclose(s["mm"].values, (y / x).rolling(6).mean().dropna().values)
+    assert len(s["tramo"]) == 24 and set(s["alta"].unique()) <= {0.0, 1.0}
+    assert abs(s["res"].mean()) < 1e-8 and s["crisis"].sum() == 10
+    assert r["usadas"] == ["coint_y", "coint_x", "positiva"]
+
+
+def test_codigo_como_receta_entra_a_cualquier_metodo(banco):
+    from cueva.metodos import codigo as C
+    from cueva.metodos import recetas as R
+
+    rec = C.receta(CODIGO, "res", ["coint_y", "coint_x", "positiva"])
+    assert R.texto(rec) == "res = residuo(coint_y, coint_x)" and R.hojas(rec)[:2] == ["coint_y", "coint_x"]
+    assert len(R.evaluar(rec)) > 100
+    out = ejecutar("raiz_unitaria", {"sid": rec})
+    assert out["ok"] and out["datos"]["orden"] == 0  # residuo de una cointegración: estacionario
+
+
+@pytest.mark.parametrize(
+    "malo",
+    [
+        "import os",
+        "x = coint_y.__class__",
+        "x = open('a')",
+        "f = lambda x: x",
+        "for i in coint_y:\n    pass",
+        "x = coint_y.to_csv('a')",
+        "x = dif(coint_y, **{'k': 1})",
+        "x = __import__('os')",
+        "x = 'a' * 1000",
+        "x = 10 ** 10 ** 10",
+        "x = coint_y.values",
+        "def f():\n    return 1",
+        "x = [coint_y]",
+        "x = y = coint_y",
+        "x = no_existe_esta_serie",
+        "x = coint_y.rolling(3).apply(print)",
+        "x = 1;" * 100,
+    ],
+)
+def test_codigo_rechaza_lo_que_no_esta_en_la_lista_blanca(banco, malo):
+    from cueva.metodos import codigo as C
+    from cueva.metodos.contrato import ErrorMetodo
+
+    with pytest.raises(ErrorMetodo):
+        C.ejecutar(malo)
+
+
+def test_api_codigo(banco):
+    from fastapi.testclient import TestClient
+
+    from cueva.api.app import crear_app
+
+    c = TestClient(crear_app())
+    r = c.post("/api/v1/codigo/evaluar", json={"codigo": "r = coint_y / coint_x\nzr = z(r)"}).json()
+    assert [s["nombre"] for s in r["series"]] == ["r", "zr"]
+    assert r["series"][1]["receta"]["op"] == "codigo" and r["series"][1]["texto"] == "zr = z(r)"
+    ev = c.post("/api/v1/recetas/evaluar", json={"receta": r["series"][1]["receta"]}).json()
+    assert np.allclose(ev["valores"], r["series"][1]["valores"])
+    assert c.post("/api/v1/codigo/evaluar", json={"codigo": "import os"}).status_code == 422

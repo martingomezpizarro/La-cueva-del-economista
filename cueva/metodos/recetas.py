@@ -35,6 +35,7 @@ from cueva.metodos.contrato import ErrorMetodo
 
 MAX_PROFUNDIDAD = 12
 MAX_NODOS = 60
+OP_CODIGO = "codigo"  # receta especial: Python restringido (no es una operación de OPS)
 
 
 @dataclass
@@ -241,6 +242,9 @@ def validar(r, profundidad: int = 0, cuenta: list | None = None) -> None:
         return
     if not isinstance(r, dict) or set(r) - {"op", "de", "p"}:
         raise ErrorMetodo("Una receta es un id de serie o {op, de, p}.")
+    if r.get("op") == OP_CODIGO:
+        _validar_codigo(r)
+        return
     op = OPS.get(r.get("op"))
     if op is None:
         raise ErrorMetodo(f"Operación desconocida: {r.get('op')!r} (hay: {', '.join(sorted(OPS))})")
@@ -269,6 +273,24 @@ def validar(r, profundidad: int = 0, cuenta: list | None = None) -> None:
         validar(h, profundidad + 1, cuenta)
 
 
+def _validar_codigo(r) -> None:
+    """La receta especial `codigo`: Python restringido (ver `cueva.metodos.codigo`)."""
+    from cueva.metodos import codigo as C
+
+    p = r.get("p") or {}
+    de = r.get("de") or []
+    if set(p) - {"codigo", "salida"} or not isinstance(p.get("codigo"), str):
+        raise ErrorMetodo("La receta «codigo» lleva p = {codigo, salida}.")
+    salida = p.get("salida") or ""
+    if not (isinstance(salida, str) and salida.isidentifier() and not salida.startswith("_")):
+        raise ErrorMetodo("«salida» tiene que ser el nombre de una variable del código.")
+    if not isinstance(de, list) or not all(isinstance(h, str) for h in de):
+        raise ErrorMetodo("En una receta «codigo», «de» lista los ids de serie que usa.")
+    for h in de:
+        validar(h)
+    C.validar_codigo(p["codigo"])
+
+
 def canonica(r) -> str:
     return json.dumps(r, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
 
@@ -280,6 +302,17 @@ def huella(r) -> str:
 def texto(r) -> str:
     if isinstance(r, str):
         return r
+    if r["op"] == OP_CODIGO:
+        salida = r["p"].get("salida") or "resultado"
+        linea = next(
+            (
+                ln.strip()
+                for ln in r["p"]["codigo"].splitlines()
+                if ln.replace(" ", "").startswith(salida + "=")
+            ),
+            "",
+        )
+        return linea if linea and len(linea) <= 80 else f"{salida} = código({', '.join(r.get('de', []))})"
     op = OPS[r["op"]]
     de = [texto(h) for h in r.get("de", [])]
     p = {**{k: v[1] for k, v in op.params.items()}, **(r.get("p") or {})}
@@ -332,6 +365,14 @@ def evaluar(r, freq: str = "mensual", cargar: Callable[[str, str], pd.Series] | 
             return memo[h]
         if isinstance(n, str):
             s = cargar(n, freq)
+        elif n["op"] == OP_CODIGO:
+            from cueva.metodos import codigo as C
+
+            res = C.ejecutar(n["p"]["codigo"], freq, cargar)
+            salida = n["p"].get("salida") or "resultado"
+            if salida not in res["series"]:
+                raise ErrorMetodo(f"El código no define la serie «{salida}».")
+            s = res["series"][salida]
         else:
             op = OPS[n["op"]]
             args = [ev(x) for x in n["de"]]
