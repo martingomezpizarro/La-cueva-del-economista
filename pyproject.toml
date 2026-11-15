@@ -68,5 +68,6 @@ ignore = ["E501"]  # largo de línea: lo maneja el formateador
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]  # para que `pytest` a secas (el del CI) encuentre `tests.sinteticas_metodos`
 addopts = "-q"
 filterwarnings = ["ignore::FutureWarning", "ignore::UserWarning"]
