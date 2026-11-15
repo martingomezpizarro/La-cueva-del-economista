@@ -33,6 +33,9 @@ dependencies = [
 claude = ["anthropic>=0.40"]
 # Recuperación semántica multilingüe (baja torch ~2GB; necesaria para re-ingestar con embeddings)
 embeddings = ["sentence-transformers>=2.7"]
+# Catálogo de métodos: boosting de árboles y detección de cambios (cueva/metodos). Sin esto
+# esos métodos aparecen como «falta instalar» y el resto funciona igual.
+ml = ["xgboost>=2.0", "lightgbm>=4.0", "ruptures>=1.1"]
 # Herramientas de desarrollo (tests, lint, hooks)
 dev = [
     "pytest>=8",

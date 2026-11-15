@@ -1,5 +1,14 @@
 """herramientas — Herramientas econométricas ejecutables por los agentes (modo HÍBRIDO).
 
+⚠ CAPA DE COMPATIBILIDAD (revisión 2026-11-04). El catálogo vivo es `cueva.metodos` (100+
+métodos declarados, con verbo, recetas y bloques tipados). Estas 11 herramientas quedan porque
+el orquestador de la mesa de agentes y el Estudio del explorador clásico leen sus campos
+propios (`conclusion`, `rango_cointegracion`, `p_por_lag`…). No sumar herramientas acá:
+`ejecutar()` ya resuelve cualquier método del catálogo, y las transformaciones delegan en
+`cueva.metodos.recetas`. Migración pendiente: que el orquestador lea `datos` de los métodos
+equivalentes (ols→mco, vecm→johansen_vecm, var→var_completo, granger→toda_yamamoto/granger_matriz,
+estacionariedad→raiz_unitaria, garch→garch_familia, arima→sarima, describir→estadisticos).
+
 Lo ESTÁNDAR se ejecuta de verdad sobre las series reales (estacionariedad, Granger, OLS, VAR,
 VECM, GARCH, descriptivos). Lo no estándar no está acá: el agente lo detecta, lo asesora y, si
 hace falta, pide confirmación al usuario.
@@ -40,25 +49,19 @@ TRANSFORMACIONES = {
 
 
 def _transformar(s, transf: str | None):
-    """Aplica una transformación a una serie. Devuelve (serie, sufijo legible)."""
+    """Aplica una transformación a una serie. Devuelve (serie, sufijo legible).
+    La definición vive en `cueva.metodos.recetas` (única fuente de las transformaciones)."""
     import numpy as np
+
+    from cueva.metodos import recetas as R
 
     t = (transf or "nivel").lower()
     if t in ("", "nivel", "none"):
         return s, ""
     if t not in TRANSFORMACIONES:
         raise ValueError(f"Transformación desconocida: {transf} (hay: {', '.join(TRANSFORMACIONES)})")
-    if t == "log":
-        s = np.log(s[s > 0])
-    elif t == "dif":
-        s = s.diff()
-    elif t == "dif2":
-        s = s.diff().diff()
-    elif t == "dif_log":
-        s = np.log(s[s > 0]).diff()
-    elif t == "pct":
-        s = s.pct_change() * 100
-    return s.dropna(), f" ({TRANSFORMACIONES[t]})"
+    out = R.OPS[t].fn(s).replace([np.inf, -np.inf], np.nan)
+    return out.dropna(), f" ({TRANSFORMACIONES[t]})"
 
 
 def _transf_de(transf, sid: str) -> str:
@@ -224,7 +227,11 @@ def granger(sid_x: str, sid_y: str, freq: str = "mensual", max_lags: int = 6, tr
     d = df.dropna()
     # statsmodels: testea si la 2da columna causa-Granger a la 1ra → orden [y, x]
     try:
-        res = grangercausalitytests(d[[sid_y, sid_x]].diff().dropna(), maxlag=max_lags, verbose=False)
+        import inspect
+
+        # statsmodels 0.15 quitó `verbose` (antes imprimía por defecto): se pasa sólo si existe
+        kw = {"verbose": False} if "verbose" in inspect.signature(grangercausalitytests).parameters else {}
+        res = grangercausalitytests(d[[sid_y, sid_x]].diff().dropna(), maxlag=max_lags, **kw)
     except Exception as e:
         return {"ok": False, "herramienta": "granger", "resumen": f"Falló el test: {e}"}
     # int() nativo: statsmodels devuelve claves numpy.int64 y json.dumps no las acepta
@@ -478,7 +485,11 @@ def diagnosticos(dep: str, indeps: list[str], freq: str = "mensual", transf=None
         return {"ok": False, "herramienta": "diagnosticos", "resumen": f"No pude cargar las series: {e}"}
     df = df.dropna()
     if df.shape[1] < 2 or len(df) < len(indeps) + 15:
-        return {"ok": False, "herramienta": "diagnosticos", "resumen": "Datos insuficientes para diagnosticar."}
+        return {
+            "ok": False,
+            "herramienta": "diagnosticos",
+            "resumen": "Datos insuficientes para diagnosticar.",
+        }
     y = df[dep]
     X = sm.add_constant(df[list(indeps)])
     m = sm.OLS(y, X).fit()  # los tests clásicos se definen sobre los residuos OLS (sin HAC)
@@ -596,8 +607,12 @@ def correlaciones(sids: list[str], freq: str = "mensual", transf=None) -> dict:
         "n": int(len(df)),
         "matriz": {a: {b: round(float(corr.loc[a, b]), 3) for b in cols} for a in cols},
         "etiquetas": etiquetas,
-        "grafico": {"tipo": "matriz_corr", "titulo": "Matriz de correlaciones", "labels": cols,
-                    "valores": [[round(float(corr.loc[a, b]), 3) for b in cols] for a in cols]},
+        "grafico": {
+            "tipo": "matriz_corr",
+            "titulo": "Matriz de correlaciones",
+            "labels": cols,
+            "valores": [[round(float(corr.loc[a, b]), 3) for b in cols] for a in cols],
+        },
     }
 
 
@@ -880,8 +895,19 @@ def declaraciones_herramientas(nombres: list[str]) -> list[dict]:
     ejecutables (intersección con el REGISTRO = lista blanca efectiva). Lo que se descarta
     se LOGUEA: un skill que promete herramientas inexistentes es un bug de configuración,
     no algo que deba fallar en silencio."""
+    from cueva.metodos import registro as MR
+
     out = []
-    for n in nombres:
+    for n in MR.expandir(nombres):
+        if n not in REGISTRO and n in MR.registro():
+            m = MR.obtener(n)
+            if MR.faltantes(m):
+                log.warning("método %s sin dependencias instaladas (%s): se descarta", n, MR.faltantes(m))
+                continue
+            out.append(
+                {"name": n, "description": f"{m.nombre}. {m.pregunta}", "parameters_json_schema": m.esquema()}
+            )
+            continue
         if n in REGISTRO and n in ESQUEMAS:
             out.append(
                 {
@@ -896,8 +922,13 @@ def declaraciones_herramientas(nombres: list[str]) -> list[dict]:
 
 
 def ejecutar(nombre: str, **kwargs) -> dict:
-    """Ejecuta una herramienta estándar por nombre. Si no existe → modo asesor (híbrido)."""
+    """Ejecuta una herramienta estándar por nombre. Si no está en el REGISTRO clásico la busca
+    en el catálogo de métodos (`cueva.metodos`); si tampoco está → modo asesor (híbrido)."""
     if nombre not in REGISTRO:
+        from cueva.metodos import registro as MR
+
+        if nombre in MR.registro():
+            return MR.ejecutar(nombre, kwargs)
         return {
             "ok": False,
             "herramienta": nombre,

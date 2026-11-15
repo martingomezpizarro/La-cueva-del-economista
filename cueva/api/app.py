@@ -13,6 +13,17 @@ Endpoints (todos bajo /api/v1):
     POST   /api/v1/explorador/analisis-basico     → corre el script legacy del TF (puente subprocess)
     GET    /api/v1/herramientas                   → herramientas econométricas disponibles
     POST   /api/v1/herramienta                    → ejecuta una herramienta {nombre, args, proyecto_id?}
+                                                    (también cualquier método del catálogo)
+    GET    /api/v1/metodos                        → catálogo: verbos, familias, métodos y operaciones de recetas
+    POST   /api/v1/recetas/evaluar                → evalúa una receta (serie derivada) {receta, freq}
+    POST   /api/v1/codigo/evaluar                 → corre Python restringido sobre series {codigo, freq}
+    GET    /api/v1/metodos/{id}                   → declaración completa de un método
+    GET    /api/v1/mis-series                     → series propias del usuario
+    POST   /api/v1/mis-series                     → sube un CSV propio (precios, bases)
+    POST   /api/v1/mis-series/derivada            → guarda como serie la salida de un método
+    DELETE /api/v1/mis-series/{archivo}           → borra un CSV propio
+    GET    /api/v1/mis-resultados[/{id}]          → vectores de resultados guardados (selecciones de tablas)
+    POST   /api/v1/mis-resultados                 → guarda una selección de una tabla o matriz
 
     GET    /api/v1/proyectos                      → lista las investigaciones guardadas
     POST   /api/v1/proyectos                      → crea una investigación (acepta semilla de Vista Rápida)
@@ -62,12 +73,16 @@ from cueva.sesiones import PidInvalido, ProyectoNoEncontrado, RepositorioProyect
 
 from .esquemas import (
     PID_PATTERN,
+    CodigoEvaluar,
     HerramientaEjecutar,
     InformeTexto,
     NotaCrear,
     PreguntaAgente,
     ProyectoCrear,
     ProyectoPatch,
+    RecetaEvaluar,
+    SerieDerivada,
+    VectorResultado,
 )
 
 log = logging.getLogger("cueva.api")
@@ -296,8 +311,13 @@ def crear_app() -> FastAPI:
                 csv_path.name,
             ] + extra
             proc = subprocess.run(
-                cmd, capture_output=True, text=True, encoding="utf-8", errors="replace",
-                cwd=str(tf), timeout=900,
+                cmd,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                cwd=str(tf),
+                timeout=900,
             )
             log_tail = (proc.stdout + "\n" + proc.stderr).splitlines()[-30:]
             return JSONResponse({"ok": proc.returncode == 0, "log_tail": log_tail})
@@ -333,6 +353,162 @@ def crear_app() -> FastAPI:
     @app.get("/api/v1/herramientas")
     def listar_herramientas():
         return JSONResponse(H.catalogo_herramientas())
+
+    # ── catálogo de métodos (econometría, ML, redes, finanzas) ─────────────
+    @app.get("/api/v1/metodos")
+    def listar_metodos():
+        from cueva.metodos import recetas as R
+        from cueva.metodos import registro as MR
+        from cueva.metodos.contrato import CLASES, FAMILIAS
+
+        cat = MR.catalogo()
+        ops = R.catalogo_operaciones()
+        familias = [
+            {"id": k, **v, "n": sum(1 for m in cat if m["familia"] == k)} for k, v in FAMILIAS.items()
+        ]
+        clases = [
+            {
+                "id": k,
+                **v,
+                "n": sum(1 for m in cat if m["clase"] == k) + sum(1 for o in ops if o["clase"] == k),
+            }
+            for k, v in CLASES.items()
+        ]
+        return JSONResponse({"clases": clases, "familias": familias, "metodos": cat, "operaciones": ops})
+
+    @app.post("/api/v1/recetas/evaluar")
+    def evaluar_receta(body: RecetaEvaluar):
+        """Evalúa una receta (árbol de operaciones sobre series) y devuelve la serie + su texto."""
+        from cueva.metodos import recetas as R
+        from cueva.metodos.contrato import ErrorMetodo, limpiar
+
+        try:
+            s = R.evaluar(body.receta, body.freq)
+        except ErrorMetodo as e:
+            raise HTTPException(422, str(e)) from e
+        return JSONResponse(
+            limpiar(
+                {
+                    "texto": R.texto(body.receta),
+                    "huella": R.huella(body.receta),
+                    "hojas": R.hojas(body.receta),
+                    "fechas": [str(f.date()) for f in s.index],
+                    "valores": s.values.tolist(),
+                }
+            )
+        )
+
+    @app.post("/api/v1/codigo/evaluar")
+    def evaluar_codigo(body: CodigoEvaluar):
+        """Corre código Python RESTRINGIDO (lista blanca, sin eval) y devuelve cada serie que
+        asigna, con su receta para guardarla en Mis series o pasarla a un método."""
+        from cueva.metodos import codigo as C
+        from cueva.metodos import recetas as R
+        from cueva.metodos.contrato import ErrorMetodo, limpiar
+
+        try:
+            res = C.ejecutar(body.codigo, body.freq)
+        except ErrorMetodo as e:
+            raise HTTPException(422, str(e)) from e
+        series = []
+        for nombre, s in res["series"].items():
+            rec = C.receta(body.codigo, nombre, res["usadas"])
+            series.append(
+                {
+                    "nombre": nombre,
+                    "receta": rec,
+                    "texto": R.texto(rec),
+                    "huella": R.huella(rec),
+                    "fechas": [str(f.date()) for f in s.index],
+                    "valores": s.values.tolist(),
+                }
+            )
+        ultimo = res["ultimo"]
+        return JSONResponse(
+            limpiar(
+                {
+                    "series": series,
+                    "usadas": res["usadas"],
+                    "ultimo": None if ultimo is None or hasattr(ultimo, "index") else str(ultimo)[:200],
+                }
+            )
+        )
+
+    @app.get("/api/v1/metodos/{mid}")
+    def obtener_metodo(mid: str = Path(pattern=r"^[a-z][a-z0-9_]{1,29}$")):
+        from cueva.metodos import registro as MR
+
+        try:
+            m = MR.obtener(mid)
+        except KeyError as e:
+            raise HTTPException(404, f"Método desconocido: {mid}") from e
+        falta = MR.faltantes(m)
+        return JSONResponse(m.a_dict(disponible=not falta, falta=falta))
+
+    # ── series propias del usuario ─────────────────────────────────────────
+    @app.get("/api/v1/mis-series")
+    def api_mis_series():
+        from cueva.datos import mis_series
+
+        return JSONResponse(mis_series.listar())
+
+    @app.post("/api/v1/mis-series")
+    async def api_subir_serie(archivo: UploadFile):
+        from cueva.datos import mis_series
+
+        contenido = await archivo.read()
+        try:
+            return JSONResponse(mis_series.guardar(archivo.filename or "", contenido))
+        except mis_series.ArchivoInvalido as e:
+            raise HTTPException(422, str(e)) from e
+
+    @app.post("/api/v1/mis-series/derivada")
+    def api_serie_derivada(body: SerieDerivada):
+        from cueva.datos import mis_series
+
+        try:
+            return JSONResponse(
+                mis_series.guardar_derivada(
+                    body.nombre, body.fechas, body.valores, body.descripcion, body.receta
+                )
+            )
+        except mis_series.ArchivoInvalido as e:
+            raise HTTPException(422, str(e)) from e
+
+    # ── vectores de resultados (selecciones de tablas y matrices) ───────────
+    @app.get("/api/v1/mis-resultados")
+    def api_mis_resultados():
+        from cueva.datos import mis_resultados
+
+        return JSONResponse(mis_resultados.listar())
+
+    @app.get("/api/v1/mis-resultados/{rid}")
+    def api_mi_resultado(rid: str = Path(pattern=r"^res_[a-z0-9_]{1,50}$")):
+        from cueva.datos import mis_resultados
+
+        try:
+            return JSONResponse(mis_resultados.obtener(rid))
+        except KeyError as e:
+            raise HTTPException(404, "No existe ese resultado.") from e
+
+    @app.post("/api/v1/mis-resultados")
+    def api_guardar_resultado(body: VectorResultado):
+        from cueva.datos import mis_resultados
+
+        try:
+            return JSONResponse(
+                mis_resultados.guardar(body.nombre, body.valores, body.etiquetas, body.procedencia)
+            )
+        except mis_resultados.ResultadoInvalido as e:
+            raise HTTPException(422, str(e)) from e
+
+    @app.delete("/api/v1/mis-series/{archivo}")
+    def api_borrar_serie(archivo: str = Path(pattern=r"^mis_[a-z0-9_]{1,60}\.csv$")):
+        from cueva.datos import mis_series
+
+        if not mis_series.borrar(archivo):
+            raise HTTPException(404, "No existe ese archivo.")
+        return JSONResponse({"ok": True})
 
     # ── biblioteca del usuario (bibliografía propia subida) ────────────────
     @app.get("/api/v1/biblioteca")

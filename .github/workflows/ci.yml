@@ -20,7 +20,7 @@ jobs:
       - name: Instalar dependencias (sin extras pesados)
         run: |
           python -m pip install --upgrade pip
-          pip install -e ".[dev]"
+          pip install -e ".[dev,ml]"
 
       - name: Lint (ruff)
         run: ruff check .

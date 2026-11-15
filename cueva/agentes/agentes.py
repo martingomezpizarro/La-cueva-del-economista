@@ -86,8 +86,11 @@ class Agente:
 
     # ── ejecución segura de herramientas pedidas por el modelo ────────────
     def _ejecutar_segura(self, nombre: str, args: dict) -> dict:
-        """Lista blanca + saneo de argumentos. El modelo PIDE; el código decide."""
-        if nombre not in self.herramientas:
+        """Lista blanca + saneo de argumentos. El modelo PIDE; el código decide.
+        La lista blanca admite comodines de familia del catálogo («familia:pruebas»)."""
+        from cueva.metodos.registro import expandir
+
+        if nombre not in expandir(self.herramientas):
             return {
                 "ok": False,
                 "herramienta": nombre,

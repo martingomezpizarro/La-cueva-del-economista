@@ -272,7 +272,9 @@ Lo específico de la Mesa:
 | Explorar | ✅ **nativo en `/`** (2026-10-16): `web/mesa/explorar.{js,css}` sobre `tokens.css`, datos reales de `data/series` por `GET /api/v1/series/{id}/datos`. El clásico (`web/explorador.html`) sigue en `/explorador` | media móvil, dispersión y rango 1M/3M/6M/YTD de §2.6; agregación declarada en `proc` (hoy es una regla, marcada «supuesto»); Kalman y Estudio siguen solo en el clásico |
 | Tests | ⏳ las herramientas existen (`estacionariedad`, `arch_lm`, `diagnosticos`) y se corren desde el Estudio | pantalla de baterías; Bai-Perron; correlograma; cruce con eventos |
 | Transformaciones | ⏳ `transf` como parámetro de toda herramienta | constructor de expresiones con receta; tabla de series construidas |
-| Modelado | ✅ pestaña «⚗️ Estudio»: pasos persistidos con id y resultado, 11 herramientas | acciones sugeridas desde el veredicto; duplicar; exportar a LaTeX |
+| Modelado | ✅ pestaña «⚗️ Estudio» del clásico (11 herramientas) + **vista «Métodos» nativa en `/mesa` con 90 métodos** (2026-11-04, `docs/INVESTIGACION_METODOS.md`): cada corrida en modo Proyecto se persiste como paso del Estudio | acciones sugeridas desde el veredicto; duplicar; exportar a LaTeX; cadena reproducible de pasos |
+| Tests (baterías) | ⏳ ya existen como métodos (`raiz_unitaria`, `quiebres_estructurales` con evento coincidente, `acf_pacf`, `heterocedasticidad`) | pantalla de baterías por serie × transformación |
+| Transformaciones | ⏳ las salidas de métodos se guardan como serie («Mis series»), con descripción | constructor de expresiones con receta |
 | Laboratorio | ⏳ informe de 6 secciones fijas; hipótesis/objetivos como `list[str]` | entidades `Hipotesis`/`Objetivo`/`Seccion`/`Cita` con relaciones y estados (`AUDITORIA` D3) |
 | Copiloto | ✅ FAB de agentes, chat 1:1 y mesa | listado desde skills, tarjeta movible; **contexto completo** (`AUDITORIA` D4) |
 
@@ -334,3 +336,6 @@ Línea de Tiempo:
 | 2026-10-16 | Explorar nativo reemplaza al iframe en `/`; el clásico convive en `/explorador` hasta que la Mesa nueva lo cubra |
 | 2026-10-16 | `cueva/datos/series.py` resuelve primero en `data/series/` (sin `<Familia>_Fuentes/`) y el Trabajo Final queda de respaldo marcado `origen="Trabajo Final"` |
 | 2026-10-16 | Lo diario se baja a mensual en el servidor; lo mensual o más grueso viaja nativo y el navegador agrega. Nunca se inventan datos más finos que el nativo: se avisa |
+| 2026-11-04 | La subnav se construye con DOS vistas reales: **Explorar · Métodos**. Métodos es el catálogo completo (`cueva/metodos`), con formulario y resultado generados desde la declaración de cada método |
+| 2026-11-04 | Todo método predictivo se evalúa fuera de muestra contra paseo aleatorio y media histórica con Diebold-Mariano; ningún resultado de ML se muestra sin esa comparación |
+| 2026-11-04 | Las salidas de un método se guardan como serie («Mis series») para encadenar métodos; también se suben CSV propios (proyecto de activos) |

@@ -19,6 +19,91 @@ visual: `docs/mockup/cueva-mockup.html` (publicado como artifact; el documento m
 
 ## Estado (actualizado 2026-07-14)
 
+**Catálogo de métodos: 102 métodos en 16 familias y 9 VERBOS + 20 operaciones de recetas (sesión 2026-11-04).** Mapa completo,
+pendientes y hoja de ruta en **`docs/INVESTIGACION_METODOS.md`** (leerlo antes de sumar métodos).
+- **`cueva/metodos/`**: cada método se DECLARA con `@metodo(...)` (familia, pregunta, `Param`
+  tipados, supuestos, trampas, deps, costo, referencias) y devuelve un `Resultado` con BLOQUES
+  TIPADOS (`metricas`, `tabla`, `lineas`, `bandas`, `barras`, `mapa_calor`, `dispersion`,
+  `texto`, `veredicto`) + `advertencias`, `series_salida` y `codigo`. La pantalla, la API y los
+  agentes se arman solos desde la declaración: **sumar un método = una función + un caso en
+  `ARGS` de `tests/test_metodos.py`** (si falta el caso, `test_todo_metodo_tiene_caso` falla).
+- Familias: exploratorio · pruebas (batería de raíz unitaria, **Bai-Perron propio cruzado con
+  eventos.csv**, PELT, Chow, CUSUM, BDS, memoria larga) · filtros (HP, Hamilton, BK/CF, STL, BN,
+  UCM) · univariados · volatilidad · regresión · multivariados (VAR+IRF+FEVD, Jordà, Toda-Yamamoto,
+  BVAR) · cointegración (EG, ARDL límites, Johansen, DOLS) · regímenes (Markov, SETAR, LSTAR) ·
+  estado (TVP-Kalman propio, DFM, Chow-Lin/Denton) · causal (ITS, CausalImpact, control
+  sintético, DiD, estudio de eventos) · ml (13 modelos + SHAP + `probabilidad_evento` +
+  selección) · redes (LSTM/GRU/ESN **en numpy puro**, `redes_np.py`, gradiente testeado) · no
+  supervisado (PCA, clusters de series y de PERÍODOS, anomalías) · **finanzas** (Monte Carlo,
+  carteras fuera de muestra, cruce de medias, momentum por régimen, pares, volatilidad,
+  estacionalidad intradía, neutralidad a factores) · evaluación (torneo, curva de especificaciones).
+- **Regla de validación** (`validacion.py`): todo lo predictivo se evalúa con origen móvil
+  expansivo SIN fuga, contra paseo aleatorio y media histórica, con Diebold-Mariano (HLN). Los
+  backtests eligen parámetros en la 1.ª mitad y evalúan en la 2.ª. Los causales declaran su
+  supuesto de identificación y corren placebo.
+- **Mis series** (`cueva/datos/mis_series.py`): CSV propios (detecta `;` y coma decimal) y
+  salidas de métodos guardadas como serie → `<CUEVA_DATA>/series_usuario/` (gitignorado), entran
+  al catálogo con origen «Mis series». Es lo que permite ENCADENAR métodos.
+- API: `GET /api/v1/metodos[/{id}]`; `POST /api/v1/herramienta` corre cualquier método (y lo
+  persiste como paso del Estudio si hay proyecto); `GET|POST /api/v1/mis-series`,
+  `POST /api/v1/mis-series/derivada`, `DELETE /api/v1/mis-series/{archivo}`.
+- Agentes: `herramientas.ejecutar/declaraciones_herramientas` resuelven métodos del catálogo;
+  las listas blancas aceptan comodines `familia:<id>`.
+- Pantalla: `/mesa` tiene ahora **Explorar · Métodos** (`web/mesa/metodos.{js,css}`, SVG propio
+  sobre tokens; `?vista=metodos`). Paso nuevo en el recorrido guiado (`#vistas`).
+- ⚠ `from cueva.metodos import registro` es el SUBMÓDULO: no reexportar la función `registro`
+  en `cueva/metodos/__init__.py` (ya pasó: rompía la API).
+- Fase M1 (activos) en `familias/finanzas_avanzadas.py`: `burbuja_gsadf` (ADF con rezagos
+  vectorizado en lote para todas las ventanas + críticos por wild bootstrap con la dinámica
+  impuesta bajo H0: con críticos i.i.d. aparecían burbujas falsas; tamaño medido ≈ 7,5 % al 5 %),
+  `sobreajuste_backtest` (PBO/CSCV, Sharpe deflactado, White), `apuesta_binaria` (Kalshi),
+  `triple_barrera`, `eventos_mercado`, `contagio_diebold_yilmaz`, `dcc_garch`, `colas_extremas`,
+  `curva_nelson_siegel`; en evaluación `intervalos_conformales` y el MCS dentro del torneo.
+- ⚠ `tests/sinteticas_metodos.py`: una serie nueva que use el `rng` compartido cambia TODAS las
+  siguientes (y los tests de conclusiones); usar un generador propio por serie nueva.
+- **Revisión de arquitectura (misma sesión, `INVESTIGACION_METODOS.md` §5.1)**:
+  `cueva/metodos/recetas.py` es LA definición de las transformaciones (una serie derivada =
+  receta JSON `{op, de, p}` con `texto`/`huella`/`hojas`); todo param `serie` acepta una receta
+  (se vuelve id `r:<huella>`); `Metodo.clase` = verbo (`contrato.CLASES`); `Resultado.conjunto()`
+  para tablas de datos crudas; `universo_modelos` y `granger_matriz` (el método del TF) en
+  `familias/universo.py`; caché de carga en `insumos.cargar_base`; Mis series guarda la receta
+  en `.receta.json`. `herramientas.py` es capa de compatibilidad: NO sumar herramientas ahí.
+  `finanzas_avanzadas.py` se renombró `activos.py`. API nueva: `POST /api/v1/recetas/evaluar`.
+- Mockup de la Mesa de investigación con el TF: `docs/mockup/mesa-investigacion.html`
+  (artifact), armado por `scripts/mockup_mesa_investigacion_datos.py` (panel del repo
+  `riesgo-pais-argentino`) + `scripts/armar_mockup_mesa_investigacion.py`.
+- **Tablas vivas** (`web/mesa/tabla_viva.js`, UN componente para plataforma y mockup — el
+  armador lo inyecta en el HTML): toda tabla, matriz (`mapa_calor`) o `conjunto` de un
+  resultado se filtra por columna (`<0.05`, `=ARDL`, texto), se agrupa y resume (n, media,
+  mediana, % < α, % > 0…), se seleccionan columnas (hasta 2: dispersión), filas (shift =
+  rango) o filas de una matriz, se grafica (histograma, barras, líneas, dispersión) y se
+  guarda: como serie temporal (si hay fechas → Mis series) o como **vector de resultados**
+  (`cueva/datos/mis_resultados.py` → `<CUEVA_DATA>/resultados/`, `GET|POST
+  /api/v1/mis-resultados`). `universo_modelos` y `granger_matriz` devuelven tablas
+  DESNORMALIZADAS (nombres, no índices) para filtrar sin cruzar tablas. p-valores con 4 cifras
+  significativas (redondear a decimales los convertía en 0).
+- **Código Python restringido** (`cueva/metodos/codigo.py`, sesión 2026-11-05): el usuario pega
+  código; las series son variables, las operaciones de recetas son funciones (`hp`, `dif`, `mm`,
+  `residuo(y, x1, x2)`, `dummy`…) y hay métodos de pandas en lista blanca (`.rolling(k).mean()`,
+  `.shift`, `.pct_change`…). `ast` + lista blanca de nodos, SIN `eval`; imports, bucles,
+  lambdas, dunders y kwargs se rechazan antes de ejecutar. Receta especial `{"op": "codigo"}`
+  (validada en `recetas.validar`), entra a cualquier método. API `POST /api/v1/codigo/evaluar`.
+- **Lienzo de paneles del mockup** (misma sesión): la Mesa ya no tiene UN gráfico con «vista»
+  sino N paneles (`st.paneles`), cada uno con un MODO (tiempo · dispersión · distribución · 3D ·
+  árbol) y CAPAS mezclables (línea/área/barras/puntos/escalón, eje izq./der., color, estilo,
+  visible). Una capa apunta a una REFERENCIA = ficha + cadena de transformaciones con
+  parámetros (`OPSJ`, espejo de recetas) que se muestran como chips y se sacan con ✕. Deshacer/
+  rehacer por fotos del estado (Ctrl+Z/Y). Clusters k-medias (color + ficha de etiquetas),
+  árbol CART propio con nodos clicables (dummy del nodo / predicción como fichas), 3D rotable.
+  La tabla viva ahora elige qué mandar con casillas (columnas y filas, sin tope) y tiene
+  «→ Fichas» / «→ Gráfico» (`alGraficar`, opcional). Pendiente: portar el lienzo a `/mesa`.
+- ⚠ En SVG, `el.hidden = true` NO oculta (la propiedad es de HTML): usar `style.display`.
+- statsmodels 0.15 quitó `verbose` de `grangercausalitytests`: pasarlo sólo si existe.
+- Dependencias: extra `[ml]` (xgboost, lightgbm, ruptures; el CI lo instala). Sin él, esos
+  métodos aparecen como «falta instalar». `torch` NO se usa (bloqueado en el sandbox y pesado).
+- ⚠ CI: ya venía rojo antes de esta sesión por `ruff format --check .` (35 archivos ajenos) y
+  16 errores de ruff en `scripts/`; los 9 tests rojos de skills siguen igual.
+
 **Portada, pie institucional y recorridos guiados (sesión 2026-10-22).**
 - **Rutas**: `/` es la **portada** (`web/index.html`, página de lectura que scrollea) y la
   **Mesa se mudó a `/mesa`** (`web/mesa/index.html`, mismo código que antes vivía en

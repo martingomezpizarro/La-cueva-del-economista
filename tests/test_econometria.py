@@ -90,3 +90,11 @@ def test_argumentos_invalidos_no_rompen(carpeta_series):
     r = ejecutar("estacionariedad", sid="caminata", argumento_falso=1)
     assert not r["ok"]
     assert "Argumentos inválidos" in r["resumen"]
+
+
+def test_granger_corre_con_statsmodels_actual(carpeta_series):
+    """statsmodels 0.15 quitó el argumento `verbose` de grangercausalitytests: la herramienta
+    tiene que seguir corriendo (antes devolvía ok=False con un TypeError)."""
+    r = ejecutar("granger", sid_x="coint_x", sid_y="coint_y")
+    assert r["ok"], r["resumen"]
+    assert r["p_por_lag"]

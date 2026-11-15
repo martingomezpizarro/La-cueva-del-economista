@@ -62,7 +62,40 @@ class PreguntaAgente(BaseModel):
     pregunta: str = Field(min_length=1, max_length=4_000)
 
 
+class CodigoEvaluar(BaseModel):
+    """Código Python restringido (ver cueva.metodos.codigo); el tope de largo se valida allá."""
+
+    codigo: str = Field(min_length=1, max_length=6000)
+    freq: str = Field(default="mensual", pattern=r"^(mensual|trimestral|anual|diaria)$")
+
+
+class RecetaEvaluar(BaseModel):
+    """Una receta (id de serie o árbol {op, de, p}) a evaluar; se valida en cueva.metodos.recetas."""
+
+    receta: str | dict
+    freq: str = Field(default="mensual", pattern=r"^(mensual|trimestral|anual|diaria)$")
+
+
+class SerieDerivada(BaseModel):
+    """Salida de un método que el usuario guarda como serie propia (para encadenar métodos)."""
+
+    nombre: str = Field(min_length=1, max_length=80)
+    fechas: list[str] = Field(max_length=200_000)
+    valores: list[float | None] = Field(max_length=200_000)
+    descripcion: str = Field(default="", max_length=500)
+    receta: str | dict | None = None  # de qué sale (si se conoce): queda guardada al lado de los datos
+
+
+class VectorResultado(BaseModel):
+    """Selección de una tabla o matriz de resultados (no es una serie de tiempo)."""
+
+    nombre: str = Field(min_length=1, max_length=120)
+    valores: list[float | None] = Field(min_length=1, max_length=200_000)
+    etiquetas: list[str] | None = Field(default=None, max_length=200_000)
+    procedencia: str = Field(default="", max_length=500)
+
+
 class HerramientaEjecutar(BaseModel):
-    nombre: str = Field(pattern=r"^[a-z_]{2,30}$")
+    nombre: str = Field(pattern=r"^[a-z][a-z0-9_]{1,29}$")
     args: dict = Field(default_factory=dict)
     proyecto_id: str | None = Field(default=None, pattern=PID_PATTERN)

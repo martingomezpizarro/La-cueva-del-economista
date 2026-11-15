@@ -28,6 +28,8 @@
         texto: 'Debajo del gráfico se ve qué gobierno estaba en cada momento, constitucional o de facto; sale de la Línea de Tiempo. Más abajo hay distribución, cuadro comparativo, correlación y spread.' },
       { sel: ['#ex-ficha', '.mesa .col-der'], titulo: 'De dónde sale cada dato',
         texto: 'La ficha de la serie activa dice organismo, definición y transformaciones. Cuando algo es un supuesto (por ejemplo, cómo se pasó de diario a mensual), lo dice.' },
+      { sel: '#vistas', titulo: 'Explorar y Métodos',
+        texto: '«Métodos» abre el catálogo completo de análisis: pruebas, filtros, modelos, cointegración, regímenes, inferencia causal, aprendizaje automático, redes y finanzas. Usa las series que elegiste acá, y todo pronóstico se evalúa contra un benchmark ingenuo.' },
       { sel: '#modo-switch', titulo: 'Vista Rápida o Proyecto',
         texto: 'La Vista Rápida es un espacio para explorar: no se guarda nada. Cuando encontrás algo, «Promover a proyecto» se lleva las series y lo que hiciste a un proyecto con nombre.' },
       { sel: '#sidebar', titulo: 'El cuaderno del proyecto',
