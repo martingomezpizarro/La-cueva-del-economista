@@ -5,6 +5,12 @@ datos + motor de análisis + **agentes-profesores con RAG** (`docs/PLAN_AGENTES.
 La arquitectura objetivo y el roadmap aprobado viven en `docs/PROPUESTA_ARQUITECTURA.md`.
 Responder siempre en español.
 
+**⚠ UNIFICACIÓN EN CURSO (2026-11-13): leer `docs/UNIFICACION_LA_CUEVA.md` antes de planificar.**
+La Cueva del Economista pasa a llamarse **La Cueva** y absorbe la Terminal de Análisis de Activos
+(repo privado `INVESTIGACI-N-ACTIVOS`) como pestaña. Pestañas: Inicio personalizable · Línea de
+tiempo (abre aparte) · Mesa de trabajo (Investigación, Proyecto, Documento) · Terminal; bandeja de
+series global. El mockup vigente es el artifact «La Cueva» (link en ese documento).
+
 **Mapa de la plataforma (leer primero, 2026-09-12)**: `docs/PLATAFORMA.md` — las 4 fuentes del
 backend, los 2 módulos del frontend, carpetas, API, decisiones y orden de construcción. Un documento
 por módulo con spec + construcción + registro de decisiones: `docs/MODULO_LINEA_DE_TIEMPO.md`
