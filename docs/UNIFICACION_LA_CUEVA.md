@@ -30,6 +30,23 @@
 4. **La Línea de tiempo quedó pendiente de adaptar** a este esquema (abre aparte, pero tiene
    que compartir la bandeja; ver §5.5).
 
+## 1 bis. Decidido el 2026-11-15
+
+| Tema | Decisión |
+|---|---|
+| Frontend (§5.1) | **Conviven.** La Cueva pone el cascarón común (barra, Inicio, bandeja, un solo `tokens.css`); la Terminal entra como pestaña con su React tal cual. |
+| Estilo | **Manda el de la Terminal** (oscuro, financiero), reacomodado. El `tokens.css` común se arma a partir de su paleta, no de «pizarrón y tiza». |
+| Backend (§5.2) | **Un solo servidor.** La Cueva instala la Terminal desde su repo privado (`pip install -e <repo>/terminal`) y la monta con `terminal.puente.montar(app)` en `/terminal/`. El código de la Terminal no entra a este repo público. Ya está hecho del lado de la Terminal (PR #27 de INVESTIGACI-N-ACTIVOS). |
+| Series de mercado (§5.3) | **Se llaman como el activo: el ticker** (`GGAL`, `NVDA`), sin prefijo `mkt_`. `puente.listar_series()` y `puente.datos_serie(ticker, moneda)` leen el DuckDB local y traen la fuente para el linaje. |
+| Almacén | Como dice la especificación 1.0: un solo almacén con el esquema point-in-time de la Terminal; los CSV de `data/series/` siguen siendo la fuente versionada de la macro y se cargan ahí. |
+| Nombre | La pestaña se llama **Terminal** (no «Mercados»). |
+| Rama de métodos (§5.6) | **Se une a `main`.** Probada el 15/11: sin conflictos; 303 tests pasan y fallan los mismos 9 que ya fallaban en `main`. |
+| «Rápido» | Un proyecto armado desde la Mesa en **menos de 15 minutos** por alguien que sabe qué quiere hacer. |
+| Factores para neutralidad | **Fama-French** (Ken French Data Library, diarios); ETFs como respaldo. |
+| Cómputo del sitio público | Python (en el navegador, etapa 3), además del código que ya se puede escribir en la Mesa. |
+| Datos | **No es el foco ahora.** Intradía y precios con licencia para el sitio público se buscan después de la unificación (puede haber presupuesto si el análisis lo justifica). |
+| Macro y riesgos (Terminal) | Al rediseñarla entran el crédito (spreads, bonos y CDS cargados a mano, Merton) y lo que ayude a identificar coyunturas: la tesis de fondo es estimar la probabilidad de éxito según la coyuntura, clusterizando períodos. |
+
 ## 2. El Inicio
 
 Boceto original de Martín: una credencial arriba a la izquierda, el título y el saludo al
