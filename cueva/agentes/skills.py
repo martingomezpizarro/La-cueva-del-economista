@@ -1,4 +1,4 @@
-"""skills — carga las definiciones de agentes desde knowledge-base/skills/.
+"""skills — carga las definiciones de agentes desde RAG/skills/.
 
 Cada archivo .md es la FUENTE DE VERDAD de un agente:
   - frontmatter: `agente` (id), `rol` (etiqueta), `modelo` (tier barato/medio/claude),
@@ -64,7 +64,7 @@ def leer_skill(ruta) -> dict | None:
 
 
 def cargar_definiciones() -> dict[str, dict]:
-    """Todos los skills de knowledge-base/skills/ como {id: definición}."""
+    """Todos los skills de RAG/skills/ como {id: definición}."""
     defs: dict[str, dict] = {}
     if not SKILLS_DIR.exists():
         log.warning("no existe %s: los agentes usarán solo los defaults", SKILLS_DIR)

@@ -33,14 +33,21 @@ FAMILIA = "Actividad y Cuentas Nacionales"
 # Un prefijo por archivo. Los dos vacíos son a propósito: las columnas de esos archivos ya son
 # únicas y descriptivas (`emae_original`), y anteponerles `emae_` daría `emae_emae_original`.
 PREFIJO = {
-    "cn_vab_rama_constante.csv": "vab_c_", "cn_vab_rama_corriente.csv": "vab_n_",
-    "cn_vab_rama_ivf.csv": "vab_q_", "cn_vab_rama_ipi.csv": "vab_p_",
-    "cn_vbp_rama_constante.csv": "vbp_c_", "cn_vbp_rama_corriente.csv": "vbp_n_",
-    "cn_pbi_categoria_constante.csv": "sec_c_", "cn_pbi_categoria_corriente.csv": "sec_n_",
+    "cn_vab_rama_constante.csv": "vab_c_",
+    "cn_vab_rama_corriente.csv": "vab_n_",
+    "cn_vab_rama_ivf.csv": "vab_q_",
+    "cn_vab_rama_ipi.csv": "vab_p_",
+    "cn_vbp_rama_constante.csv": "vbp_c_",
+    "cn_vbp_rama_corriente.csv": "vbp_n_",
+    "cn_pbi_categoria_constante.csv": "sec_c_",
+    "cn_pbi_categoria_corriente.csv": "sec_n_",
     "cn_pbi_categoria_ipi.csv": "sec_p_",
-    "cn_oferta_demanda_constante.csv": "od_c_", "cn_oferta_demanda_corriente.csv": "od_n_",
-    "cn_oferta_demanda_ipi.csv": "od_p_", "cn_oferta_demanda_desest.csv": "od_d_",
-    "cn_fbkf_constante.csv": "fbkf_c_", "cn_fbkf_corriente.csv": "fbkf_n_",
+    "cn_oferta_demanda_constante.csv": "od_c_",
+    "cn_oferta_demanda_corriente.csv": "od_n_",
+    "cn_oferta_demanda_ipi.csv": "od_p_",
+    "cn_oferta_demanda_desest.csv": "od_d_",
+    "cn_fbkf_constante.csv": "fbkf_c_",
+    "cn_fbkf_corriente.csv": "fbkf_n_",
     "cn_fbkf_ipi.csv": "fbkf_p_",
     "uci_bloques.csv": "uci_",
     "emae_nivel_general_mensual.csv": "",
@@ -61,10 +68,12 @@ def _items(cat: dict, familia: str | None = None):
         if familia and fam["grp"] != familia:
             continue
         for b in fam.get("subs", []):
+
             def baja(items):
                 for it in items:
                     yield it
                     yield from baja(it.get("children") or [])
+
             for it in baja(b["items"]):
                 yield fam["grp"], b, it
 
@@ -76,8 +85,14 @@ def plan() -> tuple[list[dict], list[str]]:
     filas, avisos = [], []
     for _, b, it in _items(cat, FAMILIA):
         # La primera fuente que exista en la carpeta manda: es la que la plataforma va a resolver.
-        fuente = next((fu for fu in (it.get("sources") or [it])
-                       if fu.get("file") in cols and fu.get("valCol") in cols[fu["file"]]), None)
+        fuente = next(
+            (
+                fu
+                for fu in (it.get("sources") or [it])
+                if fu.get("file") in cols and fu.get("valCol") in cols[fu["file"]]
+            ),
+            None,
+        )
         if fuente is None:
             avisos.append(it["id"])
             continue
@@ -85,9 +100,17 @@ def plan() -> tuple[list[dict], list[str]]:
         if arch not in PREFIJO:
             avisos.append(f"{it['id']} (sin prefijo para {arch})")
             continue
-        filas.append({"id_viejo": it["id"], "id_nuevo": PREFIJO[arch] + col,
-                      "archivo": arch, "columna": col,
-                      "grupo": b["grupo"], "subgrupo": b["subgrupo"], "serie": it.get("label", "")})
+        filas.append(
+            {
+                "id_viejo": it["id"],
+                "id_nuevo": PREFIJO[arch] + col,
+                "archivo": arch,
+                "columna": col,
+                "grupo": b["grupo"],
+                "subgrupo": b["subgrupo"],
+                "serie": it.get("label", ""),
+            }
+        )
     # Ningún id nuevo puede repetirse ni pisar uno de otra familia.
     nuevos = [f["id_nuevo"] for f in filas]
     dup = sorted({i for i in nuevos if nuevos.count(i) > 1})

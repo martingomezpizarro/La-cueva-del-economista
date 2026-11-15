@@ -29,7 +29,7 @@ def previo() -> dict[str, dict]:
     cab = [str(c) if c is not None else "" for c in next(filas)]
     out = {}
     for fila in filas:
-        d = dict(zip(cab, ["" if v is None else str(v) for v in fila]))
+        d = dict(zip(cab, ["" if v is None else str(v) for v in fila], strict=False))
         for clave in _claves(d):
             out.setdefault(clave, d)
     return out
@@ -41,8 +41,7 @@ def _claves(f: dict) -> list[str]:
     claves = []
     if f.get("ID"):
         claves.append("id:" + f["ID"])
-    claves.append("|".join(f.get(c, "") for c in
-                          ("Familia", "Grupo", "Subgrupo", "Serie", "Unidad")))
+    claves.append("|".join(f.get(c, "") for c in ("Familia", "Grupo", "Subgrupo", "Serie", "Unidad")))
     return claves
 
 

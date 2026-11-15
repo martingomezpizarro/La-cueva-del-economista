@@ -8,6 +8,7 @@ Los originales no se tocan. Volver a correr cuando cambie cualquiera de los dos.
 También escribe sitio/index.html: la página pública del dominio (ver .github/workflows/pages.yml).
 Uso: python scripts/unificar_mockup.py
 """
+
 import base64
 import re
 from pathlib import Path
@@ -17,7 +18,9 @@ mesa = (RAIZ / "mesa-de-trabajo.html").read_text(encoding="utf-8")
 tl = (RAIZ / "cueva-mockup.html").read_text(encoding="utf-8")
 
 # --- Línea de Tiempo: sin su topbar, sin su Mesa vieja, sin su copiloto flotante ---
-tl = tl.replace("</style>", """
+tl = tl.replace(
+    "</style>",
+    """
 .topbar{display:none!important}
 #mod-mesa{display:none!important}
 .ia-fab,.ia-panel{display:none!important}
@@ -30,14 +33,18 @@ tl = tl.replace("</style>", """
   .rail .scroll,.rail-r .scroll{max-height:300px}
   .stage{min-height:78vh;order:-1}
 }
-</style>""", 1)
+</style>""",
+    1,
+)
 tl_b64 = base64.b64encode(tl.encode("utf-8")).decode("ascii")
 
 # --- Selector de módulos real en la topbar de la Mesa ---
 viejo = '<nav class="modswitch" aria-label="Módulos"><span>Línea de Tiempo</span><span aria-current="true">Mesa de Trabajo</span></nav>'
-nuevo = ('<nav class="modswitch" aria-label="Módulos">'
-         '<button type="button" data-mod="tiempo" aria-current="false">Línea de Tiempo</button>'
-         '<button type="button" data-mod="mesa" aria-current="true">Mesa de Trabajo</button></nav>')
+nuevo = (
+    '<nav class="modswitch" aria-label="Módulos">'
+    '<button type="button" data-mod="tiempo" aria-current="false">Línea de Tiempo</button>'
+    '<button type="button" data-mod="mesa" aria-current="true">Mesa de Trabajo</button></nav>'
+)
 assert viejo in mesa, "No encontré el modswitch de la Mesa: revisar el mockup"
 mesa = mesa.replace(viejo, nuevo, 1)
 
@@ -56,7 +63,11 @@ body.en-tiempo .topbar .modo{display:none}
 body.en-tiempo > :not(.topbar):not(#mod-tiempo):not(script):not(style){display:none!important}
 </style>
 """
-mesa = mesa.replace("</head>", css + "</head>", 1) if "</head>" in mesa else mesa.replace("<header class=\"topbar\">", css + "<header class=\"topbar\">", 1)
+mesa = (
+    mesa.replace("</head>", css + "</head>", 1)
+    if "</head>" in mesa
+    else mesa.replace('<header class="topbar">', css + '<header class="topbar">', 1)
+)
 
 bloque = f"""
 <section id="mod-tiempo" aria-label="Línea de Tiempo"><iframe id="tl-frame" title="Línea de Tiempo"></iframe></section>

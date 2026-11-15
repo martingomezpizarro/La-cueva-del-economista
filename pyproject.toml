@@ -40,7 +40,7 @@ ml = ["xgboost>=2.0", "lightgbm>=4.0", "ruptures>=1.1"]
 dev = [
     "pytest>=8",
     "httpx>=0.27",
-    "ruff>=0.4",
+    "ruff==0.17.5",  # fija la versión: cada versión nueva de ruff puede cambiar el formato y romper el CI
     "pre-commit>=3.7",
 ]
 

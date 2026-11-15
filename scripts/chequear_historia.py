@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """Chequeo de consistencia de data/historia/ — versión de línea de comandos.
 
 Es el borrador de lo que después vive en tests/test_historia.py. Se corre sin
@@ -7,8 +6,15 @@ dependencias: sólo stdlib. Devuelve 0 si está todo bien, 1 si hay errores.
 
     python scripts/chequear_historia.py
 """
+
 from __future__ import annotations
-import csv, json, re, sys, datetime, pathlib
+
+import csv
+import datetime
+import json
+import pathlib
+import re
+import sys
 
 RAIZ = pathlib.Path(__file__).resolve().parents[1]
 H = RAIZ / "data" / "historia"
@@ -22,8 +28,12 @@ errores: list[str] = []
 avisos: list[str] = []
 
 
-def err(m): errores.append(m)
-def avi(m): avisos.append(m)
+def err(m):
+    errores.append(m)
+
+
+def avi(m):
+    avisos.append(m)
 
 
 def fecha(s: str):
@@ -50,7 +60,7 @@ def frontmatter(texto: str) -> tuple[dict, str]:
     if not texto.startswith("---"):
         return {}, texto
     fin = texto.find("\n---", 3)
-    head, cuerpo = texto[3:fin], texto[fin + 4:]
+    head, cuerpo = texto[3:fin], texto[fin + 4 :]
     fm: dict = {"cifras": [], "relacionados": [], "series": []}
     cifra = None
     for linea in head.splitlines():
@@ -60,11 +70,11 @@ def frontmatter(texto: str) -> tuple[dict, str]:
         elif s.startswith("verificado:"):
             fm["verificado"] = s.split(":", 1)[1].strip()
         elif s.startswith("relacionados:"):
-            fm["relacionados"] = [x.strip() for x in
-                                  s.split(":", 1)[1].strip().strip("[]").split(",") if x.strip()]
+            fm["relacionados"] = [
+                x.strip() for x in s.split(":", 1)[1].strip().strip("[]").split(",") if x.strip()
+            ]
         elif s.startswith("series:"):
-            fm["series"] = [x.strip() for x in
-                            s.split(":", 1)[1].strip().strip("[]").split(",") if x.strip()]
+            fm["series"] = [x.strip() for x in s.split(":", 1)[1].strip().strip("[]").split(",") if x.strip()]
         elif s.startswith("- id:"):
             cifra = {"id": s[5:].strip(), "fuente": None}
             fm["cifras"].append(cifra)
@@ -98,8 +108,12 @@ def main() -> int:
                 err(f"{i}: 'hasta' inválido ({f['hasta']})")
             elif d and h < d:
                 err(f"{i}: hasta < desde")
-        for campo, permitido in (("categoria", cats), ("subtipo", subs),
-                                 ("nivel", nivs), ("precision", precs)):
+        for campo, permitido in (
+            ("categoria", cats),
+            ("subtipo", subs),
+            ("nivel", nivs),
+            ("precision", precs),
+        ):
             if f[campo] not in permitido:
                 err(f"{i}: {campo}='{f[campo]}' fuera del vocabulario")
         for campo in ("verificado", "ficha"):
@@ -146,15 +160,19 @@ def main() -> int:
     # ------------------------------------------------------- presidencias
     pres = list(csv.DictReader((H / "presidencias.csv").open(encoding="utf-8")))
     pres.sort(key=lambda r: r["desde"])
-    for a, b in zip(pres, pres[1:]):
+    for a, b in zip(pres, pres[1:], strict=False):
         if a["hasta"] != b["desde"]:
-            err(f"presidencias.csv: hueco o solapamiento entre "
-                f"{a['nombre']} ({a['hasta']}) y {b['nombre']} ({b['desde']})")
+            err(
+                f"presidencias.csv: hueco o solapamiento entre "
+                f"{a['nombre']} ({a['hasta']}) y {b['nombre']} ({b['desde']})"
+            )
 
     # -------------------------------------------------------------- salida
-    print(f"eventos: {len(filas)}  ·  fichas: "
-          f"{len(list((H / 'fichas').glob('[!_]*.md')))}  ·  "
-          f"presidencias: {len(pres)}  ·  referencias.bib: {len(bib)} claves")
+    print(
+        f"eventos: {len(filas)}  ·  fichas: "
+        f"{len(list((H / 'fichas').glob('[!_]*.md')))}  ·  "
+        f"presidencias: {len(pres)}  ·  referencias.bib: {len(bib)} claves"
+    )
     sin_ver = sum(1 for f in filas if f["verificado"] == "no")
     print(f"sin verificar: {sin_ver}/{len(filas)} eventos")
     for a in avisos:

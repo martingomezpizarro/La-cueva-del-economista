@@ -49,7 +49,7 @@ PREFIJO_SUBGRUPO = {
     "Saldo por País — África": "Saldo comercial",
     "Saldo por País — Oceanía": "Saldo comercial",
     "Saldo por País — Totales y Regiones": "Saldo comercial",
-    "Oferta y Demanda — Constante 2004": "",          # se resuelve con sufijo, no prefijo
+    "Oferta y Demanda — Constante 2004": "",  # se resuelve con sufijo, no prefijo
     "Oferta y Demanda — Corriente (nominal)": "",
     "Oferta y Demanda — Precios Implícitos": "",
     "PBI por Sector — Constante 2004": "",
@@ -80,8 +80,7 @@ def _recorrer(items: list, fam: str, sub: str, padres: list[str] | None = None):
     padres = padres or []
     for item in items:
         yield fam, sub, padres, item
-        yield from _recorrer(item.get("children") or [], fam, sub,
-                             padres + [item.get("label", item["id"])])
+        yield from _recorrer(item.get("children") or [], fam, sub, padres + [item.get("label", item["id"])])
 
 
 def _todas(catalogo: dict):
@@ -132,8 +131,7 @@ def colisiones(catalogo: dict, campo=lambda i: i.get("label", "")) -> dict[str, 
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description=__doc__,
-                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--aplicar", action="store_true", help="Escribir los cambios en el catálogo.")
     ap.add_argument("--ver", type=int, default=25, help="Cuántos cambios mostrar (0 = todos).")
     args = ap.parse_args()
@@ -177,7 +175,7 @@ def main() -> None:
     print(f"etiquetas ambiguas después: {len(despues)}  (afectan a {sum(despues.values())} series)")
     print(f"renombradas: {len(cambios)}\n")
 
-    muestra = cambios if args.ver == 0 else cambios[:args.ver]
+    muestra = cambios if args.ver == 0 else cambios[: args.ver]
     for sid, viejo, nuevo in muestra:
         print(f"  {sid:<20} {viejo!r}\n  {'':<20}   -> {nuevo!r}")
     if len(cambios) > len(muestra):

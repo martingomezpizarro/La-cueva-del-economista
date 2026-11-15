@@ -194,15 +194,17 @@ Casi todos los problemas de arriba se cierran con tres tipos nuevos.
 ```python
 @dataclass
 class FichaDeSerie:
-    id: str; etiqueta: str; unidad: str
-    organismo: str                 # INDEC · BCRA · MECON · World Bank · Ferreres
+    id: str
+    etiqueta: str
+    unidad: str
+    organismo: str  # INDEC · BCRA · MECON · World Bank · Ferreres
     url_fuente: str
-    metodo: str                    # cómo se construye (deflactación, empalme, base)
-    cobertura: tuple[str, str]     # calculada sobre el archivo COMPLETO, no nrows=400
+    metodo: str  # cómo se construye (deflactación, empalme, base)
+    cobertura: tuple[str, str]  # calculada sobre el archivo COMPLETO, no nrows=400
     frecuencia: str
     ajuste_estacional: bool
-    revisiones: str                # "definitiva" | "provisoria" | "empalmada"
-    descargada: str                # fecha ISO
+    revisiones: str  # "definitiva" | "provisoria" | "empalmada"
+    descargada: str  # fecha ISO
     licencia: str
     notas: str
 ```

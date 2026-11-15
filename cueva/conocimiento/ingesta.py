@@ -17,8 +17,8 @@ Colecciones (provenance): cada fragmento lleva `coleccion` ("corpus" = bibliogra
 las citas marcan el origen — un PDF subido jamás se confunde con el corpus curado.
 
 Uso (CLI en scripts/ingestar.py):
-    python scripts/ingestar.py knowledge-base/corpus            # incremental
-    python scripts/ingestar.py --completo knowledge-base/corpus # desde cero
+    python scripts/ingestar.py RAG/corpus            # incremental
+    python scripts/ingestar.py --completo RAG/corpus # desde cero
 """
 
 from __future__ import annotations

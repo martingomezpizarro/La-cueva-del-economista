@@ -1,4 +1,4 @@
-"""Tests del sistema de skills: los agentes se definen en knowledge-base/skills/."""
+"""Tests del sistema de skills: los agentes se definen en RAG/skills/."""
 
 from cueva.agentes.agentes import AGENTES
 from cueva.agentes.pipelines import PIPELINES

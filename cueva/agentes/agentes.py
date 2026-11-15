@@ -1,7 +1,7 @@
 """agentes — Los agentes-profesores y su clase base.
 
 Desde la fase 2, la FUENTE DE VERDAD de cada agente es su skill en
-`knowledge-base/skills/` (ver `skills.py`): editar el markdown cambia la identidad,
+`RAG/skills/` (ver `skills.py`): editar el markdown cambia la identidad,
 el tier de modelo, el sesgo de búsqueda y la lista blanca de herramientas SIN tocar
 Python. Acá quedan la mecánica común (armar el prompt, RAG, handoffs, tool-use) y
 unos defaults mínimos por si falta un skill.

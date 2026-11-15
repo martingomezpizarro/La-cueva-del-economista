@@ -35,9 +35,19 @@ UCI = CRUDO / "UCCI 04-26.xls"
 PIE = ("(1)", "(2)", "(3)", "(4)", "(5)", "Nota", "Fuente", "Las variaciones")
 
 MESES = {
-    "enero": 1, "febrero": 2, "marzo": 3, "abril": 4, "mayo": 5, "junio": 6,
-    "julio": 7, "agosto": 8, "septiembre": 9, "setiembre": 9, "octubre": 10,
-    "noviembre": 11, "diciembre": 12,
+    "enero": 1,
+    "febrero": 2,
+    "marzo": 3,
+    "abril": 4,
+    "mayo": 5,
+    "junio": 6,
+    "julio": 7,
+    "agosto": 8,
+    "septiembre": 9,
+    "setiembre": 9,
+    "octubre": 10,
+    "noviembre": 11,
+    "diciembre": 12,
 }
 
 
@@ -49,52 +59,148 @@ def _sin_tildes(s: str) -> str:
 
 # Nombres de columna cortos y estables. El orden es el del cuadro.
 OD_COLS = [
-    "pbi", "impo", "oferta_global", "demanda_global", "consumo_priv", "consumo_pub",
-    "expo", "fbkf", "var_existencias", "objetos_valiosos", "discrepancia",
+    "pbi",
+    "impo",
+    "oferta_global",
+    "demanda_global",
+    "consumo_priv",
+    "consumo_pub",
+    "expo",
+    "fbkf",
+    "var_existencias",
+    "objetos_valiosos",
+    "discrepancia",
 ]
 
 PBI_CAT_COLS = [
-    "pbi", "impuestos_netos", "iva", "imp_importaciones", "vab",
-    "agro", "pesca", "mineria", "industria", "elect_gas_agua", "construccion",
-    "comercio", "hoteles", "transporte", "intermediacion_fin", "inmobiliarias",
-    "admin_publica", "ensenanza", "salud", "otros_servicios", "hogares_dom",
+    "pbi",
+    "impuestos_netos",
+    "iva",
+    "imp_importaciones",
+    "vab",
+    "agro",
+    "pesca",
+    "mineria",
+    "industria",
+    "elect_gas_agua",
+    "construccion",
+    "comercio",
+    "hoteles",
+    "transporte",
+    "intermediacion_fin",
+    "inmobiliarias",
+    "admin_publica",
+    "ensenanza",
+    "salud",
+    "otros_servicios",
+    "hogares_dom",
 ]
 
 FBKF_COLS = [
-    "fbkf_total", "construcciones", "otras_construcciones", "maq_equipo",
-    "maq_nacional", "maq_importado", "eq_transporte", "transp_nacional",
-    "transp_importado", "otros_activos",
+    "fbkf_total",
+    "construcciones",
+    "otras_construcciones",
+    "maq_equipo",
+    "maq_nacional",
+    "maq_importado",
+    "eq_transporte",
+    "transp_nacional",
+    "transp_importado",
+    "otros_activos",
 ]
 
 RAMA_COLS = [
-    "total", "agro", "agro_cultivos", "agro_animales", "agro_serv", "agro_caza",
-    "agro_construcciones", "agro_silvicultura", "pesca", "mineria",
-    "min_petroleo_gas", "min_metaliferos", "industria", "ind_alimentos",
-    "ind_tabaco", "ind_textiles", "ind_prendas", "ind_cueros", "ind_madera",
-    "ind_papel", "ind_edicion", "ind_refinacion", "ind_quimicos", "ind_caucho",
-    "ind_minerales", "ind_metales", "ind_prod_metal", "ind_maquinaria",
-    "ind_maq_oficina", "ind_maq_electrica", "ind_radio_tv", "ind_instrumentos",
-    "ind_automotriz", "ind_transporte_ncp", "ind_muebles", "ind_reciclamiento",
-    "ind_reparacion", "elect_gas_agua", "ee_electricidad", "ee_gas", "ee_agua",
-    "construccion", "comercio", "hoteles", "hot_hoteles", "hot_restaurantes",
-    "transporte", "tr_transporte", "tr_comunicaciones", "intermediacion_fin",
-    "fin_intermediacion", "fin_seguros", "fin_auxiliares", "inmobiliarias",
-    "inmo_inmobiliarios", "inmo_resto", "admin_publica", "ensenanza",
-    "ense_publica", "ense_privada", "salud", "salud_publica", "salud_privada",
-    "otros_servicios", "otr_saneamiento", "otr_asociaciones", "otr_culturales",
+    "total",
+    "agro",
+    "agro_cultivos",
+    "agro_animales",
+    "agro_serv",
+    "agro_caza",
+    "agro_construcciones",
+    "agro_silvicultura",
+    "pesca",
+    "mineria",
+    "min_petroleo_gas",
+    "min_metaliferos",
+    "industria",
+    "ind_alimentos",
+    "ind_tabaco",
+    "ind_textiles",
+    "ind_prendas",
+    "ind_cueros",
+    "ind_madera",
+    "ind_papel",
+    "ind_edicion",
+    "ind_refinacion",
+    "ind_quimicos",
+    "ind_caucho",
+    "ind_minerales",
+    "ind_metales",
+    "ind_prod_metal",
+    "ind_maquinaria",
+    "ind_maq_oficina",
+    "ind_maq_electrica",
+    "ind_radio_tv",
+    "ind_instrumentos",
+    "ind_automotriz",
+    "ind_transporte_ncp",
+    "ind_muebles",
+    "ind_reciclamiento",
+    "ind_reparacion",
+    "elect_gas_agua",
+    "ee_electricidad",
+    "ee_gas",
+    "ee_agua",
+    "construccion",
+    "comercio",
+    "hoteles",
+    "hot_hoteles",
+    "hot_restaurantes",
+    "transporte",
+    "tr_transporte",
+    "tr_comunicaciones",
+    "intermediacion_fin",
+    "fin_intermediacion",
+    "fin_seguros",
+    "fin_auxiliares",
+    "inmobiliarias",
+    "inmo_inmobiliarios",
+    "inmo_resto",
+    "admin_publica",
+    "ensenanza",
+    "ense_publica",
+    "ense_privada",
+    "salud",
+    "salud_publica",
+    "salud_privada",
+    "otros_servicios",
+    "otr_saneamiento",
+    "otr_asociaciones",
+    "otr_culturales",
     "hogares_dom",
 ]
 
 UCI_COLS = [
-    "nivel_general", "alimentos_bebidas", "tabaco", "textiles", "papel_carton",
-    "edicion_impresion", "refinacion_petroleo", "quimicos", "caucho_plastico",
-    "minerales_no_metalicos", "metalicas_basicas", "automotriz", "metalmecanica",
+    "nivel_general",
+    "alimentos_bebidas",
+    "tabaco",
+    "textiles",
+    "papel_carton",
+    "edicion_impresion",
+    "refinacion_petroleo",
+    "quimicos",
+    "caucho_plastico",
+    "minerales_no_metalicos",
+    "metalicas_basicas",
+    "automotriz",
+    "metalmecanica",
 ]
 
 DESEST_COLS = ["pbi", "impo", "consumo_priv", "consumo_pub", "fbkf", "expo"]
 
 
 # ---------------------------------------------------------------- lectores
+
 
 def _conceptos(d: pd.DataFrame) -> list[tuple[int, str]]:
     """(fila, nombre del INDEC) de cada concepto. Corta en el pie de cuadro.
@@ -119,7 +225,7 @@ _NOMBRES: dict[str, dict[str, str]] = {}
 
 def _registrar(cols: list[str], textos: list[str]) -> None:
     """Guarda el nombre del INDEC de cada columna del cuadro que se está leyendo."""
-    _NOMBRES[_CUADRO[0]] = dict(zip(cols, textos))
+    _NOMBRES[_CUADRO[0]] = dict(zip(cols, textos, strict=False))
 
 
 _CUADRO = [""]  # cuadro que se está leyendo, para etiquetar los nombres
@@ -147,7 +253,7 @@ def _trimestral(ruta: Path, hoja: str, cols: list[str]) -> pd.DataFrame:
             if all(pd.isna(v) for v in valores):
                 continue
             fechas.append(f"{anio}-{3 * (t + 1):02d}-01")
-            for c, v in zip(cols, valores):
+            for c, v in zip(cols, valores, strict=False):
                 datos[c].append(v)
     return pd.DataFrame({"fecha": fechas, **datos})
 
@@ -167,7 +273,7 @@ def _anual(ruta: Path, hoja: str, cols: list[str]) -> pd.DataFrame:
         if all(pd.isna(v) for v in valores):
             continue
         fechas.append(f"{anio}-01-01")
-        for c, v in zip(cols, valores):
+        for c, v in zip(cols, valores, strict=False):
             datos[c].append(v)
     return pd.DataFrame({"fecha": fechas, **datos})
 
@@ -243,16 +349,12 @@ EMAE_SEC_NOMBRES = {
     "hoteles_restaurantes": "Hoteles y restaurantes",
     "transporte_comunicaciones": "Transporte, almacenamiento y comunicaciones",
     "intermediacion_financiera": "Intermediación financiera",
-    "actividades_inmobiliarias_empresariales_alquiler":
-        "Actividades inmobiliarias, empresariales y de alquiler",
-    "admin_publica_planes_seguridad_social_afiliacion_obligatoria":
-        "Administración pública y defensa; planes de seguridad social de afiliación obligatoria",
+    "actividades_inmobiliarias_empresariales_alquiler": "Actividades inmobiliarias, empresariales y de alquiler",
+    "admin_publica_planes_seguridad_social_afiliacion_obligatoria": "Administración pública y defensa; planes de seguridad social de afiliación obligatoria",
     "ensenianza": "Enseñanza",
     "servicios_sociales_salud": "Servicios sociales y de salud",
-    "otras_actividades_servicios_comunitarias_sociales_personales":
-        "Otras actividades de servicios comunitarias, sociales y personales",
-    "impuestos_netos_subsidios":
-        "Impuesto a los productos netos de subsidios",
+    "otras_actividades_servicios_comunitarias_sociales_personales": "Otras actividades de servicios comunitarias, sociales y personales",
+    "impuestos_netos_subsidios": "Impuesto a los productos netos de subsidios",
 }
 
 
@@ -313,12 +415,14 @@ def _escribir_nombres() -> None:
     for archivo, mapa in _NOMBRES.items():
         for columna, texto in mapa.items():
             pie = re.search(r"\((\d)\)\s*$", texto)
-            filas.append({
-                "archivo": archivo,
-                "columna": columna,
-                "nombre_indec": re.sub(r"\s*\(\d\)\s*$", "", texto),
-                "llamada_al_pie": pie.group(1) if pie else "",
-            })
+            filas.append(
+                {
+                    "archivo": archivo,
+                    "columna": columna,
+                    "nombre_indec": re.sub(r"\s*\(\d\)\s*$", "", texto),
+                    "llamada_al_pie": pie.group(1) if pie else "",
+                }
+            )
     pd.DataFrame(filas).to_csv(NOMBRES, index=False)
     print(f"{NOMBRES.name:38s} {len(filas):4d} nombres de {len(_NOMBRES)} archivos")
 

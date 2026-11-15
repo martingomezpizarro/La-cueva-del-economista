@@ -44,31 +44,33 @@ def _datos(filas: list[dict]) -> list[dict]:
     compactas = []
     for f in filas:
         nivel, etiqueta = _estado(f["estado"])
-        compactas.append({
-            "serie": f["serie"],
-            "id": f["id"],
-            "fam": f["familia"],
-            "sub": f["subgrupo"],
-            "base": f["base"],
-            "ini": f["origen"],
-            "fin": f["final"],
-            "frec": f["frecuencia"],
-            "fuente": f["fuente"],
-            "desc": f["descripcion"],
-            "mag": f["magnitud"],
-            "esc": f["escala"],
-            "mon": f["moneda"],
-            "uni": f["unidad_texto"],
-            "baseidx": f["base_indice"],
-            "prec": f["precios"],
-            "obs": f["n_obs"],
-            "conf": f["confianza"],
-            "niv": nivel,
-            "est": etiqueta,
-            "cf": f["col_fecha"],
-            "cv": f["col_valor"],
-            "ext": f["id_externo"],
-        })
+        compactas.append(
+            {
+                "serie": f["serie"],
+                "id": f["id"],
+                "fam": f["familia"],
+                "sub": f["subgrupo"],
+                "base": f["base"],
+                "ini": f["origen"],
+                "fin": f["final"],
+                "frec": f["frecuencia"],
+                "fuente": f["fuente"],
+                "desc": f["descripcion"],
+                "mag": f["magnitud"],
+                "esc": f["escala"],
+                "mon": f["moneda"],
+                "uni": f["unidad_texto"],
+                "baseidx": f["base_indice"],
+                "prec": f["precios"],
+                "obs": f["n_obs"],
+                "conf": f["confianza"],
+                "niv": nivel,
+                "est": etiqueta,
+                "cf": f["col_fecha"],
+                "cv": f["col_valor"],
+                "ext": f["id_externo"],
+            }
+        )
     return compactas
 
 
@@ -89,9 +91,13 @@ def _resumen(datos: list[dict]) -> dict:
 
 def construir(datos: list[dict], resumen: dict, cuerpo_solo: bool = False) -> str:
     payload = json.dumps(datos, ensure_ascii=False, separators=(",", ":"))
-    cabeza = "" if cuerpo_solo else (
-        "<!doctype html>\n<html lang=\"es\">\n<head>\n<meta charset=\"utf-8\">\n"
-        "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n"
+    cabeza = (
+        ""
+        if cuerpo_solo
+        else (
+            '<!doctype html>\n<html lang="es">\n<head>\n<meta charset="utf-8">\n'
+            '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
+        )
     )
     cierre_cabeza = "" if cuerpo_solo else "</head>\n<body>\n"
     pie = "" if cuerpo_solo else "\n</body>\n</html>\n"
@@ -101,7 +107,7 @@ def construir(datos: list[dict], resumen: dict, cuerpo_solo: bool = False) -> st
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:wght@500;600&display=swap">
 <style>
-{ESTILOS.read_text(encoding='utf-8')}
+{ESTILOS.read_text(encoding="utf-8")}
 </style>
 {cierre_cabeza}
 <header class="barra">
@@ -110,12 +116,12 @@ def construir(datos: list[dict], resumen: dict, cuerpo_solo: bool = False) -> st
     <p class="bajada">La Cueva del Economista · cada serie con su archivo, su cobertura, su fuente y su unidad</p>
   </div>
   <dl class="metricas">
-    <div><dt>Series</dt><dd>{resumen['series']}</dd></div>
-    <div><dt>Entradas</dt><dd>{resumen['entradas']}<span class="sufijo">serie × frecuencia</span></dd></div>
-    <div><dt>Verificables</dt><dd class="v-bien">{resumen['verificables']}</dd></div>
-    <div><dt>Por bajar</dt><dd class="v-espera">{resumen['pendientes']}</dd></div>
-    <div><dt>Con problema</dt><dd class="v-mal">{resumen['problemas']}</dd></div>
-    <div><dt>Dato más viejo</dt><dd class="fecha">{resumen['mas_antigua'] or '—'}</dd></div>
+    <div><dt>Series</dt><dd>{resumen["series"]}</dd></div>
+    <div><dt>Entradas</dt><dd>{resumen["entradas"]}<span class="sufijo">serie × frecuencia</span></dd></div>
+    <div><dt>Verificables</dt><dd class="v-bien">{resumen["verificables"]}</dd></div>
+    <div><dt>Por bajar</dt><dd class="v-espera">{resumen["pendientes"]}</dd></div>
+    <div><dt>Con problema</dt><dd class="v-mal">{resumen["problemas"]}</dd></div>
+    <div><dt>Dato más viejo</dt><dd class="fecha">{resumen["mas_antigua"] or "—"}</dd></div>
   </dl>
 </header>
 
@@ -158,7 +164,7 @@ def construir(datos: list[dict], resumen: dict, cuerpo_solo: bool = False) -> st
 
 <script>
 const DATOS = {payload};
-{GUION.read_text(encoding='utf-8')}
+{GUION.read_text(encoding="utf-8")}
 </script>{pie}"""
 
 
@@ -167,10 +173,10 @@ GUION = RAIZ / "web" / "cuadro" / "cuadro.js"
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description=__doc__,
-                                 formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--cuerpo", default="",
-                    help="Escribir además una versión sin <html>/<head>/<body>, para publicar.")
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument(
+        "--cuerpo", default="", help="Escribir además una versión sin <html>/<head>/<body>, para publicar."
+    )
     args = ap.parse_args()
 
     if not CATALOGO.exists():
@@ -182,10 +188,11 @@ def main() -> None:
     resumen = _resumen(datos)
 
     SALIDA.write_text(construir(datos, resumen), encoding="utf-8")
-    print(f"{resumen['entradas']} entradas · {resumen['series']} series -> "
-          f"{SALIDA.relative_to(RAIZ)}")
-    print(f"   verificables {resumen['verificables']} · por bajar {resumen['pendientes']} "
-          f"· con problema {resumen['problemas']} · sin descripción {resumen['sin_desc']}")
+    print(f"{resumen['entradas']} entradas · {resumen['series']} series -> {SALIDA.relative_to(RAIZ)}")
+    print(
+        f"   verificables {resumen['verificables']} · por bajar {resumen['pendientes']} "
+        f"· con problema {resumen['problemas']} · sin descripción {resumen['sin_desc']}"
+    )
 
     if args.cuerpo:
         destino = Path(args.cuerpo)

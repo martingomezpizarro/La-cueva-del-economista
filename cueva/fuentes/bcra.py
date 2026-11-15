@@ -66,12 +66,12 @@ class VariableBCRA:
     id: int
     descripcion: str
     categoria: str
-    tipo_serie: str        # tipoSerie: "Saldos", "Flujo diario", "Tasa de interés", …
-    periodicidad: str      # "D" diaria · "M" mensual
-    unidad: str            # unidadExpresion
-    moneda: str            # "ML" · "ME" · "MEyML" · "USD"
-    desde: str             # primerFechaInformada
-    hasta: str             # ultFechaInformada
+    tipo_serie: str  # tipoSerie: "Saldos", "Flujo diario", "Tasa de interés", …
+    periodicidad: str  # "D" diaria · "M" mensual
+    unidad: str  # unidadExpresion
+    moneda: str  # "ML" · "ME" · "MEyML" · "USD"
+    desde: str  # primerFechaInformada
+    hasta: str  # ultFechaInformada
     ultimo_valor: float | None = None
 
     @property
@@ -119,8 +119,11 @@ class ClienteBCRA:
         for intento in range(1, REINTENTOS + 1):
             try:
                 r = self._sesion.get(
-                    url, params=limpios, headers=cabeceras,
-                    verify=self.verificar_tls, timeout=self.tiempo_maximo,
+                    url,
+                    params=limpios,
+                    headers=cabeceras,
+                    verify=self.verificar_tls,
+                    timeout=self.tiempo_maximo,
                 )
             except requests.exceptions.SSLError as exc:
                 raise ErrorBCRA(
@@ -159,8 +162,10 @@ class ClienteBCRA:
         while True:
             payload = self._pedir(
                 "/estadisticas/v4.0/Monetarias",
-                Categoria=categoria, Periodicidad=periodicidad,
-                Limit=LIMITE_PAGINA_INDICE, Offset=offset,
+                Categoria=categoria,
+                Periodicidad=periodicidad,
+                Limit=LIMITE_PAGINA_INDICE,
+                Offset=offset,
             )
             pagina = payload.get("results") or []
             for v in pagina:
@@ -186,8 +191,7 @@ class ClienteBCRA:
         """
         if id_variable is not None:
             payload = self._pedir(f"/estadisticas/v4.0/Metodologia/{id_variable}")
-            return {int(r["id"]): (r.get("detalle") or "").strip()
-                    for r in payload.get("results", [])}
+            return {int(r["id"]): (r.get("detalle") or "").strip() for r in payload.get("results", [])}
 
         textos: dict[int, str] = {}
         offset, limite = 0, LIMITE_PAGINA_INDICE
@@ -219,7 +223,10 @@ class ClienteBCRA:
         while True:
             payload = self._pedir(
                 f"/estadisticas/v4.0/Monetarias/{id_variable}",
-                Desde=desde, Hasta=hasta, Limit=LIMITE_PAGINA_SERIE, Offset=offset,
+                Desde=desde,
+                Hasta=hasta,
+                Limit=LIMITE_PAGINA_SERIE,
+                Offset=offset,
             )
             tramo = list(_observaciones(payload))
             if not tramo:

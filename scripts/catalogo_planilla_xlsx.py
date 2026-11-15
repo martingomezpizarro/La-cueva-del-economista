@@ -38,11 +38,15 @@ def main() -> None:
     # «Grupo» corrió todo un lugar— hay que remapear las fórmulas de las otras hojas, que
     # referencian columnas por letra: Estado pasó de M a N, Revisado de R a S. Sin esto la
     # planilla queda silenciosamente desalineada y los conteos del resumen cuentan otra columna.
-    cab_previa = [str(c.value) if c.value is not None else ""
-                  for c in next(hoja.iter_rows(min_row=1, max_row=1))]
-    letras = {get_column_letter(i + 1): get_column_letter(cab.index(n) + 1)
-              for i, n in enumerate(cab_previa) if n in cab}
-    if cab_previa[:len(cab)] != cab:
+    cab_previa = [
+        str(c.value) if c.value is not None else "" for c in next(hoja.iter_rows(min_row=1, max_row=1))
+    ]
+    letras = {
+        get_column_letter(i + 1): get_column_letter(cab.index(n) + 1)
+        for i, n in enumerate(cab_previa)
+        if n in cab
+    }
+    if cab_previa[: len(cab)] != cab:
         movidas = {a: b for a, b in letras.items() if a != b}
         for h in wb.worksheets:
             if h is hoja:
@@ -54,18 +58,23 @@ def main() -> None:
                         # dos veces y solo la primera trae el prefijo de la hoja.
                         c.value = re.sub(
                             r"(Catálogo!\$)([A-Z]+)(\$\d+:\$)([A-Z]+)(\$)",
-                            lambda m: (m.group(1) + letras.get(m.group(2), m.group(2))
-                                       + m.group(3) + letras.get(m.group(4), m.group(4))
-                                       + m.group(5)),
-                            c.value)
-        print(f"cabecera nueva: {len(cab_previa)} -> {len(cab)} columnas · "
-              f"columnas movidas {movidas or '—'}")
+                            lambda m: (
+                                m.group(1)
+                                + letras.get(m.group(2), m.group(2))
+                                + m.group(3)
+                                + letras.get(m.group(4), m.group(4))
+                                + m.group(5)
+                            ),
+                            c.value,
+                        )
+        print(f"cabecera nueva: {len(cab_previa)} -> {len(cab)} columnas · columnas movidas {movidas or '—'}")
     for j, col in enumerate(cab, start=1):
         hoja.cell(row=1, column=j, value=col)
 
     estilo = {c: hoja.cell(row=2, column=c)._style for c in range(1, len(cab) + 1)}
-    validaciones = [(str(next(iter(dv.sqref.ranges))), dv.formula1)
-                    for dv in list(hoja.data_validations.dataValidation)]
+    validaciones = [
+        (str(next(iter(dv.sqref.ranges))), dv.formula1) for dv in list(hoja.data_validations.dataValidation)
+    ]
 
     hoja.delete_rows(2, max(previa - 1, 0))
     for i, f in enumerate(filas, start=2):
@@ -97,8 +106,9 @@ def main() -> None:
         for fila in h.iter_rows():
             for c in fila:
                 if isinstance(c.value, str) and "Catálogo!" in c.value:
-                    nueva = re.sub(r"(Catálogo!\$[A-Z]+\$\d+:\$[A-Z]+\$)\d+",
-                                   lambda m: m.group(1) + str(ultima), c.value)
+                    nueva = re.sub(
+                        r"(Catálogo!\$[A-Z]+\$\d+:\$[A-Z]+\$)\d+", lambda m: m.group(1) + str(ultima), c.value
+                    )
                     if nueva != c.value:
                         c.value = nueva
                         cambiadas += 1

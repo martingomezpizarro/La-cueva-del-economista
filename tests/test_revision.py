@@ -31,14 +31,44 @@ def app():
 
 @pytest.fixture
 def catalogo():
-    return {"familias": [{"grp": "Prueba", "clr": "#000", "subs": [{"sub": "S", "items": [
-        {"id": "uno", "label": "Serie Uno", "unit": "Miles de ARS", "file": "a.csv",
-         "proc": {"fuente": "bcra", "definicion": "vieja", "confianza": "alta"}},
-        {"id": "dos", "label": "Serie Dos", "unit": "Mill. USD", "file": "b.csv",
-         "proc": {"fuente": "indec", "confianza": "media"},
-         "children": [{"id": "hijo", "label": "Hijo", "unit": "Mill. USD", "file": "c.csv",
-                       "proc": {"fuente": "indec", "confianza": "media"}}]},
-    ]}]}]}
+    return {
+        "familias": [
+            {
+                "grp": "Prueba",
+                "clr": "#000",
+                "subs": [
+                    {
+                        "sub": "S",
+                        "items": [
+                            {
+                                "id": "uno",
+                                "label": "Serie Uno",
+                                "unit": "Miles de ARS",
+                                "file": "a.csv",
+                                "proc": {"fuente": "bcra", "definicion": "vieja", "confianza": "alta"},
+                            },
+                            {
+                                "id": "dos",
+                                "label": "Serie Dos",
+                                "unit": "Mill. USD",
+                                "file": "b.csv",
+                                "proc": {"fuente": "indec", "confianza": "media"},
+                                "children": [
+                                    {
+                                        "id": "hijo",
+                                        "label": "Hijo",
+                                        "unit": "Mill. USD",
+                                        "file": "c.csv",
+                                        "proc": {"fuente": "indec", "confianza": "media"},
+                                    }
+                                ],
+                            },
+                        ],
+                    }
+                ],
+            }
+        ]
+    }
 
 
 def test_ok_sella_la_serie_como_verificada(app, catalogo):
@@ -57,14 +87,18 @@ def test_corregir_la_descripcion_la_escribe_y_sella(app, catalogo):
 
 def test_la_unidad_se_rearma_desde_el_vocabulario(app, catalogo):
     """magnitud + escala + moneda vuelven a un texto que ya existe en unidades.json."""
-    app.aplicar(catalogo, {"uno": {"estado": "corregida",
-                                   "campos": {"mag": "moneda", "esc": "millones", "mon": "ARS"}}})
+    app.aplicar(
+        catalogo,
+        {"uno": {"estado": "corregida", "campos": {"mag": "moneda", "esc": "millones", "mon": "ARS"}}},
+    )
     assert catalogo["familias"][0]["subs"][0]["items"][0]["unit"] == "Mill. ARS"
 
 
 def test_una_combinacion_inexistente_avisa_y_no_inventa_unidad(app, catalogo):
-    diff, avisos = app.aplicar(catalogo, {"uno": {"estado": "corregida",
-                                                  "campos": {"mag": "ratio", "esc": "millones", "mon": "ARS"}}})
+    diff, avisos = app.aplicar(
+        catalogo,
+        {"uno": {"estado": "corregida", "campos": {"mag": "ratio", "esc": "millones", "mon": "ARS"}}},
+    )
     assert catalogo["familias"][0]["subs"][0]["items"][0]["unit"] == "Miles de ARS", "no debía cambiar"
     assert any("no existe en" in a for a in avisos)
 

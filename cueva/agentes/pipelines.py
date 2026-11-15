@@ -6,7 +6,7 @@ calling). Editar/agregar un guion no requiere tocar el orquestador.
 
 - "clasica": la mesa de 4 profesores; tool-use del Metodólogo (modelización) y del
   Crítico (auditoría de la interpretación).
-- "equipo_completo": los 10 especialistas de knowledge-base/skills/ (reemplaza al viejo
+- "equipo_completo": los 10 especialistas de RAG/skills/ (reemplaza al viejo
   pipeline LangGraph de grafo_cueva.py, retirado en fase 2); tool-use en los turnos de
   multivariados, volatilidad, controles_causal y robustez.
 

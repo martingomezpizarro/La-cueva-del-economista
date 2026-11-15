@@ -8,8 +8,8 @@ Uso (desde la raiz del repo, con tu Python de Windows que SI tiene internet):
 
 Solo biblioteca estandar: no necesita requests ni el venv.
 
-Despues de bajar, reindexar segun knowledge-base/GUIA_CARGA.md:
-    python rag/ingest.py knowledge-base/corpus
+Despues de bajar, reindexar segun RAG/GUIA_CARGA.md:
+    python rag/ingest.py RAG/corpus
 """
 
 from __future__ import annotations
@@ -21,8 +21,8 @@ import urllib.request
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
-MANIFIESTO = RAIZ / "knowledge-base" / "fuentes_abiertas.tsv"
-CORPUS = RAIZ / "knowledge-base" / "corpus"
+MANIFIESTO = RAIZ / "RAG" / "fuentes_abiertas.tsv"
+CORPUS = RAIZ / "RAG" / "corpus"
 
 # Varios editores rechazan el user-agent por defecto de urllib.
 CABECERAS = {
@@ -117,7 +117,7 @@ def main() -> int:
         for etiqueta, url, detalle in fallados:
             print(f"  - {etiqueta}\n      {url}\n      motivo: {detalle}")
     if bajados:
-        print("\nAhora reindexa:  python rag/ingest.py knowledge-base/corpus")
+        print("\nAhora reindexa:  python rag/ingest.py RAG/corpus")
     return 1 if fallados else 0
 
 

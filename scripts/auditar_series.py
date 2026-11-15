@@ -33,13 +33,31 @@ SALIDA_CSV = RAIZ / "docs" / "inventario_series.csv"
 # El orden es el del cuadro que se mira: qué serie es, de dónde sale el dato, desde
 # cuándo hasta cuándo, cada cuánto, quién la publica, qué mide y en qué está medida.
 COLUMNAS = [
-    "serie", "id", "familia", "grupo", "subgrupo",
-    "base", "origen", "final", "frecuencia",
-    "fuente", "descripcion",
-    "magnitud", "escala", "moneda",
-    "unidad_texto", "base_indice", "precios",
-    "n_obs", "faltantes", "confianza", "estado",
-    "col_fecha", "col_valor", "id_externo", "existe",
+    "serie",
+    "id",
+    "familia",
+    "grupo",
+    "subgrupo",
+    "base",
+    "origen",
+    "final",
+    "frecuencia",
+    "fuente",
+    "descripcion",
+    "magnitud",
+    "escala",
+    "moneda",
+    "unidad_texto",
+    "base_indice",
+    "precios",
+    "n_obs",
+    "faltantes",
+    "confianza",
+    "estado",
+    "col_fecha",
+    "col_valor",
+    "id_externo",
+    "existe",
 ]
 
 
@@ -106,8 +124,9 @@ def _iter_series(catalogo: dict):
     por separado; los que no los traen usan `sub` para los dos, así el resto del catálogo sigue
     andando sin tocarlo."""
     for fam in catalogo["familias"]:
-        bloques = [(s.get("grupo", s["sub"]), s.get("subgrupo", s["sub"]), s["items"])
-                   for s in fam.get("subs", [])]
+        bloques = [
+            (s.get("grupo", s["sub"]), s.get("subgrupo", s["sub"]), s["items"]) for s in fam.get("subs", [])
+        ]
         if fam.get("items"):
             bloques.append(("—", "—", fam["items"]))
         for grupo, sub, items in bloques:
@@ -126,7 +145,10 @@ def _radiografia(ruta: Path | None, col_fecha: str, col_valor: str) -> dict:
         return {"existe": True, "n_obs": 0, "origen": "", "final": "", "faltantes": "ilegible"}
     if col_valor not in df.columns:
         return {
-            "existe": True, "n_obs": len(df), "origen": "", "final": "",
+            "existe": True,
+            "n_obs": len(df),
+            "origen": "",
+            "final": "",
             "faltantes": f"falta la columna '{col_valor}'",
         }
     serie = df[[c for c in (col_fecha, col_valor) if c in df.columns]].dropna()
@@ -182,10 +204,7 @@ def auditar() -> list[dict]:
             fila.update(_radiografia(ruta, fila["col_fecha"], fila["col_valor"]))
             if not fila["existe"]:
                 script = proc.get("script", "")
-                fila["estado"] = (
-                    f"pendiente de descarga ({script})" if script
-                    else "ARCHIVO NO ENCONTRADO"
-                )
+                fila["estado"] = f"pendiente de descarga ({script})" if script else "ARCHIVO NO ENCONTRADO"
             elif not fila["n_obs"]:
                 fila["estado"] = "vacía o columna equivocada"
             elif not proc:
@@ -232,7 +251,8 @@ def escribir(filas: list[dict], solo_sin_fuente: bool = False) -> None:
         lineas.append(
             "| {serie} | `{base}` | {origen} | {final} | {frecuencia} | {fuente} "
             "| {desc} | {magnitud} | {escala} | {moneda} |".format(
-                **f, desc=(desc[:110] + "…") if len(desc) > 110 else desc)
+                **f, desc=(desc[:110] + "…") if len(desc) > 110 else desc
+            )
         )
     if no_encontrados:
         lineas += ["", "## Archivos no encontrados", ""]
@@ -244,8 +264,11 @@ def escribir(filas: list[dict], solo_sin_fuente: bool = False) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--solo-sin-fuente", action="store_true",
-                    help="En el markdown, listar solo las series sin procedencia documentada.")
+    ap.add_argument(
+        "--solo-sin-fuente",
+        action="store_true",
+        help="En el markdown, listar solo las series sin procedencia documentada.",
+    )
     args = ap.parse_args()
     filas = auditar()
     escribir(filas, solo_sin_fuente=args.solo_sin_fuente)

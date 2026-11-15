@@ -40,7 +40,7 @@ def test_sin_indice_devuelve_vacio(tmp_path, monkeypatch):
 
 
 def test_fichas_relevantes_reales():
-    """Las fichas del repo (knowledge-base/fichas/) se eligen por vocabulario."""
+    """Las fichas del repo (RAG/fichas/) se eligen por vocabulario."""
     from cueva.conocimiento import fichas_relevantes
 
     fichas = fichas_relevantes("cointegración relación de largo plazo entre series", n=3)

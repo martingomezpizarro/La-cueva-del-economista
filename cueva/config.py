@@ -20,7 +20,7 @@ import os
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-KNOWLEDGE_BASE = ROOT / "knowledge-base"
+KNOWLEDGE_BASE = ROOT / "RAG"  # skills, fichas, prompts y corpus (antes se llamaba knowledge-base/)
 
 # Cargar .env una sola vez, apenas se importa config, para que las claves lleguen sin
 # exportarlas a mano en cada terminal (server, CLIs, tests los cargan vía este import).

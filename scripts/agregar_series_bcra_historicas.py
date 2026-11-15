@@ -37,35 +37,65 @@ SUB_RESERVAS = "Reservas y Liquidez"
 
 # id de catálogo, idVariable del BCRA, etiqueta legible, subgrupo
 PLAN: list[tuple[str, int, str, str]] = [
-    ("bm_hist",        1606, "Base Monetaria (mensual, histórica)",                        SUB_AGREGADOS),
-    ("circ_hist",      1607, "Circulación Monetaria (mensual, histórica)",                 SUB_AGREGADOS),
-    ("bym_publico",    1608, "Billetes y Monedas en Poder del Público (histórica)",        SUB_AGREGADOS),
-    ("efectivo_eeff",  1609, "Efectivo en Entidades Financieras (histórica)",              SUB_AGREGADOS),
-    ("dep_eeff_bcra",  1610, "Depósitos de EEFF en Cta. Cte. en el BCRA (histórica)",      SUB_AGREGADOS),
-    ("m1_total",       1611, "M1 — moneda local y extranjera",                             SUB_AGREGADOS),
-    ("m1_ml",          1612, "M1 — moneda local",                                          SUB_AGREGADOS),
-    ("m2_total",       1617, "M2 — moneda local y extranjera",                             SUB_AGREGADOS),
-    ("m2_ml",          1618, "M2 — moneda local",                                          SUB_AGREGADOS),
-    ("m3_total",       1623, "M3 — moneda local y extranjera",                             SUB_AGREGADOS),
-    ("m3_ml",          1624, "M3 — moneda local",                                          SUB_AGREGADOS),
-    ("cc_priv_ml",     1613, "Cuentas Corrientes — sector privado (ARS)",                  SUB_COMPONENTES),
-    ("cc_pub_ml",      1614, "Cuentas Corrientes — sector público (ARS)",                  SUB_COMPONENTES),
-    ("cc_priv_me",     1615, "Cuentas Corrientes — sector privado (m. extranjera, valuada en ARS)",                  SUB_COMPONENTES),
-    ("cc_pub_me",      1616, "Cuentas Corrientes — sector público (m. extranjera, valuada en ARS)",                  SUB_COMPONENTES),
-    ("ca_priv_ml",     1619, "Cajas de Ahorro — sector privado (ARS)",                     SUB_COMPONENTES),
-    ("ca_pub_ml",      1620, "Cajas de Ahorro — sector público (ARS)",                     SUB_COMPONENTES),
-    ("ca_priv_me",     1621, "Cajas de Ahorro — sector privado (m. extranjera, valuada en ARS)",                     SUB_COMPONENTES),
-    ("ca_pub_me",      1622, "Cajas de Ahorro — sector público (m. extranjera, valuada en ARS)",                     SUB_COMPONENTES),
-    ("pf_priv_ml",     1625, "Depósitos a Plazo Fijo — sector privado (ARS)",              SUB_COMPONENTES),
-    ("pf_pub_ml",      1626, "Depósitos a Plazo Fijo — sector público (ARS)",              SUB_COMPONENTES),
-    ("pf_priv_me",     1630, "Depósitos a Plazo Fijo — sector privado (m. extranjera, valuada en ARS)",              SUB_COMPONENTES),
-    ("pf_pub_me",      1631, "Depósitos a Plazo Fijo — sector público (m. extranjera, valuada en ARS)",              SUB_COMPONENTES),
-    ("otrosdep_priv_ml", 1627, "Otros Depósitos — sector privado (ARS)",                   SUB_COMPONENTES),
-    ("otrosdep_pub_ml",  1628, "Otros Depósitos — sector público (ARS)",                   SUB_COMPONENTES),
-    ("otrosdep_priv_me", 1632, "Otros Depósitos — sector privado (m. extranjera, valuada en ARS)",                   SUB_COMPONENTES),
-    ("otrosdep_pub_me",  1633, "Otros Depósitos — sector público (m. extranjera, valuada en ARS)",                   SUB_COMPONENTES),
-    ("aceptaciones",   1629, "Aceptaciones",                                               SUB_COMPONENTES),
-    ("res_mensual",    1605, "Reservas Internacionales (saldo a fin de mes, histórica)",   SUB_RESERVAS),
+    ("bm_hist", 1606, "Base Monetaria (mensual, histórica)", SUB_AGREGADOS),
+    ("circ_hist", 1607, "Circulación Monetaria (mensual, histórica)", SUB_AGREGADOS),
+    ("bym_publico", 1608, "Billetes y Monedas en Poder del Público (histórica)", SUB_AGREGADOS),
+    ("efectivo_eeff", 1609, "Efectivo en Entidades Financieras (histórica)", SUB_AGREGADOS),
+    ("dep_eeff_bcra", 1610, "Depósitos de EEFF en Cta. Cte. en el BCRA (histórica)", SUB_AGREGADOS),
+    ("m1_total", 1611, "M1 — moneda local y extranjera", SUB_AGREGADOS),
+    ("m1_ml", 1612, "M1 — moneda local", SUB_AGREGADOS),
+    ("m2_total", 1617, "M2 — moneda local y extranjera", SUB_AGREGADOS),
+    ("m2_ml", 1618, "M2 — moneda local", SUB_AGREGADOS),
+    ("m3_total", 1623, "M3 — moneda local y extranjera", SUB_AGREGADOS),
+    ("m3_ml", 1624, "M3 — moneda local", SUB_AGREGADOS),
+    ("cc_priv_ml", 1613, "Cuentas Corrientes — sector privado (ARS)", SUB_COMPONENTES),
+    ("cc_pub_ml", 1614, "Cuentas Corrientes — sector público (ARS)", SUB_COMPONENTES),
+    (
+        "cc_priv_me",
+        1615,
+        "Cuentas Corrientes — sector privado (m. extranjera, valuada en ARS)",
+        SUB_COMPONENTES,
+    ),
+    (
+        "cc_pub_me",
+        1616,
+        "Cuentas Corrientes — sector público (m. extranjera, valuada en ARS)",
+        SUB_COMPONENTES,
+    ),
+    ("ca_priv_ml", 1619, "Cajas de Ahorro — sector privado (ARS)", SUB_COMPONENTES),
+    ("ca_pub_ml", 1620, "Cajas de Ahorro — sector público (ARS)", SUB_COMPONENTES),
+    ("ca_priv_me", 1621, "Cajas de Ahorro — sector privado (m. extranjera, valuada en ARS)", SUB_COMPONENTES),
+    ("ca_pub_me", 1622, "Cajas de Ahorro — sector público (m. extranjera, valuada en ARS)", SUB_COMPONENTES),
+    ("pf_priv_ml", 1625, "Depósitos a Plazo Fijo — sector privado (ARS)", SUB_COMPONENTES),
+    ("pf_pub_ml", 1626, "Depósitos a Plazo Fijo — sector público (ARS)", SUB_COMPONENTES),
+    (
+        "pf_priv_me",
+        1630,
+        "Depósitos a Plazo Fijo — sector privado (m. extranjera, valuada en ARS)",
+        SUB_COMPONENTES,
+    ),
+    (
+        "pf_pub_me",
+        1631,
+        "Depósitos a Plazo Fijo — sector público (m. extranjera, valuada en ARS)",
+        SUB_COMPONENTES,
+    ),
+    ("otrosdep_priv_ml", 1627, "Otros Depósitos — sector privado (ARS)", SUB_COMPONENTES),
+    ("otrosdep_pub_ml", 1628, "Otros Depósitos — sector público (ARS)", SUB_COMPONENTES),
+    (
+        "otrosdep_priv_me",
+        1632,
+        "Otros Depósitos — sector privado (m. extranjera, valuada en ARS)",
+        SUB_COMPONENTES,
+    ),
+    (
+        "otrosdep_pub_me",
+        1633,
+        "Otros Depósitos — sector público (m. extranjera, valuada en ARS)",
+        SUB_COMPONENTES,
+    ),
+    ("aceptaciones", 1629, "Aceptaciones", SUB_COMPONENTES),
+    ("res_mensual", 1605, "Reservas Internacionales (saldo a fin de mes, histórica)", SUB_RESERVAS),
 ]
 
 DEFINICIONES = {
@@ -119,8 +149,7 @@ def _subgrupo(familia: dict, nombre: str) -> dict:
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description=__doc__,
-                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--simular", action="store_true", help="No escribir; solo informar.")
     args = ap.parse_args()
 
@@ -143,16 +172,18 @@ def main() -> None:
         if meta is None:
             print(f"  ! idVariable {id_bcra} no está en el índice; salteada")
             continue
-        _subgrupo(familia, nombre_sub)["items"].append({
-            "id": sid,
-            "label": etiqueta,
-            "file": f"{meta['slug']}.csv",
-            "dateCol": "fecha",
-            "valCol": "valor",
-            "unit": "Mill. USD" if "USD" in meta["unidad"] else "Miles de ARS",
-            "freq": meta["periodicidad"],
-            "proc": _proc(meta),
-        })
+        _subgrupo(familia, nombre_sub)["items"].append(
+            {
+                "id": sid,
+                "label": etiqueta,
+                "file": f"{meta['slug']}.csv",
+                "dateCol": "fecha",
+                "valCol": "valor",
+                "unit": "Mill. USD" if "USD" in meta["unidad"] else "Miles de ARS",
+                "freq": meta["periodicidad"],
+                "proc": _proc(meta),
+            }
+        )
         agregadas += 1
 
     print(f"{agregadas} series agregadas · {omitidas} ya estaban")

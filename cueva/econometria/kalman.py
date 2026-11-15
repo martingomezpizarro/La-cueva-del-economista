@@ -50,7 +50,9 @@ def ajustar_kalman(payload: dict) -> dict:
         columnas = []
         for i, e in enumerate(exog_lista):
             fechas_e = pd.to_datetime(e.get("dates", []))
-            serie_e = pd.Series(e.get("values", []), index=fechas_e, name=e.get("label", f"exog_{i}")).dropna()
+            serie_e = pd.Series(
+                e.get("values", []), index=fechas_e, name=e.get("label", f"exog_{i}")
+            ).dropna()
             columnas.append(serie_e)
         if columnas:
             exog_df = pd.concat(columnas, axis=1).resample(freq).mean().ffill().bfill()

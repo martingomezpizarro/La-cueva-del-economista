@@ -468,9 +468,17 @@ tests/test_metodos.py       125 tests; tests/sinteticas_metodos.py el banco de s
 **Sumar un método** es escribir una función en la familia que corresponde:
 
 ```python
-@metodo("mi_metodo", "Nombre visible", "pruebas", "¿Qué pregunta responde?",
-        params=[P_SERIE(), P_FREQ, P_TRANSF, Param("k", "entero", "Rezagos", defecto=4, minimo=1)],
-        supuestos=[...], trampas=[...], referencias=[...], etiquetas=[...])
+@metodo(
+    "mi_metodo",
+    "Nombre visible",
+    "pruebas",
+    "¿Qué pregunta responde?",
+    params=[P_SERIE(), P_FREQ, P_TRANSF, Param("k", "entero", "Rezagos", defecto=4, minimo=1)],
+    supuestos=[...],
+    trampas=[...],
+    referencias=[...],
+    etiquetas=[...],
+)
 def mi_metodo(sid, freq, transf, k):
     s, et = serie(sid, freq, transf)
     r = Resultado()

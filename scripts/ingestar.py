@@ -2,9 +2,9 @@
 """ingestar — CLI de ingesta de conocimiento para La Cueva-LM.
 
 Uso:
-    python scripts/ingestar.py knowledge-base/corpus            # todo el corpus
+    python scripts/ingestar.py RAG/corpus            # todo el corpus
     python scripts/ingestar.py archivo.pdf otro.md              # archivos sueltos
-    python scripts/ingestar.py --no-embeddings knowledge-base/corpus
+    python scripts/ingestar.py --no-embeddings RAG/corpus
 """
 
 from __future__ import annotations

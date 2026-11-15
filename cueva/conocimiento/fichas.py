@@ -1,7 +1,7 @@
 """fichas — acceso a las fichas metodológicas (el ingrediente secreto).
 
 Una ficha = 1 página por método con supuestos, errores típicos y cuándo usar / cuándo no
-(knowledge-base/fichas/). Se eligen por solapamiento de vocabulario con el contexto.
+(RAG/fichas/). Se eligen por solapamiento de vocabulario con el contexto.
 """
 
 from __future__ import annotations

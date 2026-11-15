@@ -36,12 +36,25 @@ CRUDO = RAIZ / "data" / "historia" / "_crudo"
 # trabajo y se integran a mano o con un script de fusión aparte.
 SALIDA = RAIZ / "data" / "historia" / "_crudo" / "rr_argentina_episodios.csv"
 
-URL = ("https://www.hbs.edu/behavioral-finance-and-financial-stability/"
-       "Documents/ChartData/MapCharts/20160923_global_crisis_data.xlsx")
+URL = (
+    "https://www.hbs.edu/behavioral-finance-and-financial-stability/"
+    "Documents/ChartData/MapCharts/20160923_global_crisis_data.xlsx"
+)
 FUENTE = "Reinhart & Rogoff — Global Crises Data by Country (HBS)"
 
-CAMPOS = ["id", "fecha_inicio", "fecha_fin", "ambito", "tipo", "titulo",
-          "descripcion", "magnitud", "fuente", "verificado", "nota"]
+CAMPOS = [
+    "id",
+    "fecha_inicio",
+    "fecha_fin",
+    "ambito",
+    "tipo",
+    "titulo",
+    "descripcion",
+    "magnitud",
+    "fuente",
+    "verificado",
+    "nota",
+]
 
 # Fragmento del nombre de columna (en minúsculas) -> (tipo de evento, título legible).
 # El Excel de HBS usa nombres largos y algo inconsistentes entre hojas; se busca por
@@ -49,7 +62,7 @@ CAMPOS = ["id", "fecha_inicio", "fecha_fin", "ambito", "tipo", "titulo",
 COLUMNAS: dict[str, tuple[str, str]] = {
     "banking crisis": ("crisis bancaria", "Crisis bancaria"),
     "systemic crisis": ("crisis bancaria sistémica", "Crisis bancaria sistémica"),
-    "currency cris": ("crisis cambiaria", "Crisis cambiaria"),        # "Currency Crises"
+    "currency cris": ("crisis cambiaria", "Crisis cambiaria"),  # "Currency Crises"
     "inflation cris": ("crisis inflacionaria", "Crisis inflacionaria"),  # "Inflation Crises"
     "gold standard": ("patrón oro", "Patrón oro"),
     "sovereign external debt 1": ("default externo", "Default de deuda externa"),
@@ -89,8 +102,7 @@ def tabla_argentina(libro: pd.ExcelFile) -> tuple[str, pd.DataFrame]:
             if len(arg):
                 return f"{nombre} (filas de Argentina)", arg.reset_index(drop=True)
     raise SystemExit(
-        "No encontré una hoja de Argentina. Hojas disponibles:\n  "
-        + "\n  ".join(libro.sheet_names)
+        "No encontré una hoja de Argentina. Hojas disponibles:\n  " + "\n  ".join(libro.sheet_names)
     )
 
 
@@ -122,10 +134,10 @@ def episodios(anios: list[int], banderas: list) -> list[tuple[int, int]]:
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description=__doc__,
-                                 formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--inspeccionar", action="store_true",
-                    help="Solo mostrar hojas y columnas, sin extraer nada.")
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument(
+        "--inspeccionar", action="store_true", help="Solo mostrar hojas y columnas, sin extraer nada."
+    )
     ap.add_argument("--sin-verificar-tls", action="store_true")
     args = ap.parse_args()
 
@@ -160,20 +172,22 @@ def main() -> None:
             continue
         tipo, titulo = match
         for ini, fin in episodios(anios, list(df[columna])):
-            filas.append({
-                "id": f"rr_{tipo.replace(' ', '_')}_{ini}",
-                "fecha_inicio": f"{ini}-01-01",
-                "fecha_fin": f"{fin}-12-31",
-                "ambito": "económico",
-                "tipo": tipo,
-                "titulo": f"{titulo} ({ini}{'–' + str(fin) if fin != ini else ''})",
-                "descripcion": f"Episodio marcado por Reinhart & Rogoff en la columna «{columna}».",
-                "magnitud": fin - ini + 1,
-                "fuente": FUENTE,
-                "verificado": "no",
-                "nota": "Resolución ANUAL: el año se abre el 1 de enero y se cierra el 31 "
-                        "de diciembre. Para fechas exactas hay que ir a la fuente primaria.",
-            })
+            filas.append(
+                {
+                    "id": f"rr_{tipo.replace(' ', '_')}_{ini}",
+                    "fecha_inicio": f"{ini}-01-01",
+                    "fecha_fin": f"{fin}-12-31",
+                    "ambito": "económico",
+                    "tipo": tipo,
+                    "titulo": f"{titulo} ({ini}{'–' + str(fin) if fin != ini else ''})",
+                    "descripcion": f"Episodio marcado por Reinhart & Rogoff en la columna «{columna}».",
+                    "magnitud": fin - ini + 1,
+                    "fuente": FUENTE,
+                    "verificado": "no",
+                    "nota": "Resolución ANUAL: el año se abre el 1 de enero y se cierra el 31 "
+                    "de diciembre. Para fechas exactas hay que ir a la fuente primaria.",
+                }
+            )
 
     filas.sort(key=lambda f: (f["fecha_inicio"], f["tipo"]))
     SALIDA.parent.mkdir(parents=True, exist_ok=True)

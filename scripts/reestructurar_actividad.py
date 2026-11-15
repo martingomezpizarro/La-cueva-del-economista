@@ -51,16 +51,40 @@ DETALLE = RAIZ / "docs" / "reestructura_actividad.csv"
 FAMILIA = "Actividad y Cuentas Nacionales"
 TOTAL = "Total"
 
-LETRAS = ["agro", "pesca", "mineria", "industria", "elect_gas_agua", "construccion", "comercio",
-          "hoteles", "transporte", "intermediacion_fin", "inmobiliarias", "admin_publica",
-          "ensenanza", "salud", "otros_servicios", "hogares_dom"]
+LETRAS = [
+    "agro",
+    "pesca",
+    "mineria",
+    "industria",
+    "elect_gas_agua",
+    "construccion",
+    "comercio",
+    "hoteles",
+    "transporte",
+    "intermediacion_fin",
+    "inmobiliarias",
+    "admin_publica",
+    "ensenanza",
+    "salud",
+    "otros_servicios",
+    "hogares_dom",
+]
 
 # El prefijo de la columna ya dice de qué letra cuelga la rama: la jerarquía no hay que
 # inventarla, estaba codificada ahí desde la ingesta.
-PREFIJOS = {"agro_": "agro", "min_": "mineria", "ind_": "industria", "ee_": "elect_gas_agua",
-            "hot_": "hoteles", "tr_": "transporte", "fin_": "intermediacion_fin",
-            "inmo_": "inmobiliarias", "ense_": "ensenanza", "salud_": "salud",
-            "otr_": "otros_servicios"}
+PREFIJOS = {
+    "agro_": "agro",
+    "min_": "mineria",
+    "ind_": "industria",
+    "ee_": "elect_gas_agua",
+    "hot_": "hoteles",
+    "tr_": "transporte",
+    "fin_": "intermediacion_fin",
+    "inmo_": "inmobiliarias",
+    "ense_": "ensenanza",
+    "salud_": "salud",
+    "otr_": "otros_servicios",
+}
 
 
 def _sin_letra(nombre: str) -> str:
@@ -129,33 +153,45 @@ def _ubic_emae_sec(col: str, nombre: dict[str, str]) -> tuple[str, str]:
 
 # (Grupo, {archivo: unidad por defecto para las series nuevas}, regla de subgrupo)
 GRUPOS = [
-    ("Valor Agregado Bruto por rama",
-     {"cn_vab_rama_constante.csv": "Mill. ARS 2004", "cn_vab_rama_corriente.csv": "Mill. ARS"},
-     _ubic_rama),
-    ("Valor Bruto de Producción por rama",
-     {"cn_vbp_rama_constante.csv": "Mill. ARS 2004", "cn_vbp_rama_corriente.csv": "Mill. ARS"},
-     _ubic_rama),
-    ("Índice de Volumen Físico por rama",
-     {"cn_vab_rama_ivf.csv": "Índice base 2004=100"}, _ubic_rama),
-    ("Índice de Precios Implícitos por rama",
-     {"cn_vab_rama_ipi.csv": "Índice"}, _ubic_rama),
-    ("PBI por categoría de tabulación",
-     {"cn_pbi_categoria_constante.csv": "Mill. ARS 2004",
-      "cn_pbi_categoria_corriente.csv": "Mill. ARS"}, _ubic_pbi_cat),
-    ("PBI por categoría de tabulación — Precios Implícitos",
-     {"cn_pbi_categoria_ipi.csv": "Índice"}, _ubic_pbi_cat),
-    ("Oferta y Demanda Globales",
-     {"cn_oferta_demanda_constante.csv": "Mill. ARS 2004",
-      "cn_oferta_demanda_corriente.csv": "Mill. ARS"}, _ubic_od),
-    ("Oferta y Demanda Globales — Desestacionalizada",
-     {"cn_oferta_demanda_desest.csv": "Mill. ARS 2004"}, _ubic_od),
-    ("Oferta y Demanda Globales — Precios Implícitos",
-     {"cn_oferta_demanda_ipi.csv": "Índice"}, _ubic_od),
-    ("Formación Bruta de Capital Fijo",
-     {"cn_fbkf_constante.csv": "Mill. ARS 2004", "cn_fbkf_corriente.csv": "Mill. ARS"},
-     _ubic_fbkf),
-    ("Formación Bruta de Capital Fijo — Precios Implícitos",
-     {"cn_fbkf_ipi.csv": "Índice"}, _ubic_fbkf),
+    (
+        "Valor Agregado Bruto por rama",
+        {"cn_vab_rama_constante.csv": "Mill. ARS 2004", "cn_vab_rama_corriente.csv": "Mill. ARS"},
+        _ubic_rama,
+    ),
+    (
+        "Valor Bruto de Producción por rama",
+        {"cn_vbp_rama_constante.csv": "Mill. ARS 2004", "cn_vbp_rama_corriente.csv": "Mill. ARS"},
+        _ubic_rama,
+    ),
+    ("Índice de Volumen Físico por rama", {"cn_vab_rama_ivf.csv": "Índice base 2004=100"}, _ubic_rama),
+    ("Índice de Precios Implícitos por rama", {"cn_vab_rama_ipi.csv": "Índice"}, _ubic_rama),
+    (
+        "PBI por categoría de tabulación",
+        {"cn_pbi_categoria_constante.csv": "Mill. ARS 2004", "cn_pbi_categoria_corriente.csv": "Mill. ARS"},
+        _ubic_pbi_cat,
+    ),
+    (
+        "PBI por categoría de tabulación — Precios Implícitos",
+        {"cn_pbi_categoria_ipi.csv": "Índice"},
+        _ubic_pbi_cat,
+    ),
+    (
+        "Oferta y Demanda Globales",
+        {"cn_oferta_demanda_constante.csv": "Mill. ARS 2004", "cn_oferta_demanda_corriente.csv": "Mill. ARS"},
+        _ubic_od,
+    ),
+    (
+        "Oferta y Demanda Globales — Desestacionalizada",
+        {"cn_oferta_demanda_desest.csv": "Mill. ARS 2004"},
+        _ubic_od,
+    ),
+    ("Oferta y Demanda Globales — Precios Implícitos", {"cn_oferta_demanda_ipi.csv": "Índice"}, _ubic_od),
+    (
+        "Formación Bruta de Capital Fijo",
+        {"cn_fbkf_constante.csv": "Mill. ARS 2004", "cn_fbkf_corriente.csv": "Mill. ARS"},
+        _ubic_fbkf,
+    ),
+    ("Formación Bruta de Capital Fijo — Precios Implícitos", {"cn_fbkf_ipi.csv": "Índice"}, _ubic_fbkf),
     ("Utilización de la Capacidad Instalada", {"uci_bloques.csv": "%"}, _ubic_uci),
     ("EMAE — Nivel General", {"emae_nivel_general.csv": "Índice base 2004=100"}, _ubic_emae),
     # Solo el archivo mensual: el trimestral y el anual son otras FRECUENCIAS de la misma serie
@@ -169,7 +205,8 @@ GRUPOS = [
 SALTAR = {
     # El PBI del cuadro de categorías es el mismo número que el de Oferta y Demanda, donde ya vive
     # como `pbi_constante` / `pbi_nominal`. Se cataloga una sola vez, en el cuadro que lo encabeza.
-    "cn_pbi_categoria_constante.csv": {"pbi"}, "cn_pbi_categoria_corriente.csv": {"pbi"},
+    "cn_pbi_categoria_constante.csv": {"pbi"},
+    "cn_pbi_categoria_corriente.csv": {"pbi"},
 }
 
 # Duplicados a eliminar: los creó la primera corrida de este script, antes de repuntar
@@ -187,15 +224,24 @@ RESTO = {
 }
 
 PREFIJO_ID = {
-    "cn_vab_rama_constante.csv": "vab_c_", "cn_vab_rama_corriente.csv": "vab_n_",
-    "cn_vab_rama_ivf.csv": "vab_q_", "cn_vab_rama_ipi.csv": "vab_p_",
-    "cn_vbp_rama_constante.csv": "vbp_c_", "cn_vbp_rama_corriente.csv": "vbp_n_",
-    "cn_pbi_categoria_constante.csv": "sec_c_", "cn_pbi_categoria_corriente.csv": "sec_n_",
+    "cn_vab_rama_constante.csv": "vab_c_",
+    "cn_vab_rama_corriente.csv": "vab_n_",
+    "cn_vab_rama_ivf.csv": "vab_q_",
+    "cn_vab_rama_ipi.csv": "vab_p_",
+    "cn_vbp_rama_constante.csv": "vbp_c_",
+    "cn_vbp_rama_corriente.csv": "vbp_n_",
+    "cn_pbi_categoria_constante.csv": "sec_c_",
+    "cn_pbi_categoria_corriente.csv": "sec_n_",
     "cn_pbi_categoria_ipi.csv": "sec_p_",
-    "cn_oferta_demanda_constante.csv": "od_c_", "cn_oferta_demanda_corriente.csv": "od_n_",
-    "cn_oferta_demanda_ipi.csv": "od_p_", "cn_oferta_demanda_desest.csv": "od_d_",
-    "cn_fbkf_constante.csv": "fbkf_c_", "cn_fbkf_corriente.csv": "fbkf_n_",
-    "cn_fbkf_ipi.csv": "fbkf_p_", "uci_bloques.csv": "uci_", "emae_nivel_general.csv": "emae_",
+    "cn_oferta_demanda_constante.csv": "od_c_",
+    "cn_oferta_demanda_corriente.csv": "od_n_",
+    "cn_oferta_demanda_ipi.csv": "od_p_",
+    "cn_oferta_demanda_desest.csv": "od_d_",
+    "cn_fbkf_constante.csv": "fbkf_c_",
+    "cn_fbkf_corriente.csv": "fbkf_n_",
+    "cn_fbkf_ipi.csv": "fbkf_p_",
+    "uci_bloques.csv": "uci_",
+    "emae_nivel_general.csv": "emae_",
 }
 
 
@@ -210,7 +256,7 @@ def _actual(cat: dict) -> dict[tuple[str, str], dict]:
 
     def bajar(items, sub):
         for it in items:
-            for fu in (it.get("sources") or [it]):
+            for fu in it.get("sources") or [it]:
                 if fu.get("file"):
                     idx[(fu["file"], fu.get("valCol"))] = {"item": it, "sub_viejo": sub}
             bajar(it.get("children") or [], sub)
@@ -249,13 +295,15 @@ def _sufijos(actual: dict) -> dict[str, dict[str, str]]:
         if not pre or not sid.startswith(pre):
             continue
         raiz = pre[: pre.index("_") + 1] if "_" in pre else pre
-        mapa.setdefault(raiz, {})[col] = sid[len(pre):]
+        mapa.setdefault(raiz, {})[col] = sid[len(pre) :]
     return mapa
 
 
 def proponer() -> pd.DataFrame:
     nombres = pd.read_csv(NOMBRES).fillna("")
-    por_archivo = {a: dict(zip(g.columna, g.nombre_indec)) for a, g in nombres.groupby("archivo")}
+    por_archivo = {
+        a: dict(zip(g.columna, g.nombre_indec, strict=False)) for a, g in nombres.groupby("archivo")
+    }
     cat = _catalogo()
     actual = _actual(cat)
     sufijos = _sufijos(actual)
@@ -274,15 +322,21 @@ def proponer() -> pd.DataFrame:
                 pre = PREFIJO_ID.get(arch, "")
                 raiz = pre[: pre.index("_") + 1] if "_" in pre else pre
                 sid = info["item"]["id"] if info else pre + sufijos.get(raiz, {}).get(col, col)
-                filas.append({
-                    "familia": FAMILIA, "grupo": grupo,
-                    "subgrupo": ubic[0], "serie": ubic[1], "id": sid,
-                    "unidad": info["item"].get("unit", unidad) if info else unidad,
-                    "archivo": arch, "columna": col,
-                    "estado": "existe" if info else "NUEVA",
-                    "serie_vieja": info["item"].get("label", "") if info else "",
-                    "subgrupo_viejo": info["sub_viejo"] if info else "",
-                })
+                filas.append(
+                    {
+                        "familia": FAMILIA,
+                        "grupo": grupo,
+                        "subgrupo": ubic[0],
+                        "serie": ubic[1],
+                        "id": sid,
+                        "unidad": info["item"].get("unit", unidad) if info else unidad,
+                        "archivo": arch,
+                        "columna": col,
+                        "estado": "existe" if info else "NUEVA",
+                        "serie_vieja": info["item"].get("label", "") if info else "",
+                        "subgrupo_viejo": info["sub_viejo"] if info else "",
+                    }
+                )
     return pd.DataFrame(filas)
 
 
@@ -306,7 +360,7 @@ def aplicar(df: pd.DataFrame) -> None:
     # así que comparten frecuencia y procedencia: se heredan de una hermana en vez de inventarlas.
     freq, proc = {}, {}
     for (arch, _), info in viejos.items():
-        for fu in (info["item"].get("sources") or [info["item"]]):
+        for fu in info["item"].get("sources") or [info["item"]]:
             if fu.get("file") == arch:
                 freq[arch] = fu.get("freq", "Q")
                 if fu.get("proc") and arch not in proc:
@@ -319,12 +373,19 @@ def aplicar(df: pd.DataFrame) -> None:
             info = viejos.get((r.archivo, r.columna))
             if info:
                 it = dict(info["item"])
-                it["label"] = r.serie      # el nombre pasa a ser el del INDEC
+                it["label"] = r.serie  # el nombre pasa a ser el del INDEC
                 it["unit"] = r.unidad
-                it.pop("children", None)   # la jerarquía ahora vive en Grupo › Subgrupo
+                it.pop("children", None)  # la jerarquía ahora vive en Grupo › Subgrupo
             else:
-                it = {"id": r.id, "label": r.serie, "unit": r.unidad, "file": r.archivo,
-                      "dateCol": "fecha", "valCol": r.columna, "freq": freq.get(r.archivo, "Q")}
+                it = {
+                    "id": r.id,
+                    "label": r.serie,
+                    "unit": r.unidad,
+                    "file": r.archivo,
+                    "dateCol": "fecha",
+                    "valCol": r.columna,
+                    "freq": freq.get(r.archivo, "Q"),
+                }
                 if r.archivo in proc:
                     it["proc"] = dict(proc[r.archivo])
             items.append(it)
@@ -336,16 +397,17 @@ def aplicar(df: pd.DataFrame) -> None:
     # reestructura.
     cubiertos = {r.id for r in df.itertuples()}
     for b in fam_original:
-        faltantes = [it for it in b["items"]
-                     if it["id"] not in cubiertos and it["id"] not in BORRAR]
+        faltantes = [it for it in b["items"] if it["id"] not in cubiertos and it["id"] not in BORRAR]
         if not faltantes:
             continue
         # RESTO se busca por el nombre viejo del bloque y también por el grupo ya reestructurado,
         # para que una segunda corrida no herede el subgrupo provisorio de la primera.
-        grupo, sub = (RESTO.get(b["sub"]) or RESTO.get(b.get("grupo", ""))
-                      or (b.get("grupo", b["sub"]), b.get("subgrupo", TOTAL)))
-        bloques.append({"sub": f"{grupo} › {sub}", "grupo": grupo, "subgrupo": sub,
-                        "items": faltantes})
+        grupo, sub = (
+            RESTO.get(b["sub"])
+            or RESTO.get(b.get("grupo", ""))
+            or (b.get("grupo", b["sub"]), b.get("subgrupo", TOTAL))
+        )
+        bloques.append({"sub": f"{grupo} › {sub}", "grupo": grupo, "subgrupo": sub, "items": faltantes})
 
     # Verificación dura: ningún id del catálogo viejo puede desaparecer sin estar en BORRAR.
     quedaron = {it["id"] for b in bloques for it in b["items"]}
@@ -371,24 +433,37 @@ def main() -> None:
     nuevas = df[df.estado == "NUEVA"]
     choques = sorted(set(nuevas.id) & _ids_ocupados(_catalogo()))
 
-    print(f"{df.grupo.nunique()} grupos · {len(df.groupby(['grupo', 'subgrupo']))} subgrupos"
-          f" · {len(df)} filas de catálogo · {len(nuevas)} nuevas")
-    print(f"ids nuevos que chocan con alguno existente: {len(choques)}"
-          + (f"  → {choques}" if choques else "  (ninguno)") + "\n")
+    print(
+        f"{df.grupo.nunique()} grupos · {len(df.groupby(['grupo', 'subgrupo']))} subgrupos"
+        f" · {len(df)} filas de catálogo · {len(nuevas)} nuevas"
+    )
+    print(
+        f"ids nuevos que chocan con alguno existente: {len(choques)}"
+        + (f"  → {choques}" if choques else "  (ninguno)")
+        + "\n"
+    )
     for grupo, g in df.groupby("grupo", sort=False):
-        print(f"  {grupo:54s} {g.subgrupo.nunique():3d} subg · {len(g):4d} filas"
-              f" · {len(g[g.estado == 'NUEVA']):3d} nuevas")
+        print(
+            f"  {grupo:54s} {g.subgrupo.nunique():3d} subg · {len(g):4d} filas"
+            f" · {len(g[g.estado == 'NUEVA']):3d} nuevas"
+        )
 
     if args.ver:
-        g = df[df.grupo.str.lower() == args.ver.lower()] if args.ver.lower() in set(df.grupo.str.lower()) else df[df.grupo.str.lower().str.startswith(args.ver.lower())]
+        g = (
+            df[df.grupo.str.lower() == args.ver.lower()]
+            if args.ver.lower() in set(df.grupo.str.lower())
+            else df[df.grupo.str.lower().str.startswith(args.ver.lower())]
+        )
         if g.empty:
             raise SystemExit(f"ningún grupo empieza con «{args.ver}»")
         print(f"\n=== {g.grupo.iloc[0]} ===")
         for sub, s in g.groupby("subgrupo", sort=False):
             print(f"\n  {sub}")
             for serie, v in s.groupby("serie", sort=False):
-                us = " · ".join(f"{r.unidad}: {r.id}" + (" (nueva)" if r.estado == "NUEVA" else "")
-                                for r in v.itertuples())
+                us = " · ".join(
+                    f"{r.unidad}: {r.id}" + (" (nueva)" if r.estado == "NUEVA" else "")
+                    for r in v.itertuples()
+                )
                 print(f"    {serie}\n        {us}")
 
     df.to_csv(DETALLE, index=False)

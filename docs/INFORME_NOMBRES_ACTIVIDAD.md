@@ -186,8 +186,8 @@ momento la plataforma permite pedir solo por nombre de columna, sí lo hay.
 **`scripts/ingestar_cuentas_nacionales.py` no corre.** Quedó apuntando a las carpetas viejas:
 
 ```python
-CRUDO  = RAIZ / "data" / "series" / "Actividad y Cuentas Nacionales"   # ya no existe
-SALIDA = RAIZ / "data" / "series" / "indec"                             # ya no existe
+CRUDO = RAIZ / "data" / "series" / "Actividad y Cuentas Nacionales"  # ya no existe
+SALIDA = RAIZ / "data" / "series" / "indec"  # ya no existe
 ```
 
 Hoy son `…_Fuentes/` y `1.Actividad y Cuentas Nacionales/`. Si se regenera la ingesta sin corregir

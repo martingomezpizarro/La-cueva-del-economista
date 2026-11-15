@@ -32,17 +32,39 @@ def _en_data_series() -> set[str]:
     el organismo (los .xls del INDEC, los CSV de datos.gob.ar), que es insumo de la ingesta, no
     algo que el catálogo lea. Contarlas daba por resuelto el ICA de Sector Externo, que todavía
     no está migrado."""
-    return {r.name for r in SERIES.rglob("*")
-            if r.is_file() and not any(p.name.endswith("_Fuentes") for p in r.parents)}
+    return {
+        r.name
+        for r in SERIES.rglob("*")
+        if r.is_file() and not any(p.name.endswith("_Fuentes") for p in r.parents)
+    }
+
 
 CSV = RAIZ / "docs" / "catalogo_series.csv"
 XLSX = RAIZ / "docs" / "catalogo_series.xlsx"
 REGISTRO = RAIZ / "cueva" / "fuentes" / "registro.json"
 
 COLUMNAS = [
-    "Familia", "Grupo", "Subgrupo", "Serie", "ID", "Archivo", "Columna", "Frec", "Desde", "Hasta", "Obs",
-    "Unidad", "Fuente", "IdExt", "Confianza", "Estado",
-    "¿Ampliable?", "Fuente alternativa", "Objetivo desde", "Notas", "Revisado",
+    "Familia",
+    "Grupo",
+    "Subgrupo",
+    "Serie",
+    "ID",
+    "Archivo",
+    "Columna",
+    "Frec",
+    "Desde",
+    "Hasta",
+    "Obs",
+    "Unidad",
+    "Fuente",
+    "IdExt",
+    "Confianza",
+    "Estado",
+    "¿Ampliable?",
+    "Fuente alternativa",
+    "Objetivo desde",
+    "Notas",
+    "Revisado",
 ]
 # Las cinco últimas van vacías: son las columnas de trabajo.
 A_MANO = 5
@@ -55,10 +77,9 @@ def filas() -> list[dict]:
     for f in auditar():
         clave = f["id"]
         actual = por_id.get(clave)
-        mejor = (
-            actual is None
-            or (bool(f["origen"]), -orden.get(f["frecuencia"], 9))
-            > (bool(actual["origen"]), -orden.get(actual["frecuencia"], 9))
+        mejor = actual is None or (bool(f["origen"]), -orden.get(f["frecuencia"], 9)) > (
+            bool(actual["origen"]),
+            -orden.get(actual["frecuencia"], 9),
         )
         if mejor:
             por_id[clave] = f
@@ -68,29 +89,31 @@ def filas() -> list[dict]:
     for f in por_id.values():
         resuelve = f["base"] in disponibles
         estado = f["estado"].split(" (")[0]
-        salida.append({
-            "Familia": f["familia"],
-            "Grupo": f["grupo"],
-            "Subgrupo": f["subgrupo"],
-            "Serie": f["serie"],
-            "ID": f["id"] if resuelve else "",
-            "Archivo": f["base"] if resuelve else "",
-            "Columna": f["col_valor"] if resuelve else "",
-            "Frec": f["frecuencia"],
-            "Desde": f["origen"],
-            "Hasta": f["final"],
-            "Obs": f["n_obs"],
-            "Unidad": f["unidad_texto"],
-            "Fuente": f["fuente"],
-            "IdExt": f["id_externo"],
-            "Confianza": f["confianza"],
-            "Estado": estado,
-            "¿Ampliable?": "",
-            "Fuente alternativa": "",
-            "Objetivo desde": "",
-            "Notas": "",
-            "Revisado": "",
-        })
+        salida.append(
+            {
+                "Familia": f["familia"],
+                "Grupo": f["grupo"],
+                "Subgrupo": f["subgrupo"],
+                "Serie": f["serie"],
+                "ID": f["id"] if resuelve else "",
+                "Archivo": f["base"] if resuelve else "",
+                "Columna": f["col_valor"] if resuelve else "",
+                "Frec": f["frecuencia"],
+                "Desde": f["origen"],
+                "Hasta": f["final"],
+                "Obs": f["n_obs"],
+                "Unidad": f["unidad_texto"],
+                "Fuente": f["fuente"],
+                "IdExt": f["id_externo"],
+                "Confianza": f["confianza"],
+                "Estado": estado,
+                "¿Ampliable?": "",
+                "Fuente alternativa": "",
+                "Objetivo desde": "",
+                "Notas": "",
+                "Revisado": "",
+            }
+        )
     salida.sort(key=lambda x: (x["Familia"], x["Grupo"], x["Subgrupo"], x["Serie"]))
     return salida
 

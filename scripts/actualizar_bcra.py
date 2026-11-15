@@ -43,6 +43,7 @@ DESTINO = RAIZ / "data" / "series" / "bcra"
 
 # --------------------------------------------------------------------- índice
 
+
 def bajar_indice(cli: ClienteBCRA, con_metodologia: bool = True) -> dict:
     variables = cli.variables()
     print(f"  índice: {len(variables)} variables")
@@ -74,9 +75,7 @@ def bajar_indice(cli: ClienteBCRA, con_metodologia: bool = True) -> dict:
         ],
     }
     SNAPSHOT.parent.mkdir(parents=True, exist_ok=True)
-    SNAPSHOT.write_text(
-        json.dumps(snapshot, ensure_ascii=False, indent=1) + "\n", encoding="utf-8"
-    )
+    SNAPSHOT.write_text(json.dumps(snapshot, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print(f"  -> {SNAPSHOT.relative_to(RAIZ)}")
     return snapshot
 
@@ -91,6 +90,7 @@ def leer_snapshot() -> dict:
 
 
 # --------------------------------------------------------------------- series
+
 
 def ids_del_catalogo() -> list[int]:
     """idVariable que el catálogo declara como propios del BCRA (proc.fuente == 'bcra')."""
@@ -128,19 +128,21 @@ def bajar_series(cli: ClienteBCRA, ids: list[int], catalogo_bcra: dict) -> None:
             w = csv.writer(fh)
             w.writerow(["fecha", "valor"])
             w.writerows(filas)
-        resumen.append({
-            "id": id_var,
-            "archivo": ruta.name,
-            "descripcion": etiqueta,
-            "unidad": meta.get("unidad", ""),
-            "moneda": meta.get("moneda", ""),
-            "periodicidad": meta.get("periodicidad", ""),
-            "categoria": meta.get("categoria", ""),
-            "n_obs": len(filas),
-            "desde": filas[0][0],
-            "hasta": filas[-1][0],
-            "consultado": date.today().isoformat(),
-        })
+        resumen.append(
+            {
+                "id": id_var,
+                "archivo": ruta.name,
+                "descripcion": etiqueta,
+                "unidad": meta.get("unidad", ""),
+                "moneda": meta.get("moneda", ""),
+                "periodicidad": meta.get("periodicidad", ""),
+                "categoria": meta.get("categoria", ""),
+                "n_obs": len(filas),
+                "desde": filas[0][0],
+                "hasta": filas[-1][0],
+                "consultado": date.today().isoformat(),
+            }
+        )
         print(f"        {len(filas)} obs · {filas[0][0]} → {filas[-1][0]}")
 
     if resumen:
@@ -154,21 +156,39 @@ def bajar_series(cli: ClienteBCRA, ids: list[int], catalogo_bcra: dict) -> None:
 
 # ----------------------------------------------------------------------- CLI
 
+
 def main() -> None:
     # La consola de Windows (cp1252) no imprime «→» ni «·»: forzar UTF-8.
     for flujo in (sys.stdout, sys.stderr):
         if hasattr(flujo, "reconfigure"):
             flujo.reconfigure(encoding="utf-8", errors="replace")
-    ap = argparse.ArgumentParser(description=__doc__,
-                                 formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--categorias", action="store_true", help="Mostrar cuántas variables hay por categoría (para detectar bloques nuevos del BCRA).")
-    ap.add_argument("--indice", action="store_true", help="Actualizar el índice de variables y su metodología.")
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument(
+        "--categorias",
+        action="store_true",
+        help="Mostrar cuántas variables hay por categoría (para detectar bloques nuevos del BCRA).",
+    )
+    ap.add_argument(
+        "--indice", action="store_true", help="Actualizar el índice de variables y su metodología."
+    )
     ap.add_argument("--series", action="store_true", help="Bajar las series históricas a data/series/bcra/.")
-    ap.add_argument("--todas", action="store_true", help="Con --series: bajar TODAS las variables del índice (1610), no solo las del catálogo.")
+    ap.add_argument(
+        "--todas",
+        action="store_true",
+        help="Con --series: bajar TODAS las variables del índice (1610), no solo las del catálogo.",
+    )
     ap.add_argument("--ids", default="", help="Con --series: lista de idVariable separados por coma.")
-    ap.add_argument("--categoria", default="", help="Con --series: bajar todas las variables de una categoría del BCRA.")
-    ap.add_argument("--sin-metodologia", action="store_true", help="Con --indice: saltear el corpus metodológico (más rápido).")
-    ap.add_argument("--sin-verificar-tls", action="store_true", help="Desactivar la validación del certificado del BCRA.")
+    ap.add_argument(
+        "--categoria", default="", help="Con --series: bajar todas las variables de una categoría del BCRA."
+    )
+    ap.add_argument(
+        "--sin-metodologia",
+        action="store_true",
+        help="Con --indice: saltear el corpus metodológico (más rápido).",
+    )
+    ap.add_argument(
+        "--sin-verificar-tls", action="store_true", help="Desactivar la validación del certificado del BCRA."
+    )
     args = ap.parse_args()
 
     if not args.indice and not args.series and not args.categorias:

@@ -113,7 +113,7 @@ class Hallazgo:
 
 
 # IDs canónicos de los agentes de la mesa (los chats 1:1 se indexan por esto):
-# los 4 profesores clásicos + líder, y los 7 especialistas de knowledge-base/skills/
+# los 4 profesores clásicos + líder, y los 7 especialistas de RAG/skills/
 AGENTES_IDS = [
     "metodologo",
     "critico",

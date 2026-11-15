@@ -115,8 +115,17 @@ def faltantes(familia: str | None = None) -> dict[str, dict]:
                 fuente = (proc.get("fuente") or "").lower()
                 arch = nodo["file"]
                 if fuente in FUENTES_PORTAL and arch not in disco and arch.lower().endswith(".csv"):
-                    e = out.setdefault(arch, {"familia": fam, "fuente": fuente, "dateCol": nodo.get("dateCol"),
-                                              "columnas": [], "ids": [], "url_humana": proc.get("url_humana") or proc.get("endpoint") or ""})
+                    e = out.setdefault(
+                        arch,
+                        {
+                            "familia": fam,
+                            "fuente": fuente,
+                            "dateCol": nodo.get("dateCol"),
+                            "columnas": [],
+                            "ids": [],
+                            "url_humana": proc.get("url_humana") or proc.get("endpoint") or "",
+                        },
+                    )
                     if nodo.get("valCol") and nodo["valCol"] not in e["columnas"]:
                         e["columnas"].append(nodo["valCol"])
                     if nodo.get("id"):
@@ -158,9 +167,11 @@ def _consulta_desde(archivo: str) -> str:
 def _puntaje(archivo: str, recurso: dict, dataset: dict) -> float:
     a = set(Path(archivo).stem.split("_"))
     r = set(_slug(f"{dataset.get('title', '')} {recurso.get('name', '')}").split("_"))
+
     # los nombres del TF vienen truncados ('mensua', 'trimes'): cuenta como coincidencia un prefijo de 5+ letras
     def coincide(x: str) -> bool:
         return any(x == y or (min(len(x), len(y)) >= 5 and (x.startswith(y) or y.startswith(x))) for y in r)
+
     comunes = {x for x in a if len(x) > 2 and coincide(x)}
     # la frecuencia pesa doble: es lo que distingue mensual/trimestral/anual del mismo cuadro
     extra = sum(1 for x in comunes if x.startswith(("mensua", "trimes", "anual", "semest")))
@@ -179,10 +190,20 @@ def descubrir(familia: str | None) -> None:
         q = _consulta_desde(arch)
         if len(q.split()) < 2:
             # 'ti_mensual.csv', 'ICC.csv': nombres armados a mano en el Trabajo Final, no títulos del portal
-            print(f"  [{i}] {arch}: el nombre no alcanza para buscar; probablemente es un archivo armado a mano")
-            mapa[arch] = {**previo, "familia": info["familia"], "fuente": info["fuente"], "dateCol": info["dateCol"],
-                          "columnas": info["columnas"], "series_catalogo": len(info["ids"]), "candidatos": [],
-                          "elegido": previo.get("elegido"), "confirmado": False}
+            print(
+                f"  [{i}] {arch}: el nombre no alcanza para buscar; probablemente es un archivo armado a mano"
+            )
+            mapa[arch] = {
+                **previo,
+                "familia": info["familia"],
+                "fuente": info["fuente"],
+                "dateCol": info["dateCol"],
+                "columnas": info["columnas"],
+                "series_catalogo": len(info["ids"]),
+                "candidatos": [],
+                "elegido": previo.get("elegido"),
+                "confirmado": False,
+            }
             continue
         print(f"  [{i}] {arch}\n      busco: «{q}»")
         candidatos = []
@@ -192,19 +213,26 @@ def descubrir(familia: str | None) -> None:
                 for rec in ds.get("resources", []):
                     if (rec.get("format") or "").upper() != "CSV":
                         continue
-                    candidatos.append({
-                        "dataset": ds.get("name"), "dataset_titulo": ds.get("title"),
-                        "recurso_id": rec.get("id"), "recurso": rec.get("name"),
-                        "url": rec.get("url") or rec.get("download_url"),
-                        "puntaje": _puntaje(arch, rec, ds),
-                    })
+                    candidatos.append(
+                        {
+                            "dataset": ds.get("name"),
+                            "dataset_titulo": ds.get("title"),
+                            "recurso_id": rec.get("id"),
+                            "recurso": rec.get("name"),
+                            "url": rec.get("url") or rec.get("download_url"),
+                            "puntaje": _puntaje(arch, rec, ds),
+                        }
+                    )
         except RuntimeError as e:
             print(f"      ⚠ {e}")
         candidatos.sort(key=lambda c: -c["puntaje"])
         mapa[arch] = {
             **{k: v for k, v in previo.items() if k == "nota"},
-            "familia": info["familia"], "fuente": info["fuente"], "dateCol": info["dateCol"],
-            "columnas": info["columnas"], "series_catalogo": len(info["ids"]),
+            "familia": info["familia"],
+            "fuente": info["fuente"],
+            "dateCol": info["dateCol"],
+            "columnas": info["columnas"],
+            "series_catalogo": len(info["ids"]),
             "candidatos": candidatos[:5],
             "elegido": candidatos[0]["url"] if candidatos else None,
             "confirmado": False,
@@ -217,7 +245,7 @@ def descubrir(familia: str | None) -> None:
     MAPA.parent.mkdir(parents=True, exist_ok=True)
     MAPA.write_text(json.dumps(mapa, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print(f"\n  -> {MAPA.relative_to(RAIZ)}")
-    print("  Revisá cada `elegido`, cambialo si hace falta y poné `\"confirmado\": true`. Después: --bajar")
+    print('  Revisá cada `elegido`, cambialo si hace falta y poné `"confirmado": true`. Después: --bajar')
 
 
 # ------------------------------------------------------------------ bajar
@@ -255,8 +283,10 @@ def bajar(pisar: bool) -> None:
         pedidas = [c for c in [m.get("dateCol"), *m.get("columnas", [])] if c]
         faltan = [c for c in pedidas if c not in cols]
         if faltan:
-            print(f"  ✗ {arch}: el CSV no trae {len(faltan)} columnas que pide el catálogo "
-                  f"(ej. {', '.join(faltan[:4])}). NO se guarda: revisar el recurso elegido.")
+            print(
+                f"  ✗ {arch}: el CSV no trae {len(faltan)} columnas que pide el catálogo "
+                f"(ej. {', '.join(faltan[:4])}). NO se guarda: revisar el recurso elegido."
+            )
             m["ultimo_error"] = {"faltan": faltan, "trae": cols[:60]}
             mal += 1
             continue
@@ -292,8 +322,14 @@ def main() -> None:
         if hasattr(flujo, "reconfigure"):
             flujo.reconfigure(encoding="utf-8", errors="replace")
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--descubrir", action="store_true", help="Buscar en el portal el recurso de cada archivo faltante y escribir el mapa.")
-    ap.add_argument("--familia", help="Limitar --descubrir a una familia del catálogo (ej. \"Sector Externo\").")
+    ap.add_argument(
+        "--descubrir",
+        action="store_true",
+        help="Buscar en el portal el recurso de cada archivo faltante y escribir el mapa.",
+    )
+    ap.add_argument(
+        "--familia", help='Limitar --descubrir a una familia del catálogo (ej. "Sector Externo").'
+    )
     ap.add_argument("--bajar", action="store_true", help="Bajar los recursos confirmados del mapa.")
     ap.add_argument("--pisar", action="store_true", help="Con --bajar: reemplazar archivos existentes.")
     ap.add_argument("--ids", help="Ids de la API de Series de Tiempo, separados por coma.")

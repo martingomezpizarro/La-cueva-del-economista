@@ -139,10 +139,10 @@ def aplicar(catalogo: dict, revision: dict) -> tuple[list[str], list[str]]:
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description=__doc__,
-                                 formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--desde", default=str(POR_DEFECTO),
-                    help="HTML de la grilla o .json con las correcciones.")
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument(
+        "--desde", default=str(POR_DEFECTO), help="HTML de la grilla o .json con las correcciones."
+    )
     ap.add_argument("--aplicar", action="store_true", help="Escribir el catálogo.")
     args = ap.parse_args()
 
@@ -181,8 +181,10 @@ def main() -> None:
         return
     CATALOGO.write_text(json.dumps(catalogo, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print(f"\n-> {CATALOGO.relative_to(RAIZ)}")
-    print("Ahora conviene correr: python scripts/auditar_series.py && "
-          "python scripts/generar_arbol_visualizador.py")
+    print(
+        "Ahora conviene correr: python scripts/auditar_series.py && "
+        "python scripts/generar_arbol_visualizador.py"
+    )
 
 
 if __name__ == "__main__":

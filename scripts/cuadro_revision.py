@@ -42,17 +42,19 @@ def _radiografiar(item: dict, carpetas: list[Path]) -> list[dict]:
         ruta = _buscar(fd.get("file", ""), carpetas)
         radio = _radiografia(ruta, fd.get("dateCol", ""), fd.get("valCol", ""))
         proc = fd.get("proc") or item.get("proc") or {}
-        salida.append({
-            "freq": fd.get("freq") or item.get("freq", ""),
-            "base": fd.get("file", ""),
-            "cf": fd.get("dateCol", ""),
-            "cv": fd.get("valCol", ""),
-            "ini": radio.get("origen", ""),
-            "fin": radio.get("final", ""),
-            "obs": radio.get("n_obs", 0),
-            "existe": bool(radio.get("existe")),
-            "fuente": proc.get("fuente", ""),
-        })
+        salida.append(
+            {
+                "freq": fd.get("freq") or item.get("freq", ""),
+                "base": fd.get("file", ""),
+                "cf": fd.get("dateCol", ""),
+                "cv": fd.get("valCol", ""),
+                "ini": radio.get("origen", ""),
+                "fin": radio.get("final", ""),
+                "obs": radio.get("n_obs", 0),
+                "existe": bool(radio.get("existe")),
+                "fuente": proc.get("fuente", ""),
+            }
+        )
     return salida
 
 
@@ -125,12 +127,19 @@ def construir(familias: list[dict], resumen: dict, cuerpo_solo: bool = False) ->
     payload = json.dumps(familias, ensure_ascii=False, separators=(",", ":"))
     vocab = json.dumps(unidades.vocabulario(), ensure_ascii=False, separators=(",", ":"))
     fuentes = json.dumps(
-        sorted(json.loads((RAIZ / "cueva" / "fuentes" / "registro.json")
-                          .read_text(encoding="utf-8"))["fuentes"]),
-        ensure_ascii=False)
-    cabeza = "" if cuerpo_solo else (
-        '<!doctype html>\n<html lang="es">\n<head>\n<meta charset="utf-8">\n'
-        '<meta name="viewport" content="width=device-width, initial-scale=1">\n')
+        sorted(
+            json.loads((RAIZ / "cueva" / "fuentes" / "registro.json").read_text(encoding="utf-8"))["fuentes"]
+        ),
+        ensure_ascii=False,
+    )
+    cabeza = (
+        ""
+        if cuerpo_solo
+        else (
+            '<!doctype html>\n<html lang="es">\n<head>\n<meta charset="utf-8">\n'
+            '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
+        )
+    )
     cierre = "" if cuerpo_solo else "</head>\n<body>\n"
     pie = "" if cuerpo_solo else "\n</body>\n</html>\n"
 
@@ -153,21 +162,20 @@ const RESUMEN = {json.dumps(resumen, ensure_ascii=False)};
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description=__doc__,
-                                 formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--cuerpo", default="", help="Escribir además la versión sin skeleton.")
     args = ap.parse_args()
 
     familias = arbol()
     resumen = _contar(familias)
     SALIDA.write_text(construir(familias, resumen), encoding="utf-8")
-    print(f"{resumen['series']} series en {resumen['familias']} familias "
-          f"-> {SALIDA.relative_to(RAIZ)}")
-    print(f"   con descripción: {resumen['con_desc']} · "
-          f"sin descripción: {resumen['series'] - resumen['con_desc']}")
+    print(f"{resumen['series']} series en {resumen['familias']} familias -> {SALIDA.relative_to(RAIZ)}")
+    print(
+        f"   con descripción: {resumen['con_desc']} · "
+        f"sin descripción: {resumen['series'] - resumen['con_desc']}"
+    )
     if args.cuerpo:
-        Path(args.cuerpo).write_text(construir(familias, resumen, cuerpo_solo=True),
-                                     encoding="utf-8")
+        Path(args.cuerpo).write_text(construir(familias, resumen, cuerpo_solo=True), encoding="utf-8")
         print(f"   versión para publicar -> {args.cuerpo}")
 
 

@@ -69,7 +69,7 @@ def main():
     args = ap.parse_args()
 
     if not indice_disponible():
-        raise SystemExit("No hay índice. Corré primero: python scripts/ingestar.py knowledge-base/corpus")
+        raise SystemExit("No hay índice. Corré primero: python scripts/ingestar.py RAG/corpus")
 
     print("=" * 78)
     print(f"📏 EVALUACIÓN DE RETRIEVAL — {EVAL.name} (modo: {args.modo or 'mejor disponible'})")

@@ -7,7 +7,7 @@ el método correcto, advirtiendo qué supuestos verificar.
 
 Se apoya en:
   - La Cueva-LM (índice en <repo>/indice/) → pasajes citados.
-  - Las fichas cara-al-agente (knowledge-base/fichas/) → supuestos y errores típicos.
+  - Las fichas cara-al-agente (RAG/fichas/) → supuestos y errores típicos.
 
 Uso:
     python scripts/metodologo.py "Quiero explicar el riesgo país argentino (EMBI, mensual)
@@ -92,7 +92,7 @@ def main():
         ap.error("Contá qué análisis querés hacer (descripción libre y/o --variable/--objetivo…)")
 
     if not indice_disponible():
-        raise SystemExit("No hay índice. Corré primero: python scripts/ingestar.py knowledge-base/corpus")
+        raise SystemExit("No hay índice. Corré primero: python scripts/ingestar.py RAG/corpus")
 
     pasajes = buscar(contexto, args.k)
     fichas = fichas_relevantes(contexto, args.fichas)

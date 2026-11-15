@@ -34,11 +34,11 @@ class Unidad:
     magnitud: str
     escala: str = "unidad"
     moneda: str | None = None
-    precios: str | None = None   # "constantes" cuando la serie está a precios de una base
-    base: str | None = None      # "2004=100", "dic-2016=100", "2004"
-    rango: str | None = None     # para los scores
-    por: str | None = None       # "PBI", "habitante"
-    contra: str | None = None    # para tipos de cambio
+    precios: str | None = None  # "constantes" cuando la serie está a precios de una base
+    base: str | None = None  # "2004=100", "dic-2016=100", "2004"
+    rango: str | None = None  # para los scores
+    por: str | None = None  # "PBI", "habitante"
+    contra: str | None = None  # para tipos de cambio
     nota: str | None = None
 
     @property

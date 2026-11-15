@@ -86,8 +86,14 @@ def test_estan_los_que_los_listados_automaticos_suelen_perder(periodos):
     Camaño, y sin ellos cualquier serie diaria de ese diciembre queda sin gobierno.
     """
     nombres = " · ".join(p["nombre"] for p in periodos)
-    for quien in ("Ramón Puerta", "Eduardo Camaño", "Arturo Rawson",
-                  "Carlos Alberto Lacoste", "Alfredo Óscar Saint-Jean", "Javier Milei"):
+    for quien in (
+        "Ramón Puerta",
+        "Eduardo Camaño",
+        "Arturo Rawson",
+        "Carlos Alberto Lacoste",
+        "Alfredo Óscar Saint-Jean",
+        "Javier Milei",
+    ):
         assert quien in nombres, f"falta {quien}"
 
 
@@ -168,7 +174,8 @@ def test_el_markdown_de_una_ficha_no_puede_inyectar_html():
     """El relato se renderiza en el servidor; el frontend no interpreta texto libre."""
     secciones = H.renderizar(
         "## Contexto\n\nHola <script>alert(1)</script> y <img src=x onerror=y>.\n",
-        {}, set(),
+        {},
+        set(),
     )
     cuerpo = "".join(s["html"] for s in secciones)
     assert "<script" not in cuerpo and "<img" not in cuerpo, "entró una etiqueta del autor"

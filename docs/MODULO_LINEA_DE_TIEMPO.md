@@ -624,10 +624,10 @@ def cargar_presidencias() -> list[Periodo]: ...
 def cargar_ministros() -> list[Periodo]: ...
 def cargar_autoridades() -> list[Periodo]: ...
 def cargar_eventos() -> list[Evento]: ...
-def cargar_ficha(evento_id: str) -> Ficha: ...          # frontmatter + cuerpo + cifras resueltas
-def cargar_series() -> list[SerieHistorica]: ...        # series.json + datos
-def gobierno_en(fecha: date) -> Periodo: ...            # la derivación de §8.1
-def validar() -> list[str]: ...                         # lo que usan los tests y un script de chequeo
+def cargar_ficha(evento_id: str) -> Ficha: ...  # frontmatter + cuerpo + cifras resueltas
+def cargar_series() -> list[SerieHistorica]: ...  # series.json + datos
+def gobierno_en(fecha: date) -> Periodo: ...  # la derivación de §8.1
+def validar() -> list[str]: ...  # lo que usan los tests y un script de chequeo
 ```
 
 Errores como excepciones tipadas (`EventoNoEncontrado`), ids validados contra

@@ -97,7 +97,9 @@ class Pizarra:
             self.actualizado = _ahora()
         return oculta
 
-    def registrar_estudio(self, herramienta: str, args: dict, resumen: str, resultado: dict | None = None) -> dict:
+    def registrar_estudio(
+        self, herramienta: str, args: dict, resumen: str, resultado: dict | None = None
+    ) -> dict:
         """Registra una corrida de herramienta en el cuaderno. `resultado` guarda la evidencia
         completa (tablas, gráfico) para poder re-renderizarla en el banco de trabajo."""
         estudio = {

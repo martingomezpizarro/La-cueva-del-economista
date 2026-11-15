@@ -139,9 +139,23 @@ RAMAS = [
 
 # Ramas que el catálogo ya tiene abiertas (nivel letra) en constante y corriente.
 YA_LETRA = {
-    "total", "agro", "pesca", "mineria", "industria", "elect_gas_agua", "construccion",
-    "comercio", "hoteles", "transporte", "intermediacion_fin", "inmobiliarias",
-    "admin_publica", "ensenanza", "salud", "otros_servicios", "hogares_dom",
+    "total",
+    "agro",
+    "pesca",
+    "mineria",
+    "industria",
+    "elect_gas_agua",
+    "construccion",
+    "comercio",
+    "hoteles",
+    "transporte",
+    "intermediacion_fin",
+    "inmobiliarias",
+    "admin_publica",
+    "ensenanza",
+    "salud",
+    "otros_servicios",
+    "hogares_dom",
 }
 # Ramas que ya tienen índice de precios implícitos (sec_p_*).
 YA_IPI = {"total", "agro", "industria", "construccion", "comercio"}
@@ -219,105 +233,222 @@ def nuevas() -> list[tuple[str, dict]]:
     D_FBKF = "Formación bruta de capital fijo, cuentas nacionales."
 
     # EMAE tendencia-ciclo (M/Q/A, como las otras dos del nivel general)
-    out.append(("EMAE — Nivel General", {
-        "id": "emae_tc",
-        "label": "EMAE (tendencia-ciclo)",
-        "unit": "Índice base 2004=100",
-        "sources": [
-            {"freq": f, "file": a, "dateCol": "fecha", "valCol": "emae_tendencia_ciclo",
-             "proc": _proc("Estimador Mensual de Actividad Económica, serie tendencia-ciclo, "
-                           "índice base 2004 = 100.", URL_EMAE)}
-            for f, a in [("M", "emae_nivel_general.csv"),
-                         ("Q", "emae_nivel_general_trimestral.csv"),
-                         ("A", "emae_nivel_general_anual.csv")]
-        ],
-    }))
+    out.append(
+        (
+            "EMAE — Nivel General",
+            {
+                "id": "emae_tc",
+                "label": "EMAE (tendencia-ciclo)",
+                "unit": "Índice base 2004=100",
+                "sources": [
+                    {
+                        "freq": f,
+                        "file": a,
+                        "dateCol": "fecha",
+                        "valCol": "emae_tendencia_ciclo",
+                        "proc": _proc(
+                            "Estimador Mensual de Actividad Económica, serie tendencia-ciclo, "
+                            "índice base 2004 = 100.",
+                            URL_EMAE,
+                        ),
+                    }
+                    for f, a in [
+                        ("M", "emae_nivel_general.csv"),
+                        ("Q", "emae_nivel_general_trimestral.csv"),
+                        ("A", "emae_nivel_general_anual.csv"),
+                    ]
+                ],
+            },
+        )
+    )
 
     # Utilización de la capacidad instalada
     for col, sid, lab in UCI_BLOQUES:
-        out.append(("Utilización de la Capacidad Instalada", _item(
-            sid, lab, "uci_bloques.csv", col, "%", "M",
-            "Utilización de la capacidad instalada en la industria, por bloque sectorial.",
-            URL_UCI)))
+        out.append(
+            (
+                "Utilización de la Capacidad Instalada",
+                _item(
+                    sid,
+                    lab,
+                    "uci_bloques.csv",
+                    col,
+                    "%",
+                    "M",
+                    "Utilización de la capacidad instalada en la industria, por bloque sectorial.",
+                    URL_UCI,
+                ),
+            )
+        )
 
     # Oferta y demanda: conceptos que faltaban
-    for pref, arch, uni in [("od_c", "cn_oferta_demanda_constante.csv", "Mill. ARS 2004"),
-                            ("od_n", "cn_oferta_demanda_corriente.csv", "Mill. ARS")]:
-        out.append(("Oferta y Demanda", _item(
-            f"{pref}_valiosos", "Objetos Valiosos", arch, "objetos_valiosos", uni, "Q", D_OD)))
-        out.append(("Oferta y Demanda", _item(
-            f"{pref}_discrep", "Discrepancia Estadística", arch, "discrepancia", uni, "Q", D_OD)))
+    for pref, arch, uni in [
+        ("od_c", "cn_oferta_demanda_constante.csv", "Mill. ARS 2004"),
+        ("od_n", "cn_oferta_demanda_corriente.csv", "Mill. ARS"),
+    ]:
+        out.append(
+            (
+                "Oferta y Demanda",
+                _item(f"{pref}_valiosos", "Objetos Valiosos", arch, "objetos_valiosos", uni, "Q", D_OD),
+            )
+        )
+        out.append(
+            (
+                "Oferta y Demanda",
+                _item(f"{pref}_discrep", "Discrepancia Estadística", arch, "discrepancia", uni, "Q", D_OD),
+            )
+        )
 
-    for col, sid, lab in [("oferta_global", "od_p_oferta", "IPI Oferta Global"),
-                          ("demanda_global", "od_p_demanda", "IPI Demanda Global"),
-                          ("var_existencias", "od_p_varex", "IPI Var. Existencias"),
-                          ("objetos_valiosos", "od_p_valiosos", "IPI Objetos Valiosos"),
-                          ("discrepancia", "od_p_discrep", "IPI Discrepancia Estadística")]:
-        out.append(("Oferta y Demanda — Precios Implícitos", _item(
-            sid, lab, "cn_oferta_demanda_ipi.csv", col, "Índice", "Q", D_OD)))
+    for col, sid, lab in [
+        ("oferta_global", "od_p_oferta", "IPI Oferta Global"),
+        ("demanda_global", "od_p_demanda", "IPI Demanda Global"),
+        ("var_existencias", "od_p_varex", "IPI Var. Existencias"),
+        ("objetos_valiosos", "od_p_valiosos", "IPI Objetos Valiosos"),
+        ("discrepancia", "od_p_discrep", "IPI Discrepancia Estadística"),
+    ]:
+        out.append(
+            (
+                "Oferta y Demanda — Precios Implícitos",
+                _item(sid, lab, "cn_oferta_demanda_ipi.csv", col, "Índice", "Q", D_OD),
+            )
+        )
 
     # Oferta y demanda desestacionalizada
     for col, sid, lab in DESEST:
-        out.append(("Oferta y Demanda — Desestacionalizada", _item(
-            sid, lab, "cn_oferta_demanda_desest.csv", col, "Mill. ARS 2004", "Q",
-            "Oferta y demanda globales, serie desestacionalizada del INDEC.")))
+        out.append(
+            (
+                "Oferta y Demanda — Desestacionalizada",
+                _item(
+                    sid,
+                    lab,
+                    "cn_oferta_demanda_desest.csv",
+                    col,
+                    "Mill. ARS 2004",
+                    "Q",
+                    "Oferta y demanda globales, serie desestacionalizada del INDEC.",
+                ),
+            )
+        )
 
     # PBI por sector: impuestos que faltaban
-    out.append(("PBI por sector", _item(
-        "sec_c_impnet", "Impuestos netos de subsidios", "cn_pbi_categoria_constante.csv",
-        "impuestos_netos", "Mill. ARS 2004", "Q", D_SEC)))
-    out.append(("PBI por sector", _item(
-        "sec_n_impnet", "Impuestos netos de subsidios", "cn_pbi_categoria_corriente.csv",
-        "impuestos_netos", "Mill. ARS", "Q", D_SEC)))
-    for col, sid, lab in [("impuestos_netos", "sec_p_impnet", "IPI Impuestos netos de subsidios"),
-                          ("iva", "sec_p_iva", "IPI IVA"),
-                          ("imp_importaciones", "sec_p_impimp", "IPI Imp. Importaciones")]:
-        out.append(("PBI por sector — Precios Implícitos", _item(
-            sid, lab, "cn_pbi_categoria_ipi.csv", col, "Índice", "Q", D_SEC)))
+    out.append(
+        (
+            "PBI por sector",
+            _item(
+                "sec_c_impnet",
+                "Impuestos netos de subsidios",
+                "cn_pbi_categoria_constante.csv",
+                "impuestos_netos",
+                "Mill. ARS 2004",
+                "Q",
+                D_SEC,
+            ),
+        )
+    )
+    out.append(
+        (
+            "PBI por sector",
+            _item(
+                "sec_n_impnet",
+                "Impuestos netos de subsidios",
+                "cn_pbi_categoria_corriente.csv",
+                "impuestos_netos",
+                "Mill. ARS",
+                "Q",
+                D_SEC,
+            ),
+        )
+    )
+    for col, sid, lab in [
+        ("impuestos_netos", "sec_p_impnet", "IPI Impuestos netos de subsidios"),
+        ("iva", "sec_p_iva", "IPI IVA"),
+        ("imp_importaciones", "sec_p_impimp", "IPI Imp. Importaciones"),
+    ]:
+        out.append(
+            (
+                "PBI por sector — Precios Implícitos",
+                _item(sid, lab, "cn_pbi_categoria_ipi.csv", col, "Índice", "Q", D_SEC),
+            )
+        )
 
     # FBKF: aperturas que faltaban + índices de precios implícitos
-    for pref, arch, uni in [("fbkf_c", "cn_fbkf_constante.csv", "Mill. ARS 2004"),
-                            ("fbkf_n", "cn_fbkf_corriente.csv", "Mill. ARS")]:
-        for col, suf, lab in [("otras_construcciones", "otrcons", "Otras Construcciones"),
-                              ("transp_nacional", "trn", "Eq. Transporte Nacional"),
-                              ("transp_importado", "tri", "Eq. Transporte Importado")]:
-            out.append(("FBKF Detalle", _item(
-                f"{pref}_{suf}", lab, arch, col, uni, "Q", D_FBKF)))
+    for pref, arch, uni in [
+        ("fbkf_c", "cn_fbkf_constante.csv", "Mill. ARS 2004"),
+        ("fbkf_n", "cn_fbkf_corriente.csv", "Mill. ARS"),
+    ]:
+        for col, suf, lab in [
+            ("otras_construcciones", "otrcons", "Otras Construcciones"),
+            ("transp_nacional", "trn", "Eq. Transporte Nacional"),
+            ("transp_importado", "tri", "Eq. Transporte Importado"),
+        ]:
+            out.append(("FBKF Detalle", _item(f"{pref}_{suf}", lab, arch, col, uni, "Q", D_FBKF)))
     for col, sid, lab in FBKF_IPI:
-        out.append(("FBKF Detalle — Precios Implícitos", _item(
-            sid, lab, "cn_fbkf_ipi.csv", col, "Índice", "Q", D_FBKF)))
+        out.append(
+            (
+                "FBKF Detalle — Precios Implícitos",
+                _item(sid, lab, "cn_fbkf_ipi.csv", col, "Índice", "Q", D_FBKF),
+            )
+        )
 
     # VAB por rama
     for col, lab in RAMAS:
         if col not in YA_LETRA:
-            out.append(("VAB por rama", _item(
-                f"vab_c_{col}", lab, "cn_vab_rama_constante.csv", col,
-                "Mill. ARS 2004", "Q", D_VAB)))
-            out.append(("VAB por rama", _item(
-                f"vab_n_{col}", lab, "cn_vab_rama_corriente.csv", col,
-                "Mill. ARS", "Q", D_VAB)))
-        out.append(("VAB por rama — Índice de Volumen Físico", _item(
-            f"vab_q_{col}", lab, "cn_vab_rama_ivf.csv", col, "Índice base 2004=100", "Q",
-            "Índice de volumen físico del VAB a precios básicos, por rama de actividad.")))
+            out.append(
+                (
+                    "VAB por rama",
+                    _item(
+                        f"vab_c_{col}", lab, "cn_vab_rama_constante.csv", col, "Mill. ARS 2004", "Q", D_VAB
+                    ),
+                )
+            )
+            out.append(
+                (
+                    "VAB por rama",
+                    _item(f"vab_n_{col}", lab, "cn_vab_rama_corriente.csv", col, "Mill. ARS", "Q", D_VAB),
+                )
+            )
+        out.append(
+            (
+                "VAB por rama — Índice de Volumen Físico",
+                _item(
+                    f"vab_q_{col}",
+                    lab,
+                    "cn_vab_rama_ivf.csv",
+                    col,
+                    "Índice base 2004=100",
+                    "Q",
+                    "Índice de volumen físico del VAB a precios básicos, por rama de actividad.",
+                ),
+            )
+        )
         if col not in YA_IPI:
-            out.append(("VAB por rama — Precios Implícitos", _item(
-                f"vab_p_{col}", f"IPI {lab}", "cn_vab_rama_ipi.csv", col,
-                "Índice", "Q", D_VAB)))
+            out.append(
+                (
+                    "VAB por rama — Precios Implícitos",
+                    _item(f"vab_p_{col}", f"IPI {lab}", "cn_vab_rama_ipi.csv", col, "Índice", "Q", D_VAB),
+                )
+            )
 
     # VBP por rama (anual)
     for col, lab in RAMAS:
         etq = "VBP total" if col == "total" else lab
-        out.append(("VBP por rama", _item(
-            f"vbp_c_{col}", etq, "cn_vbp_rama_constante.csv", col,
-            "Mill. ARS 2004", "A", D_VBP)))
-        out.append(("VBP por rama", _item(
-            f"vbp_n_{col}", etq, "cn_vbp_rama_corriente.csv", col,
-            "Mill. ARS", "A", D_VBP)))
+        out.append(
+            (
+                "VBP por rama",
+                _item(f"vbp_c_{col}", etq, "cn_vbp_rama_constante.csv", col, "Mill. ARS 2004", "A", D_VBP),
+            )
+        )
+        out.append(
+            (
+                "VBP por rama",
+                _item(f"vbp_n_{col}", etq, "cn_vbp_rama_corriente.csv", col, "Mill. ARS", "A", D_VBP),
+            )
+        )
 
     return out
 
 
 # --------------------------------------------------------------- aplicación
+
 
 def main() -> None:
     ap = argparse.ArgumentParser()

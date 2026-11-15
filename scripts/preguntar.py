@@ -30,7 +30,7 @@ def main():
     args = ap.parse_args()
 
     if not indice_disponible():
-        raise SystemExit("No hay índice. Corré primero: python scripts/ingestar.py knowledge-base/corpus")
+        raise SystemExit("No hay índice. Corré primero: python scripts/ingestar.py RAG/corpus")
 
     pasajes = buscar(args.pregunta, args.k)
 

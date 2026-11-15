@@ -2,7 +2,7 @@
 
 - `ingesta`   : PDFs/código/markdown → índice en <repo>/indice/ (fragmentos + TF-IDF + embeddings)
 - `recuperar` : pregunta → pasajes citados (embeddings multilingües si están, si no TF-IDF)
-- `fichas`    : las fichas metodológicas de knowledge-base/fichas/ (supuestos y errores típicos)
+- `fichas`    : las fichas metodológicas de RAG/fichas/ (supuestos y errores típicos)
 
 El índice NO usa pickle (formato: JSONL + .npy + .npz + JSON): cargarlo nunca ejecuta código.
 """
