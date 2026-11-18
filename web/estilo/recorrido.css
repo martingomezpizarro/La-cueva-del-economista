@@ -2,7 +2,7 @@
 
 .rc-velo{position:fixed; inset:0; z-index:120; background:transparent}
 :root{--rc-sombra:rgba(8,14,12,.58)}
-@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){--rc-sombra:rgba(0,0,0,.7)} }
+:root:not([data-theme="light"]){--rc-sombra:rgba(0,0,0,.7)}
 :root[data-theme="dark"]{--rc-sombra:rgba(0,0,0,.7)}
 .rc-velo[hidden], .rc-foco[hidden], .rc-tarjeta[hidden]{display:none}
 

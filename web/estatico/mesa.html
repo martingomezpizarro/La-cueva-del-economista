@@ -10,6 +10,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="/web/estilo/tokens.css">
 <script src="/web/estilo/tema.js"></script>
+<script src="/web/estilo/barra.js" defer></script>
 <style>
   /* Mesa de la versión publicada: el cascarón de web/index.html sin proyectos ni agentes,
      que necesitan el servidor. El explorador va en iframe, igual que en la Mesa real. */
@@ -32,7 +33,7 @@
       <div class="brand-name">La Cueva del <em>Economista</em></div>
     </div>
 
-    <nav class="modswitch" aria-label="Módulos">
+    <nav class="modswitch" data-barra aria-label="Módulos">
       <a href="/tiempo/">
         <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M1.5 13h13M3 13V9.5M6.2 13V6M9.4 13V3.5M12.6 13V7.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         Línea de Tiempo

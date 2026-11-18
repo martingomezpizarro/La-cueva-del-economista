@@ -1,6 +1,7 @@
 /* ============================================================
    tokens.css — sistema de diseño de La Cueva del Economista
-   "pizarrón y tiza": papel de día, pizarrón de noche.
+   Oscuro por defecto con la paleta de la Terminal (15/11); el claro
+   («pizarrón y tiza») queda como opción del botón de tema.
 
    Extraído de docs/mockup/cueva-mockup.html el 2026-09-16 (fase T0 del
    módulo Línea de Tiempo). Lo usa web/tiempo/ y lo va a usar la Mesa:
@@ -11,6 +12,26 @@
    ============================================================ */
 
 :root{
+  /* Oscuro por defecto: la paleta de la Terminal (decidido el 15/11: manda su estilo). */
+  --ground:#0b0f14; --surface:#111821; --surface-2:#16202c;
+  --sunken:#0d131b; --line:#223041; --line-soft:#1a2533;
+  --ink:#d8e0ea; --ink-2:#b8c3d0; --ink-dim:#8b97a6; --ink-faint:#5f6b7a;
+  --accent:#f5a524; --accent-ink:#0b0f14; --accent-soft:rgba(245,165,36,.14); --accent-line:rgba(245,165,36,.45);
+  --ok:#2ecc8a; --ok-soft:rgba(46,204,138,.14);
+  --warn:#E08A4C; --warn-soft:rgba(224,138,76,.14);
+  --crit:#f05252; --crit-soft:rgba(240,82,82,.14);
+  --info:#6cb6ff; --info-soft:rgba(108,182,255,.14);
+  --facto:#f05252; --const:#2ecc8a;
+  --s1:#6cb6ff; --s2:#f5a524; --s3:#f05252; --s4:#2ecc8a; --s5:#B79BE0;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 32px -16px rgba(0,0,0,.7);
+  color-scheme:dark;
+  --r:6px; --r-lg:10px;
+  --mono:"JetBrains Mono","IBM Plex Mono",ui-monospace,Consolas,monospace;
+  --sans:"Inter","Segoe UI",-apple-system,Roboto,system-ui,sans-serif;
+  --display:"Inter","Segoe UI",-apple-system,Roboto,system-ui,sans-serif;
+}
+/* Claro, solo si el usuario lo elige con el botón de tema (el de «pizarrón y tiza»). */
+:root[data-theme="light"]{
   --ground:#EEF1EC; --surface:#FAFBF8; --surface-2:#F1F4EF;
   --sunken:#E4E9E2; --line:#D5DDD4; --line-soft:#E3E9E1;
   --ink:#14201C; --ink-2:#3D4B44; --ink-dim:#697A71; --ink-faint:#93A198;
@@ -22,38 +43,21 @@
   --facto:#A32F4C; --const:#2F7D52;
   --s1:#26607F; --s2:#8A6410; --s3:#A32F4C; --s4:#2F7D52; --s5:#6A4A94;
   --shadow:0 1px 2px rgba(20,32,28,.06), 0 8px 24px -12px rgba(20,32,28,.18);
-  --r:6px; --r-lg:10px;
-  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
-  --sans:"IBM Plex Sans",-apple-system,"Segoe UI",Roboto,sans-serif;
-  --display:"Fraunces",Georgia,serif;
-}
-@media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    --ground:#101715; --surface:#18211E; --surface-2:#1F2A26;
-    --sunken:#0C1211; --line:#2C3833; --line-soft:#232E2A;
-    --ink:#E7EDE9; --ink-2:#C2CEC8; --ink-dim:#8B9A93; --ink-faint:#66766E;
-    --accent:#E9C46A; --accent-ink:#151E1B; --accent-soft:rgba(233,196,106,.14); --accent-line:rgba(233,196,106,.45);
-    --ok:#7BC49A; --ok-soft:rgba(123,196,154,.14);
-    --warn:#E08A4C; --warn-soft:rgba(224,138,76,.14);
-    --crit:#E0708A; --crit-soft:rgba(224,112,138,.14);
-    --info:#7FB3D0; --info-soft:rgba(127,179,208,.14);
-    --facto:#E0708A; --const:#7BC49A;
-    --s1:#7FB3D0; --s2:#E9C46A; --s3:#E0708A; --s4:#7BC49A; --s5:#B79BE0;
-    --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 32px -16px rgba(0,0,0,.7);
-  }
+  color-scheme:light;
 }
 :root[data-theme="dark"]{
-  --ground:#101715; --surface:#18211E; --surface-2:#1F2A26;
-  --sunken:#0C1211; --line:#2C3833; --line-soft:#232E2A;
-  --ink:#E7EDE9; --ink-2:#C2CEC8; --ink-dim:#8B9A93; --ink-faint:#66766E;
-  --accent:#E9C46A; --accent-ink:#151E1B; --accent-soft:rgba(233,196,106,.14); --accent-line:rgba(233,196,106,.45);
-  --ok:#7BC49A; --ok-soft:rgba(123,196,154,.14);
+  --ground:#0b0f14; --surface:#111821; --surface-2:#16202c;
+  --sunken:#0d131b; --line:#223041; --line-soft:#1a2533;
+  --ink:#d8e0ea; --ink-2:#b8c3d0; --ink-dim:#8b97a6; --ink-faint:#5f6b7a;
+  --accent:#f5a524; --accent-ink:#0b0f14; --accent-soft:rgba(245,165,36,.14); --accent-line:rgba(245,165,36,.45);
+  --ok:#2ecc8a; --ok-soft:rgba(46,204,138,.14);
   --warn:#E08A4C; --warn-soft:rgba(224,138,76,.14);
-  --crit:#E0708A; --crit-soft:rgba(224,112,138,.14);
-  --info:#7FB3D0; --info-soft:rgba(127,179,208,.14);
-  --facto:#E0708A; --const:#7BC49A;
-  --s1:#7FB3D0; --s2:#E9C46A; --s3:#E0708A; --s4:#7BC49A; --s5:#B79BE0;
+  --crit:#f05252; --crit-soft:rgba(240,82,82,.14);
+  --info:#6cb6ff; --info-soft:rgba(108,182,255,.14);
+  --facto:#f05252; --const:#2ecc8a;
+  --s1:#6cb6ff; --s2:#f5a524; --s3:#f05252; --s4:#2ecc8a; --s5:#B79BE0;
   --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 32px -16px rgba(0,0,0,.7);
+  color-scheme:dark;
 }
 
 /* ============================ BASE ============================ */
@@ -183,3 +187,7 @@ a{color:var(--accent)}
   background:var(--sunken); border:1px solid var(--line-soft); color:var(--ink-2); font-family:var(--mono);
 }
 .ev-tag:hover{border-color:var(--accent-line); color:var(--ink)}
+
+/* ====================== BARRA COMÚN (web/estilo/barra.js) ====================== */
+.modswitch .barra-aparte{font-size:11px; opacity:.7}
+.modswitch a[aria-disabled="true"]{opacity:.45; cursor:not-allowed}

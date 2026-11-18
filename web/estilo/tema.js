@@ -1,14 +1,14 @@
 /* tema.js — el tema es del usuario, no de la pantalla.
  *
  * Lo comparten los dos módulos (Línea de Tiempo y Mesa de Trabajo) y se guarda,
- * así no hay que volver a elegirlo al cambiar de pestaña. Si nunca eligió, manda
- * el sistema operativo (tokens.css ya resuelve `prefers-color-scheme`).
+ * así no hay que volver a elegirlo al cambiar de pestaña. Si nunca eligió, es oscuro
+ * (la paleta de la Terminal, que es la base del estilo común).
  *
  * Se carga SIN defer y antes del contenido, para que no haya un parpadeo claro
  * al abrir una pantalla que el usuario dejó en oscuro.
  */
 (function () {
-  const CLAVE = 'cueva_tema';          // 'claro' | 'oscuro' | ausente = el del sistema
+  const CLAVE = 'cueva_tema';          // 'claro' | 'oscuro' | ausente = oscuro
   const raiz = document.documentElement;
 
   function leer() {
@@ -24,8 +24,7 @@
   }
   function esOscuro() {
     const t = raiz.getAttribute('data-theme');
-    if (t) return t === 'dark';
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    return t ? t === 'dark' : true;   // sin elección: oscuro (el estilo de la Terminal)
   }
   function alternar() {
     const valor = esOscuro() ? 'claro' : 'oscuro';

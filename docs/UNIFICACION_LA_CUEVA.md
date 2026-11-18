@@ -47,6 +47,56 @@
 | Datos | **No es el foco ahora.** Intradía y precios con licencia para el sitio público se buscan después de la unificación (puede haber presupuesto si el análisis lo justifica). |
 | Macro y riesgos (Terminal) | Al rediseñarla entran el crédito (spreads, bonos y CDS cargados a mano, Merton) y lo que ayude a identificar coyunturas: la tesis de fondo es estimar la probabilidad de éxito según la coyuntura, clusterizando períodos. |
 
+## 1 ter. Avance
+
+**Paso 1 de la etapa 1 — estructura común (2026-11-18), HECHO:**
+- `web/estilo/barra.js`: la barra común (Inicio · Línea de tiempo ↗ · Mesa de trabajo · Terminal)
+  en todas las pantallas. Cada página deja `<nav class="modswitch" data-barra>` y la barra la
+  completa; en el sitio publicado no hay Inicio, la Mesa es `/` y la Terminal aparece apagada.
+- `cueva/api/terminal.py` + `config.carpeta_terminal()`: si el repo de la Terminal está en la
+  compu (por defecto `PROGRAMACION/PORTFOLIO MANAGER/INVESTIGACIÓN ACTIVOS/terminal`, override
+  `CUEVA_TERMINAL`), se monta en `/terminal/` con su `puente`; si no, `/terminal/` explica por qué
+  (503). `GET /api/v1/terminal/estado`. Tests: `tests/test_terminal.py`.
+- Dentro de La Cueva, la Terminal carga la misma barra (lo inyecta su servidor; PR #28 de la
+  Terminal) y descuenta su alto con `--alto-cueva`.
+- `tokens.css`: oscuro por defecto con la paleta de la Terminal; el claro («pizarrón y tiza»)
+  queda como opción del botón de tema. Tipografía sans (Inter/Segoe UI) en vez de Fraunces/Plex.
+- **«La Cueva del Economista.bat»** (raíz): trae lo último de GitHub, prepara la Terminal
+  (`scripts/preparar_terminal.py`: pull, paquetes, interfaz, precios) y abre `localhost:8800`.
+  No abrir a la vez con Terminal.bat: comparten la base DuckDB.
+
+### Requisito de Martín (18/11): la Mesa tiene que quedar como en el mockup «La Cueva»
+
+La Investigación del mockup estaba toda pensada y **no se recorta**. Hoy `/mesa` tiene Explorar y
+Métodos; el backend de casi todo ya existe (102 métodos, recetas, código restringido, Mis series,
+Mis resultados), pero la pantalla del mockup no está portada. Lista de control (✗ = falta en `/mesa`):
+
+| Pieza del mockup | En `/mesa` | Backend |
+|---|---|---|
+| Catálogo a la izquierda (Familia › Grupo › Subgrupo › Serie, D/M/T/A, con datos / faltan), buscar y traer | parcial (drawer) | `/api/v1/series` |
+| Series de la Terminal en el mismo catálogo (por ticker) | ✗ | `terminal.puente` |
+| Lienzo de N gráficos con modos (tiempo, dispersión, distribución, 3D, árbol) y **capas** (tipo, eje, color, estilo, visible) | ✗ | — (frontend) |
+| **Transformaciones como chips** en cada capa, que se sacan con ✕ | ✗ | `metodos/recetas.py` |
+| Deshacer / rehacer | ✗ | — |
+| **Fichas** seleccionables con alias y receta | ✗ (hay «series del trabajo») | Mis series |
+| **Herramientas por verbo** a la derecha: arrastrar a ficha o gráfico, formulario de parámetros | parcial (pestaña Métodos aparte) | `/api/v1/metodos`, `/api/v1/herramienta` |
+| Tests, transformaciones, modelos, ML, regímenes, clusters… los 102 métodos | ✓ como catálogo | ✓ |
+| **Registro de resultados** (corridas, detalle, salidas → fichas, 📌 al proyecto) | ✗ | Mis resultados |
+| Tablas vivas (filtrar, agrupar, graficar, guardar) | ✓ | ✓ |
+| **Ecuaciones libres** (`objetivo ~ fórmula`, `nombre = fórmula`) | ✗ | falta |
+| **Código Python** restringido → fichas con receta | ✗ en pantalla | `/api/v1/codigo/evaluar` |
+| **Linaje** + **paquete reproducible** (CSV con huella, `receta.py`, `verificar.py`) | ✗ | falta |
+| **Proyectos de la 1.0** (9, de un clic) | ✗ | métodos ✓ |
+| **Proyecto** (tablero de figuras con su receta) | ✗ | proyectos ✓ |
+| **Documento** (borrador con figuras numeradas y anexo de datos automático) | ✗ | falta |
+| **Bandeja** (soltar desde cualquier lado; arrastrar a gráfico, ficha, herramienta o ecuación) | ✗ | paso 3 |
+
+Orden acordado: después del paso 1, **portar la Mesa del mockup a `/mesa` con datos reales**, y la
+bandeja se construye junto con ella (paso 3), porque la Mesa es su destino principal.
+
+**Siguen:** paso 2 (almacén único), paso 3 (bandeja en Terminal y Mesa), paso 4 (bandeja en la
+Línea de tiempo); después Inicio con módulos.
+
 ## 2. El Inicio
 
 Boceto original de Martín: una credencial arriba a la izquierda, el título y el saludo al
