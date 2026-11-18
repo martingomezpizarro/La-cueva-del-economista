@@ -681,7 +681,11 @@ def crear_app() -> FastAPI:
 
         return StreamingResponse(stream(), media_type="text/event-stream")
 
-<<<<<<< HEAD
+    # ── bandeja, tablero y documento compartidos (interfaz + asistente por MCP) ──
+    from cueva.api.mesa_compartida import crear_router
+
+    app.include_router(crear_router(get_repo))
+
     # ── pestaña Terminal (repo privado aparte; si no está, /terminal/ explica por qué) ──
     from cueva.api import terminal as pestana_terminal
 
@@ -690,12 +694,6 @@ def crear_app() -> FastAPI:
         return pestana_terminal.ESTADO
 
     pestana_terminal.montar(app)
-=======
-    # ── bandeja, tablero y documento compartidos (interfaz + asistente por MCP) ──
-    from cueva.api.mesa_compartida import crear_router
-
-    app.include_router(crear_router(get_repo))
->>>>>>> d5706ac (Bandeja, tablero y Documento en el servidor (para la interfaz y el MCP))
 
     return app
 
