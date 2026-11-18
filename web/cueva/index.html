@@ -3671,7 +3671,7 @@ function renderCatSide() {
   filas.forEach((a) => { const [fam, g, sg] = a; if (!arbol.has(fam)) arbol.set(fam, new Map()); const G = arbol.get(fam); if (!G.has(g)) G.set(g, new Map()); const S = G.get(g); const k = sg || ""; if (!S.has(k)) S.set(k, []); S.get(k).push(a); });
   const cnt = (xs) => `<span class="cs-c">${xs.filter((a) => a[7] === "datos").length}/${xs.length}</span>`;
   const abierto = palabras.length ? "open" : "";
-  const item = (a) => { const [, , , lab, fr, un, k, est, fu] = a; return `<div class="cs-it ${est}" ${est === "datos" ? `draggable="true" data-arr-cat="${k}" data-cs-mesa="${k}" role="button" tabindex="0"` : ""} title="${esc(lab)} · ${esc(un)} · ${esc(est === "datos" ? fu : est === "terminal" ? "Está en la Terminal; falta traerla a la Mesa" : "Falta conectar: " + fu)}"><span class="cs-f">${FCORTA[fr] || "?"}</span><span class="cs-t">${esc(lab)}</span>${est === "datos" ? `<button type="button" class="cs-b" data-cs-bj="${k}" title="A la bandeja">⇩</button>` : `<span class="cs-st">${est === "terminal" ? "Terminal" : "falta"}</span>`}</div>`; };
+  const item = (a) => { const [, , , lab, fr, un, k, est, fu] = a; return `<div class="cs-it ${est}" ${est === "datos" ? `draggable="true" data-arr-cat="${k}" data-cs-mesa="${k}" role="button" tabindex="0"` : est === "terminal" ? `data-cs-term="${k}" role="button" tabindex="0"` : ""} title="${esc(lab)} · ${esc(un)} · ${esc(est === "datos" ? fu : est === "terminal" ? "Está en la Terminal: tocala para traerla a la Mesa" : "Falta conectar: " + fu)}"><span class="cs-f">${FCORTA[fr] || "?"}</span><span class="cs-t">${esc(lab)}</span>${est === "datos" ? `<button type="button" class="cs-b" data-cs-bj="${k}" title="A la bandeja">⇩</button>` : `<span class="cs-st">${est === "terminal" ? "Terminal" : "falta"}</span>`}</div>`; };
   $("#cs-arbol").innerHTML = arbol.size ? [...arbol].map(([fam, G]) => { const todas = [...G.values()].flatMap((S) => [...S.values()].flat()); return `<details class="cs-fam" ${abierto}><summary><b>${esc(fam)}</b>${cnt(todas)}</summary>${[...G].map(([g, S]) => { const xs = [...S.values()].flat(); return `<details class="cs-g" ${abierto}><summary>${esc(g)}${cnt(xs)}</summary>${[...S].map(([sg, ys]) => (sg ? `<details class="cs-sg" ${abierto}><summary>${esc(sg)}${cnt(ys)}</summary>${ys.map(item).join("")}</details>` : ys.map(item).join(""))).join("")}</details>`; }).join("")}</details>`; }).join("") : `<div class="vacio" style="padding:12px">Nada con «${esc(q)}».</div>`;
 }
 $("#cs-q").addEventListener("input", () => renderCatSide());
@@ -4161,6 +4161,7 @@ const PY_VERIFICAR = "\"\"\"Verifica el paquete: huellas de los datos, cada fich
 })();
 </script>
 <script src="/web/cueva/metodos_servidor.js"></script>
+<script src="/web/cueva/terminal_a_pedido.js"></script>
 <script src="/web/estilo/sitio.js"></script>
 <script src="/web/estilo/pie.js"></script>
 </body>

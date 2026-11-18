@@ -117,8 +117,12 @@ las punteadas que ya existen). Formulario con sus parámetros; las fichas van co
 el resultado, que la Mesa pasa al registro (métricas, gráficos `RUNVIS.srv`, tablas, notas, series
 de salida). Siguen punteadas: Mis series, deflactar, empalme y N-BEATS/TFT.
 
-**Falta para cerrar la Mesa:** (2) traer a pedido cualquier activo de la Terminal (estado «terminal»);
-(3) bandeja, tablero y documento contra la API de la otra cuenta (hoy en el navegador);
+**Terminal a pedido (2026-11-18), HECHO:** `web/cueva/terminal_a_pedido.js` + `GET /api/v1/mesa/serie/{id}`:
+las filas «terminal» del catálogo (todo el universo por ticker, la macro de FRED, los balances
+`<TICKER>_<variable>_T`) se tocan y se traen; el buscador «Traer» también las encuentra. Quedan
+como fichas comunes (gráficos, transformaciones, los 102 métodos).
+
+**Falta para cerrar la Mesa:** (3) bandeja, tablero y documento contra la API de la otra cuenta (hoy en el navegador);
 (4) partir el JS de la página en módulos.
 
 Orden acordado: después del paso 1, **portar la Mesa del mockup a `/mesa` con datos reales**, y la

@@ -110,7 +110,51 @@ def correr_metodo(body: MetodoMesa) -> dict:
     return json.loads(texto)
 
 
+def serie_terminal(sid: str) -> dict | None:
+    """Una serie de la Terminal con sus datos, para traerla a pedido a la Mesa
+    (las que no vienen precargadas en el catálogo aparecen con estado «terminal»)."""
+    if not pestana_terminal.ESTADO.get("disponible"):
+        return None
+    from terminal import puente
+
+    ficha = next((f for f in puente.series_mesa([sid]) if f["id"] == sid), None)
+    if ficha is None or not ficha.get("puntos"):
+        return None
+    sub = ficha.get("subgrupo") or ficha.get("grupo") or ""
+    corto = ficha.get("corto") or ficha["nombre"]
+    return {
+        "id": sid,
+        "nombre": f"{corto} · {sub}" if sub else corto,
+        "corto": corto,
+        "freq": ficha["freq"],
+        "unidad": ficha.get("unidad") or "",
+        "fuente": ficha["fuente"],
+        "familia": ficha["familia"],
+        "grupo": ficha["grupo"],
+        "subgrupo": ficha.get("subgrupo") or "",
+        "url": ficha.get("url"),
+        "x": [f for f, _ in ficha["puntos"]],
+        "y": [v for _, v in ficha["puntos"]],
+    }
+
+
 def registrar(app: FastAPI) -> None:
+    @app.get("/api/v1/mesa/serie/{sid}")
+    def mesa_serie(sid: str):
+        """Trae a pedido una serie de la Terminal (ticker, vix, KO_ingresos_T…) con sus datos."""
+        import re
+
+        if not re.fullmatch(r"[A-Za-z0-9_.\-^=]{1,60}", sid):
+            raise HTTPException(422, "Id de serie inválido.")
+        try:
+            datos = serie_terminal(sid)
+        except Exception as e:  # la Terminal nunca tumba la Mesa
+            log.warning("mesa: no se pudo traer %s de la Terminal: %s", sid, e)
+            raise HTTPException(503, f"No se pudo leer «{sid}» de la Terminal.") from e
+        if datos is None:
+            raise HTTPException(404, f"«{sid}» no está en la Terminal de esta compu (o no tiene datos).")
+        return JSONResponse(datos)
+
     @app.post("/api/v1/mesa/metodo")
     def mesa_metodo(body: MetodoMesa):
         return JSONResponse(correr_metodo(body))

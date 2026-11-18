@@ -130,3 +130,44 @@ def test_ficha_que_no_vino(cliente):
 def test_la_mesa_carga_los_metodos_del_servidor(cliente):
     assert "/web/cueva/metodos_servidor.js" in cliente.get("/mesa").text
     assert cliente.get("/web/cueva/metodos_servidor.js").status_code == 200
+
+
+def test_serie_de_la_terminal_a_pedido(cliente, monkeypatch):
+    import sys
+    import types
+
+    from cueva.api import terminal as pestana
+
+    falso = types.ModuleType("terminal.puente")
+    falso.series_mesa = lambda ids=None: [
+        {
+            "id": "MUX",
+            "nombre": "MUX — McEwen Mining",
+            "freq": "diaria",
+            "unidad": "USD",
+            "fuente": "Terminal · Yahoo Finance",
+            "familia": "Mercado de Capitales",
+            "grupo": "Precio ajustado (USD)",
+            "subgrupo": "Acciones de EE.UU.",
+            **({"puntos": [("2026-11-12", 10.0), ("2026-11-13", 10.5)]} if ids and "MUX" in ids else {}),
+        },
+    ]
+    paquete = types.ModuleType("terminal")
+    paquete.puente = falso
+    monkeypatch.setitem(sys.modules, "terminal", paquete)
+    monkeypatch.setitem(sys.modules, "terminal.puente", falso)
+    monkeypatch.setitem(pestana.ESTADO, "disponible", True)
+
+    j = cliente.get("/api/v1/mesa/serie/MUX").json()
+    assert j["x"] == ["2026-11-12", "2026-11-13"] and j["y"] == [10.0, 10.5]
+    assert j["nombre"] == "MUX — McEwen Mining · Acciones de EE.UU." and j["freq"] == "diaria"
+    assert cliente.get("/api/v1/mesa/serie/OTRO").status_code == 404
+    assert cliente.get("/api/v1/mesa/serie/a b").status_code in (404, 422)
+
+
+def test_sin_terminal_no_hay_serie_a_pedido(cliente, monkeypatch):
+    from cueva.api import terminal as pestana
+
+    monkeypatch.setitem(pestana.ESTADO, "disponible", False)
+    assert cliente.get("/api/v1/mesa/serie/MUX").status_code == 404
+    assert "/web/cueva/terminal_a_pedido.js" in cliente.get("/mesa").text
