@@ -197,21 +197,30 @@ def crear_app() -> FastAPI:
         )
 
     # ── UI ─────────────────────────────────────────────────────────────────
+    def _pagina(ruta, falta: str):
+        if not ruta.exists():
+            return HTMLResponse(f"<h1>Falta {falta}</h1>", status_code=500)
+        return HTMLResponse(ruta.read_text(encoding="utf-8"))
+
     @app.get("/", response_class=HTMLResponse)
     def home():
-        """Portada pública: qué es la Cueva, los dos módulos y cómo se usa."""
-        idx = WEB / "index.html"
-        if not idx.exists():
-            return HTMLResponse("<h1>Falta web/index.html</h1>", status_code=500)
-        return HTMLResponse(idx.read_text(encoding="utf-8"))
+        """Inicio personalizable de La Cueva (la misma página que la Mesa, en #inicio)."""
+        return _pagina(WEB / "cueva" / "index.html", "web/cueva/index.html")
 
     @app.get("/mesa", response_class=HTMLResponse)
     def mesa():
-        """Módulo 2: la Mesa de Trabajo (antes vivía en /)."""
-        pagina = WEB / "mesa" / "index.html"
-        if not pagina.exists():
-            return HTMLResponse("<h1>Falta web/mesa/index.html</h1>", status_code=500)
-        return HTMLResponse(pagina.read_text(encoding="utf-8"))
+        """Mesa de trabajo: Investigación, Proyecto y Documento (portada del mockup «La Cueva»)."""
+        return _pagina(WEB / "cueva" / "index.html", "web/cueva/index.html")
+
+    @app.get("/portada", response_class=HTMLResponse)
+    def portada():
+        """La portada de lectura (qué es la Cueva); es la que usa el sitio publicado."""
+        return _pagina(WEB / "index.html", "web/index.html")
+
+    @app.get("/mesa/anterior", response_class=HTMLResponse)
+    def mesa_anterior():
+        """La Mesa anterior (Explorar · Métodos): queda mientras se portan los 102 métodos."""
+        return _pagina(WEB / "mesa" / "index.html", "web/mesa/index.html")
 
     @app.get("/explorador", response_class=HTMLResponse)
     def explorador():
@@ -694,6 +703,10 @@ def crear_app() -> FastAPI:
         return pestana_terminal.ESTADO
 
     pestana_terminal.montar(app)
+
+    from cueva.api import mesa as mesa_api
+
+    mesa_api.registrar(app)
 
     return app
 

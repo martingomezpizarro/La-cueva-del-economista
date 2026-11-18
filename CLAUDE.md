@@ -23,6 +23,9 @@ visual: `docs/mockup/cueva-mockup.html` (publicado como artifact; el documento m
 lleva `<nav class="modswitch" data-barra>` + el script), Terminal montada en `/terminal/` por
 `cueva/api/terminal.py`, oscuro por defecto con la paleta de la Terminal, lanzador
 `La Cueva del Economista.bat`. Detalle en `docs/UNIFICACION_LA_CUEVA.md` §1 ter.
+**La Mesa del mockup «La Cueva» ya es la página real (2026-11-18)**: `web/cueva/index.html` en `/`
+(Inicio) y `/mesa`, con datos vivos de `GET /api/v1/mesa/catalogo.js` (`cueva/datos/catalogo_mesa.py`).
+Se generó con `scripts/mesa_desde_mockup.py`; de acá en más se edita la página, no el mockup.
 
 **Catálogo de métodos: 102 métodos en 16 familias y 9 VERBOS + 20 operaciones de recetas (sesión 2026-11-04).** Mapa completo,
 pendientes y hoja de ruta en **`docs/INVESTIGACION_METODOS.md`** (leerlo antes de sumar métodos).

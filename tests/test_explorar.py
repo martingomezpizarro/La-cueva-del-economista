@@ -103,7 +103,7 @@ def test_api_datos_de_serie(cliente, data_series):
 
 
 def test_la_mesa_monta_explorar_nativo(cliente):
-    html = cliente.get("/mesa").text
+    html = cliente.get("/mesa/anterior").text  # la Mesa anterior (Explorar · Métodos)
     assert "/web/mesa/explorar.js" in html and "/web/mesa/explorar.css" in html
     assert 'id="viz-frame"' not in html  # el explorador clásico ya no va embebido
     assert cliente.get("/web/mesa/explorar.js").status_code == 200

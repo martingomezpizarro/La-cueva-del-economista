@@ -99,6 +99,21 @@ Mis resultados), pero la pantalla del mockup no está portada. Lista de control 
 - **Hace falta el HTML del mockup «La Cueva» en el repo** (`docs/mockup/la-cueva.html`): hoy solo
   existe como artifact y es la referencia de la pantalla. Lo sube la cuenta que lo armó.
 
+**Portada hecha (2026-11-18):** el mockup «La Cueva» (bajado como `la-cueva.html`, que NO se
+versiona porque trae datos privados) se convierte con `scripts/mesa_desde_mockup.py` en
+`web/cueva/index.html`, servido en `/` (Inicio) y `/mesa` (Investigación · Proyecto · Documento).
+Todo lo de la tabla de arriba anda como en el mockup, en el navegador. Los datos ya no van
+embebidos: `GET /api/v1/mesa/catalogo.js` los arma en vivo (`cueva/datos/catalogo_mesa.py`, mismo
+formato `CAT` y mismos ids) con data/series + la Terminal (`terminal.puente.series_mesa`, con 68
+series precargadas y el resto del universo como «terminal»). Colores de `tokens.css`. La portada
+de lectura pasó a `/portada` y la Mesa anterior (Explorar · Métodos) a `/mesa/anterior`.
+Para cambiar la pantalla: editar `web/cueva/index.html` (el mockup ya no es la fuente).
+
+**Falta para cerrar la Mesa:** (1) los 102 métodos del servidor en la caja de herramientas (hoy
+las punteadas); (2) traer a pedido cualquier activo de la Terminal (estado «terminal»);
+(3) bandeja, tablero y documento contra la API de la otra cuenta (hoy en el navegador);
+(4) partir el JS de la página en módulos.
+
 Orden acordado: después del paso 1, **portar la Mesa del mockup a `/mesa` con datos reales**, y la
 bandeja se construye junto con ella (paso 3), porque la Mesa es su destino principal.
 
