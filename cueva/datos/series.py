@@ -384,9 +384,34 @@ def _fuente_para_freq(info: SerieInfo, freq: str | None) -> dict:
     )
 
 
+# Series efímeras: las que manda la Mesa con sus datos (fichas del navegador, activos de la
+# Terminal, transformaciones). Viven en memoria con id «m:<huella>»; las registra
+# cueva.metodos.insumos.registrar_datos. Así TODO lo que carga series (métodos nuevos y
+# herramientas viejas) las ve igual que una del catálogo.
+_EFIMERAS: dict = {}
+_TOPE_EFIMERAS = 256
+
+
+def registrar_efimera(sid: str, serie) -> None:
+    if len(_EFIMERAS) >= _TOPE_EFIMERAS:
+        _EFIMERAS.clear()
+    _EFIMERAS[sid] = serie
+
+
+def efimera(sid: str):
+    return _EFIMERAS.get(sid)
+
+
 def cargar(sid: str, freq: str | None = None):
     """Devuelve un pandas.Series indexado por fecha. freq: 'D','M','Q','A' para remuestrear."""
     import pandas as pd
+
+    if sid in _EFIMERAS:
+        s = _EFIMERAS[sid].copy()
+        regla = _regla_resample(freq)
+        if regla and regla != "D":
+            s = s.resample(regla).mean().dropna()
+        return s
 
     cat = catalogo()
     if sid not in cat:

@@ -85,3 +85,48 @@ def test_armar_alinea_las_series_al_calendario():
     assert cal[pep["i0"]] == "2026-01-05"
     estados = {f[6]: f[7] for f in cat["arbol"]}
     assert estados["KO"] == "datos" and estados["MELI"] == "terminal"
+
+
+def _serie(nombre, n=180, semilla=1):
+    import numpy as np
+    import pandas as pd
+
+    f = pd.date_range("2008-01-31", periods=n, freq="ME")
+    y = 100 * np.exp(np.cumsum(np.random.default_rng(semilla).normal(0.003, 0.02, n)))
+    return {"nombre": nombre, "fechas": [str(d.date()) for d in f], "valores": y.tolist()}
+
+
+def test_metodo_del_servidor_sobre_fichas_con_datos(cliente):
+    """Las fichas de la Mesa (catálogo, Terminal o transformadas) llegan con sus datos y
+    cualquier método del catálogo corre sobre ellas."""
+    r = cliente.post(
+        "/api/v1/mesa/metodo",
+        json={"metodo": "filtro_hamilton", "args": {"sid": "@a"}, "series": {"a": _serie("ko")}},
+    )
+    j = r.json()
+    assert r.status_code == 200 and j["ok"] is True
+    assert "ko" in j["resumen"] and "m:" not in j["resumen"]
+    assert j["series_salida"] and any(b["tipo"] == "lineas" for b in j["bloques"])
+
+
+def test_herramientas_viejas_tambien_ven_las_fichas(cliente):
+    r = cliente.post(
+        "/api/v1/mesa/metodo",
+        json={
+            "metodo": "correlaciones",
+            "args": {"sids": ["@a", "@b"]},
+            "series": {"a": _serie("ko"), "b": _serie("pep", semilla=2)},
+        },
+    )
+    j = r.json()
+    assert j["ok"] is True and "ko" in j["resumen"] and "m:" not in str(j)
+
+
+def test_ficha_que_no_vino(cliente):
+    r = cliente.post("/api/v1/mesa/metodo", json={"metodo": "filtro_hamilton", "args": {"sid": "@x"}})
+    assert r.status_code == 422
+
+
+def test_la_mesa_carga_los_metodos_del_servidor(cliente):
+    assert "/web/cueva/metodos_servidor.js" in cliente.get("/mesa").text
+    assert cliente.get("/web/cueva/metodos_servidor.js").status_code == 200

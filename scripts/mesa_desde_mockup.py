@@ -128,14 +128,15 @@ def convertir(html: str) -> str:
         raise SystemExit("El mockup no termina en </html>.")
     html = html[: -len("</html>")].rstrip()
     html += (
-        '\n<script src="/web/estilo/sitio.js"></script>\n<script src="/web/estilo/pie.js"></script>\n'
+        '\n<script src="/web/cueva/metodos_servidor.js"></script>\n<script src="/web/estilo/sitio.js"></script>\n<script src="/web/estilo/pie.js"></script>\n'
         "</body>\n</html>\n"
         if not html.endswith("</body>")
         else ""
     )
     if html.endswith("</body>"):
         html = (
-            html[: -len("</body>")] + '<script src="/web/estilo/sitio.js"></script>\n'
+            html[: -len("</body>")]
+            + '<script src="/web/cueva/metodos_servidor.js"></script>\n<script src="/web/estilo/sitio.js"></script>\n'
             '<script src="/web/estilo/pie.js"></script>\n</body>\n</html>\n'
         )
 
@@ -172,7 +173,7 @@ def main() -> int:
     html = convertir(args.desde.read_text(encoding="utf-8"))
     args.salida.parent.mkdir(parents=True, exist_ok=True)
     args.salida.write_text(html, encoding="utf-8")
-    print(f"{args.salida.relative_to(RAIZ)}: {len(html) / 1024:.0f} KB (sin datos embebidos)")
+    print(f"{args.salida}: {len(html) / 1024:.0f} KB (sin datos embebidos)")
     return 0
 
 

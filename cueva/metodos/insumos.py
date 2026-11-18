@@ -85,6 +85,37 @@ def registrar_receta(receta) -> str:
     return token
 
 
+def registrar_datos(nombre: str, fechas: list, valores: list) -> str:
+    """Registra una serie que llega con sus datos (una ficha de la Mesa: del catálogo, de la
+    Terminal o transformada en el navegador) y devuelve un id («m:<huella>») que cualquier
+    método acepta igual que un id del catálogo. Se guarda en memoria, sin tocar el disco."""
+    import hashlib
+
+    from cueva.datos import series as S
+
+    s = pd.Series(
+        pd.to_numeric(pd.Series(valores), errors="coerce").values,
+        index=pd.to_datetime(fechas, errors="coerce"),
+    )
+    s = s[~s.index.isna()].dropna().sort_index()
+    s = s[~s.index.duplicated(keep="last")].astype(float)
+    if s.empty:
+        raise ErrorMetodo(f"La serie «{nombre}» llegó sin datos.")
+    huella = hashlib.sha1((nombre + s.to_json()).encode()).hexdigest()[:12]
+    token = f"m:{huella}"
+    s.name = nombre
+    S.registrar_efimera(token, s)
+    return token
+
+
+def nombre_de(sid: str) -> str:
+    """Nombre legible de un id (las series de la Mesa llevan el alias de su ficha)."""
+    from cueva.datos import series as S
+
+    e = S.efimera(sid)
+    return str(e.name) if e is not None else sid
+
+
 def receta_de(sid: str):
     """La receta detrás de un id (un id del catálogo es su propia receta)."""
     return _RECETAS.get(sid, sid)
@@ -100,6 +131,8 @@ def cargar_base(sid: str, freq: str = "mensual") -> pd.Series:
         from cueva.metodos import recetas as R
 
         return R.evaluar(_RECETAS[sid], freq)
+    if S.efimera(sid) is not None:
+        return S.cargar(sid, freq=freq).astype(float)
     cat = S.catalogo()
     if sid not in cat:
         raise ErrorMetodo(f"No existe la serie «{sid}» en el catálogo.")
@@ -125,7 +158,7 @@ def serie(sid: str, freq: str = "mensual", transf: str | None = "nivel", desde=N
 
     s = R.evaluar(R.de_transf(sid, transf), freq, cargar_base)
     s = _recortar(s, desde, hasta).dropna()
-    base = R.texto(receta_de(sid)) if sid in _RECETAS else sid
+    base = R.texto(receta_de(sid)) if sid in _RECETAS else nombre_de(sid)
     t = (transf or "nivel").lower()
     et = base if t in ("", "nivel", "none") else f"{base} ({TRANSFORMACIONES.get(t, t)})"
     s.name = sid

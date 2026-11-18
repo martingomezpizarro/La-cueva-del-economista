@@ -12,8 +12,9 @@ import json
 import logging
 import threading
 
-from fastapi import FastAPI
-from fastapi.responses import Response
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse, Response
+from pydantic import BaseModel, Field
 
 from cueva.api import terminal as pestana_terminal
 from cueva.datos import catalogo_mesa
@@ -66,7 +67,54 @@ def catalogo_js() -> str:
         return _cache["js"]
 
 
+class SerieMesa(BaseModel):
+    nombre: str = Field(max_length=120)
+    fechas: list[str] = Field(max_length=60000)
+    valores: list[float | None] = Field(max_length=60000)
+
+
+class MetodoMesa(BaseModel):
+    """Correr un método del catálogo sobre fichas de la Mesa (con sus datos)."""
+
+    metodo: str = Field(pattern=r"^[a-z0-9_]{1,60}$")
+    args: dict = Field(default_factory=dict)
+    series: dict[str, SerieMesa] = Field(default_factory=dict, max_length=24)
+
+
+def _sustituir(v, ids: dict[str, str]):
+    """Cambia «@clave» por el id registrado de esa ficha (en strings y listas)."""
+    if isinstance(v, str) and v.startswith("@"):
+        if v[1:] not in ids:
+            raise HTTPException(422, f"La ficha {v} no vino en «series».")
+        return ids[v[1:]]
+    if isinstance(v, list):
+        return [_sustituir(x, ids) for x in v]
+    return v
+
+
+def correr_metodo(body: MetodoMesa) -> dict:
+    from cueva.econometria import herramientas as H
+    from cueva.metodos import insumos
+    from cueva.metodos.contrato import ErrorMetodo, limpiar
+
+    try:
+        ids = {k: insumos.registrar_datos(s.nombre, s.fechas, s.valores) for k, s in body.series.items()}
+    except ErrorMetodo as e:
+        raise HTTPException(422, str(e)) from e
+    args = {k: _sustituir(v, ids) for k, v in body.args.items()}
+    res = limpiar(H.ejecutar(body.metodo, **args))
+    # en los textos, el id interno de cada ficha («m:…») se cambia por su nombre
+    texto = json.dumps(res, ensure_ascii=False)
+    for clave, sid in ids.items():
+        texto = texto.replace(sid, body.series[clave].nombre)
+    return json.loads(texto)
+
+
 def registrar(app: FastAPI) -> None:
+    @app.post("/api/v1/mesa/metodo")
+    def mesa_metodo(body: MetodoMesa):
+        return JSONResponse(correr_metodo(body))
+
     @app.get("/api/v1/mesa/catalogo.js", include_in_schema=False)
     def mesa_catalogo():
         return Response(

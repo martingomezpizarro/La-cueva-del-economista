@@ -109,8 +109,15 @@ series precargadas y el resto del universo como «terminal»). Colores de `token
 de lectura pasó a `/portada` y la Mesa anterior (Explorar · Métodos) a `/mesa/anterior`.
 Para cambiar la pantalla: editar `web/cueva/index.html` (el mockup ya no es la fuente).
 
-**Falta para cerrar la Mesa:** (1) los 102 métodos del servidor en la caja de herramientas (hoy
-las punteadas); (2) traer a pedido cualquier activo de la Terminal (estado «terminal»);
+**Métodos del servidor en la Mesa (2026-11-18), HECHO:** `web/cueva/metodos_servidor.js` suma los
+102 métodos de `GET /api/v1/metodos` a la caja de herramientas, cada uno bajo su verbo (reemplaza
+las punteadas que ya existen). Formulario con sus parámetros; las fichas van con sus DATOS a
+`POST /api/v1/mesa/metodo` (`cueva/api/mesa.py`), que las registra como series efímeras `m:<huella>`
+(`cueva/datos/series.registrar_efimera`, las ven métodos nuevos y herramientas viejas) y devuelve
+el resultado, que la Mesa pasa al registro (métricas, gráficos `RUNVIS.srv`, tablas, notas, series
+de salida). Siguen punteadas: Mis series, deflactar, empalme y N-BEATS/TFT.
+
+**Falta para cerrar la Mesa:** (2) traer a pedido cualquier activo de la Terminal (estado «terminal»);
 (3) bandeja, tablero y documento contra la API de la otra cuenta (hoy en el navegador);
 (4) partir el JS de la página en módulos.
 
