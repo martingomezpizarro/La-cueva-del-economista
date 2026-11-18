@@ -91,6 +91,14 @@ Mis resultados), pero la pantalla del mockup no está portada. Lista de control 
 | **Documento** (borrador con figuras numeradas y anexo de datos automático) | ✗ | falta |
 | **Bandeja** (soltar desde cualquier lado; arrastrar a gráfico, ficha, herramienta o ecuación) | ✗ | paso 3 |
 
+**Reparto de trabajo entre las dos cuentas de Claude (18/11), para no pisarse:**
+- Cuenta de La Cueva (rama `claude/mesa-compartida-mcp`): el **servidor** de la bandeja, el tablero
+  y el Documento (`cueva/sesiones/bandeja.py`, `cueva/api/mesa_compartida.py`) y el **MCP**.
+- Cuenta de la Terminal: la **pantalla** de la Mesa en `/mesa`, portada del mockup «La Cueva» y
+  conectada a esa API (no reimplementa el guardado de la bandeja ni del documento).
+- **Hace falta el HTML del mockup «La Cueva» en el repo** (`docs/mockup/la-cueva.html`): hoy solo
+  existe como artifact y es la referencia de la pantalla. Lo sube la cuenta que lo armó.
+
 Orden acordado: después del paso 1, **portar la Mesa del mockup a `/mesa` con datos reales**, y la
 bandeja se construye junto con ella (paso 3), porque la Mesa es su destino principal.
 
