@@ -681,6 +681,11 @@ def crear_app() -> FastAPI:
 
         return StreamingResponse(stream(), media_type="text/event-stream")
 
+    # ── bandeja, tablero y documento compartidos (interfaz + asistente por MCP) ──
+    from cueva.api.mesa_compartida import crear_router
+
+    app.include_router(crear_router(get_repo))
+
     return app
 
 
