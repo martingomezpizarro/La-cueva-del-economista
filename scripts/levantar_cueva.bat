@@ -1,4 +1,5 @@
 @echo off
+REM Reemplazado por "La Cueva del Economista.bat" (raiz del repo), que tambien monta la Terminal.
 REM Levanta La Cueva del Economista en http://localhost:8800
 REM   Mesa de Trabajo   -> http://localhost:8800/
 REM   Linea de Tiempo   -> http://localhost:8800/tiempo

@@ -47,6 +47,27 @@
 | Datos | **No es el foco ahora.** Intradía y precios con licencia para el sitio público se buscan después de la unificación (puede haber presupuesto si el análisis lo justifica). |
 | Macro y riesgos (Terminal) | Al rediseñarla entran el crédito (spreads, bonos y CDS cargados a mano, Merton) y lo que ayude a identificar coyunturas: la tesis de fondo es estimar la probabilidad de éxito según la coyuntura, clusterizando períodos. |
 
+## 1 ter. Avance
+
+**Paso 1 de la etapa 1 — estructura común (2026-11-18), HECHO:**
+- `web/estilo/barra.js`: la barra común (Inicio · Línea de tiempo ↗ · Mesa de trabajo · Terminal)
+  en todas las pantallas. Cada página deja `<nav class="modswitch" data-barra>` y la barra la
+  completa; en el sitio publicado no hay Inicio, la Mesa es `/` y la Terminal aparece apagada.
+- `cueva/api/terminal.py` + `config.carpeta_terminal()`: si el repo de la Terminal está en la
+  compu (por defecto `PROGRAMACION/PORTFOLIO MANAGER/INVESTIGACIÓN ACTIVOS/terminal`, override
+  `CUEVA_TERMINAL`), se monta en `/terminal/` con su `puente`; si no, `/terminal/` explica por qué
+  (503). `GET /api/v1/terminal/estado`. Tests: `tests/test_terminal.py`.
+- Dentro de La Cueva, la Terminal carga la misma barra (lo inyecta su servidor; PR #28 de la
+  Terminal) y descuenta su alto con `--alto-cueva`.
+- `tokens.css`: oscuro por defecto con la paleta de la Terminal; el claro («pizarrón y tiza»)
+  queda como opción del botón de tema. Tipografía sans (Inter/Segoe UI) en vez de Fraunces/Plex.
+- **«La Cueva del Economista.bat»** (raíz): trae lo último de GitHub, prepara la Terminal
+  (`scripts/preparar_terminal.py`: pull, paquetes, interfaz, precios) y abre `localhost:8800`.
+  No abrir a la vez con Terminal.bat: comparten la base DuckDB.
+
+**Siguen:** paso 2 (almacén único), paso 3 (bandeja en Terminal y Mesa), paso 4 (bandeja en la
+Línea de tiempo); después Inicio con módulos.
+
 ## 2. El Inicio
 
 Boceto original de Martín: una credencial arriba a la izquierda, el título y el saludo al

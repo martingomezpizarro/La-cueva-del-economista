@@ -681,6 +681,15 @@ def crear_app() -> FastAPI:
 
         return StreamingResponse(stream(), media_type="text/event-stream")
 
+    # ── pestaña Terminal (repo privado aparte; si no está, /terminal/ explica por qué) ──
+    from cueva.api import terminal as pestana_terminal
+
+    @app.get("/api/v1/terminal/estado")
+    def terminal_estado():
+        return pestana_terminal.ESTADO
+
+    pestana_terminal.montar(app)
+
     return app
 
 

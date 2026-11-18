@@ -19,6 +19,11 @@ visual: `docs/mockup/cueva-mockup.html` (publicado como artifact; el documento m
 
 ## Estado (actualizado 2026-07-14)
 
+**Unificación, paso 1 hecho (2026-11-18)**: barra común `web/estilo/barra.js` (toda página nueva
+lleva `<nav class="modswitch" data-barra>` + el script), Terminal montada en `/terminal/` por
+`cueva/api/terminal.py`, oscuro por defecto con la paleta de la Terminal, lanzador
+`La Cueva del Economista.bat`. Detalle en `docs/UNIFICACION_LA_CUEVA.md` §1 ter.
+
 **Catálogo de métodos: 102 métodos en 16 familias y 9 VERBOS + 20 operaciones de recetas (sesión 2026-11-04).** Mapa completo,
 pendientes y hoja de ruta en **`docs/INVESTIGACION_METODOS.md`** (leerlo antes de sumar métodos).
 - **`cueva/metodos/`**: cada método se DECLARA con `@metodo(...)` (familia, pregunta, `Param`

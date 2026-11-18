@@ -89,6 +89,22 @@ def carpeta_series() -> Path:
     return Path(os.environ.get("CUEVA_SERIES", ROOT / "data" / "series"))
 
 
+def carpeta_terminal() -> Path | None:
+    """Carpeta `terminal/` del repo privado de la Terminal de Análisis de Activos.
+
+    La Terminal es una pestaña de La Cueva, pero su código vive en otro repo (privado):
+    si no está en esta compu, la pestaña avisa que solo funciona en la versión local.
+    Override: CUEVA_TERMINAL o `terminal = "..."` en el config local."""
+    candidatos = [
+        os.environ.get("CUEVA_TERMINAL"),
+        _LOCAL.get("terminal"),
+        ROOT.parent / "PORTFOLIO MANAGER" / "INVESTIGACIÓN ACTIVOS" / "terminal",
+        ROOT.parent / "INVESTIGACIÓN ACTIVOS" / "terminal",
+    ]
+    hallada = _primero_que_existe(candidatos)
+    return hallada if hallada and (hallada / "terminal" / "puente.py").exists() else None
+
+
 def carpeta_trabajo_final() -> Path | None:
     """Carpeta raíz del Trabajo Final (contiene data/Variables Finales)."""
     return _primero_que_existe(
