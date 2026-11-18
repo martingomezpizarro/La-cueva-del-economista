@@ -65,6 +65,35 @@
   (`scripts/preparar_terminal.py`: pull, paquetes, interfaz, precios) y abre `localhost:8800`.
   No abrir a la vez con Terminal.bat: comparten la base DuckDB.
 
+### Requisito de Martín (18/11): la Mesa tiene que quedar como en el mockup «La Cueva»
+
+La Investigación del mockup estaba toda pensada y **no se recorta**. Hoy `/mesa` tiene Explorar y
+Métodos; el backend de casi todo ya existe (102 métodos, recetas, código restringido, Mis series,
+Mis resultados), pero la pantalla del mockup no está portada. Lista de control (✗ = falta en `/mesa`):
+
+| Pieza del mockup | En `/mesa` | Backend |
+|---|---|---|
+| Catálogo a la izquierda (Familia › Grupo › Subgrupo › Serie, D/M/T/A, con datos / faltan), buscar y traer | parcial (drawer) | `/api/v1/series` |
+| Series de la Terminal en el mismo catálogo (por ticker) | ✗ | `terminal.puente` |
+| Lienzo de N gráficos con modos (tiempo, dispersión, distribución, 3D, árbol) y **capas** (tipo, eje, color, estilo, visible) | ✗ | — (frontend) |
+| **Transformaciones como chips** en cada capa, que se sacan con ✕ | ✗ | `metodos/recetas.py` |
+| Deshacer / rehacer | ✗ | — |
+| **Fichas** seleccionables con alias y receta | ✗ (hay «series del trabajo») | Mis series |
+| **Herramientas por verbo** a la derecha: arrastrar a ficha o gráfico, formulario de parámetros | parcial (pestaña Métodos aparte) | `/api/v1/metodos`, `/api/v1/herramienta` |
+| Tests, transformaciones, modelos, ML, regímenes, clusters… los 102 métodos | ✓ como catálogo | ✓ |
+| **Registro de resultados** (corridas, detalle, salidas → fichas, 📌 al proyecto) | ✗ | Mis resultados |
+| Tablas vivas (filtrar, agrupar, graficar, guardar) | ✓ | ✓ |
+| **Ecuaciones libres** (`objetivo ~ fórmula`, `nombre = fórmula`) | ✗ | falta |
+| **Código Python** restringido → fichas con receta | ✗ en pantalla | `/api/v1/codigo/evaluar` |
+| **Linaje** + **paquete reproducible** (CSV con huella, `receta.py`, `verificar.py`) | ✗ | falta |
+| **Proyectos de la 1.0** (9, de un clic) | ✗ | métodos ✓ |
+| **Proyecto** (tablero de figuras con su receta) | ✗ | proyectos ✓ |
+| **Documento** (borrador con figuras numeradas y anexo de datos automático) | ✗ | falta |
+| **Bandeja** (soltar desde cualquier lado; arrastrar a gráfico, ficha, herramienta o ecuación) | ✗ | paso 3 |
+
+Orden acordado: después del paso 1, **portar la Mesa del mockup a `/mesa` con datos reales**, y la
+bandeja se construye junto con ella (paso 3), porque la Mesa es su destino principal.
+
 **Siguen:** paso 2 (almacén único), paso 3 (bandeja en Terminal y Mesa), paso 4 (bandeja en la
 Línea de tiempo); después Inicio con módulos.
 
