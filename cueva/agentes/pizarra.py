@@ -50,6 +50,10 @@ class Pizarra:
         self.informe: dict = {s: "" for s in SECCIONES_INFORME}
         self.secciones_ocultas: list[str] = []
         self.estudios: list[dict] = []
+        # Tablero del proyecto (figuras fijadas) y bloques del Documento: los llenan la
+        # Terminal, la Mesa y el asistente por MCP (ver cueva/api/mesa_compartida.py).
+        self.figuras: list[dict] = []
+        self.documento: list[dict] = []
         self.chats_agentes: dict[str, list[dict]] = {a: [] for a in AGENTES_IDS}
         self.uso_llm: dict = {}
         self.actualizado: float = _ahora()
@@ -125,6 +129,114 @@ class Pizarra:
                 self.actualizado = _ahora()
         return hubo
 
+    # ── tablero y documento (compartidos con la Terminal y el asistente) ───
+    def fijar_figura(
+        self,
+        titulo: str,
+        tipo: str,
+        datos: dict | None = None,
+        receta: dict | None = None,
+        procedencia: dict | None = None,
+        origen: str = "mesa",
+        autor: str = "usuario",
+    ) -> dict:
+        """Fija una figura al tablero del proyecto. `datos` es el bloque a dibujar (el mismo
+        formato de bloques tipados de los métodos: lineas, barras, tabla, sankey…) y `receta`
+        + `procedencia` son la leyenda que el Documento muestra debajo."""
+        fig = {
+            "id": uuid.uuid4().hex[:8],
+            "titulo": titulo,
+            "tipo": tipo,
+            "datos": datos,
+            "receta": receta,
+            "procedencia": procedencia,
+            "origen": origen,
+            "autor": autor,
+            "ts": _ahora(),
+        }
+        with self._lock:
+            self.figuras.append(fig)
+            self.actualizado = _ahora()
+        return fig
+
+    def quitar_figura(self, figura_id: str) -> bool:
+        with self._lock:
+            antes = len(self.figuras)
+            self.figuras = [f for f in self.figuras if f.get("id") != figura_id]
+            hubo = len(self.figuras) < antes
+            if hubo:
+                # una figura que se va del tablero se va también del documento
+                self.documento = [b for b in self.documento if b.get("figura_id") != figura_id]
+                self.actualizado = _ahora()
+        return hubo
+
+    def insertar_bloque(
+        self,
+        seccion: str,
+        tipo: str,
+        texto: str = "",
+        figura_id: str | None = None,
+        posicion: int | None = None,
+        autor: str = "usuario",
+    ) -> dict:
+        """Inserta un bloque (texto o figura del tablero) en una sección del Documento.
+        `posicion` es el lugar dentro de la sección (None = al final)."""
+        if seccion not in SECCIONES_INFORME:
+            raise KeyError(f"Sección de informe desconocida: {seccion}")
+        if tipo not in ("texto", "figura"):
+            raise ValueError(f"Tipo de bloque desconocido: {tipo}")
+        if tipo == "figura" and not any(f["id"] == figura_id for f in self.figuras):
+            raise KeyError(f"La figura {figura_id} no está en el tablero")
+        bloque = {
+            "id": uuid.uuid4().hex[:8],
+            "seccion": seccion,
+            "tipo": tipo,
+            "texto": texto,
+            "figura_id": figura_id,
+            "autor": autor,
+            "ts": _ahora(),
+        }
+        with self._lock:
+            de_la_seccion = [i for i, b in enumerate(self.documento) if b["seccion"] == seccion]
+            if posicion is None or posicion >= len(de_la_seccion):
+                donde = (de_la_seccion[-1] + 1) if de_la_seccion else len(self.documento)
+            else:
+                donde = de_la_seccion[max(posicion, 0)]
+            self.documento.insert(donde, bloque)
+            self.actualizado = _ahora()
+        return bloque
+
+    def editar_bloque(self, bloque_id: str, texto: str) -> dict:
+        with self._lock:
+            for b in self.documento:
+                if b["id"] == bloque_id:
+                    if b["tipo"] != "texto":
+                        raise ValueError("Solo se edita el texto de un bloque de texto")
+                    b["texto"] = texto
+                    self.actualizado = _ahora()
+                    return b
+        raise KeyError(bloque_id)
+
+    def mover_bloque(self, bloque_id: str, seccion: str, posicion: int | None = None) -> dict:
+        with self._lock:
+            b = next((x for x in self.documento if x["id"] == bloque_id), None)
+            if b is None:
+                raise KeyError(bloque_id)
+            self.documento.remove(b)
+        nuevo = self.insertar_bloque(seccion, b["tipo"], b["texto"], b["figura_id"], posicion, b["autor"])
+        with self._lock:
+            nuevo["id"], nuevo["ts"] = b["id"], b["ts"]  # es el mismo bloque, solo cambió de lugar
+        return nuevo
+
+    def quitar_bloque(self, bloque_id: str) -> bool:
+        with self._lock:
+            antes = len(self.documento)
+            self.documento = [b for b in self.documento if b.get("id") != bloque_id]
+            hubo = len(self.documento) < antes
+            if hubo:
+                self.actualizado = _ahora()
+        return hubo
+
     def agregar_chat(self, agente_id: str, quien: str, texto: str) -> dict:
         # la validación de que el agente exista es de la capa API (contra AGENTES);
         # la pizarra acepta cualquier id para soportar agentes nuevos definidos por skills
@@ -194,6 +306,8 @@ class Pizarra:
             "informe": self.informe,
             "secciones_ocultas": self.secciones_ocultas,
             "estudios": self.estudios,
+            "figuras": self.figuras,
+            "documento": self.documento,
             "chats_agentes": self.chats_agentes,
             "uso_llm": self.uso_llm,
             "actualizado": self.actualizado,
@@ -220,6 +334,8 @@ class Pizarra:
         piz.informe = {**{s: "" for s in SECCIONES_INFORME}, **d.get("informe", {})}
         piz.secciones_ocultas = d.get("secciones_ocultas", [])
         piz.estudios = d.get("estudios", [])
+        piz.figuras = d.get("figuras", [])
+        piz.documento = d.get("documento", [])
         piz.chats_agentes = {**{a: [] for a in AGENTES_IDS}, **d.get("chats_agentes", {})}
         piz.uso_llm = d.get("uso_llm", {})
         piz.actualizado = d.get("actualizado", _ahora())
