@@ -122,7 +122,14 @@ las filas «terminal» del catálogo (todo el universo por ticker, la macro de F
 `<TICKER>_<variable>_T`) se tocan y se traen; el buscador «Traer» también las encuentra. Quedan
 como fichas comunes (gráficos, transformaciones, los 102 métodos).
 
-**Falta para cerrar la Mesa:** (3) bandeja, tablero y documento contra la API de la otra cuenta (hoy en el navegador);
+**Bandeja Terminal → Mesa (18/11, hecho):** la bandeja es UNA, la del servidor (`/api/v1/bandeja`).
+En la Terminal, la barra de La Cueva carga `web/estilo/bandeja.js`: botón «Bandeja · n» y, en la
+ficha de un activo (`/terminal/activo/<T>`) o de una serie macro (`/terminal/macro/<id>`), «⇩ T a la
+bandeja» + menú con el precio y cada variable de balances (`GET /api/v1/mesa/activo/{ticker}`). En la
+Mesa, `web/cueva/bandeja_servidor.js` sincroniza `st.bandeja` con el servidor en los dos sentidos
+(cada 4 s y al volver a la pestaña) y trae a pedido los datos de lo que llegó. Sin bandeja de ejemplo.
+
+**Falta para cerrar la Mesa:** (3) tablero y documento contra la API de la otra cuenta (hoy en el navegador);
 (4) partir el JS de la página en módulos.
 
 Orden acordado: después del paso 1, **portar la Mesa del mockup a `/mesa` con datos reales**, y la

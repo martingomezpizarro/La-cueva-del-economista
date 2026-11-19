@@ -128,7 +128,7 @@ def convertir(html: str) -> str:
         raise SystemExit("El mockup no termina en </html>.")
     html = html[: -len("</html>")].rstrip()
     html += (
-        '\n<script src="/web/cueva/metodos_servidor.js"></script>\n<script src="/web/cueva/terminal_a_pedido.js"></script>\n<script src="/web/estilo/sitio.js"></script>\n<script src="/web/estilo/pie.js"></script>\n'
+        '\n<script src="/web/cueva/metodos_servidor.js"></script>\n<script src="/web/cueva/terminal_a_pedido.js"></script>\n<script src="/web/cueva/bandeja_servidor.js"></script>\n<script src="/web/estilo/sitio.js"></script>\n<script src="/web/estilo/pie.js"></script>\n'
         "</body>\n</html>\n"
         if not html.endswith("</body>")
         else ""
@@ -136,7 +136,7 @@ def convertir(html: str) -> str:
     if html.endswith("</body>"):
         html = (
             html[: -len("</body>")]
-            + '<script src="/web/cueva/metodos_servidor.js"></script>\n<script src="/web/cueva/terminal_a_pedido.js"></script>\n<script src="/web/estilo/sitio.js"></script>\n'
+            + '<script src="/web/cueva/metodos_servidor.js"></script>\n<script src="/web/cueva/terminal_a_pedido.js"></script>\n<script src="/web/cueva/bandeja_servidor.js"></script>\n<script src="/web/estilo/sitio.js"></script>\n'
             '<script src="/web/estilo/pie.js"></script>\n</body>\n</html>\n'
         )
 
@@ -175,6 +175,12 @@ def convertir(html: str) -> str:
     html, n = re.subn(r'    <button class="btn sm" id="b-html"[^\n]*</button>\n', "", html, count=1)
     if n != 1:
         raise SystemExit("No encontré el botón ⬇ HTML.")
+    # la bandeja de ejemplo del mockup: la real vive en el servidor (bandeja_servidor.js)
+    html = reemplazar(
+        html,
+        ' : [itemDeCat("ccl"), itemDeCat("KO_ingresos_T"), itemDeCat("emae_desestacionalizada_m")];',
+        " : []; // la bandeja real vive en el servidor (bandeja_servidor.js)",
+    )
     return html
 
 

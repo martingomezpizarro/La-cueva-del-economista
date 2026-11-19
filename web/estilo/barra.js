@@ -8,7 +8,8 @@
  *    `<nav class="modswitch" data-barra>` de la topbar que ya tiene cada página.
  *  - En la Terminal (React, se carga con data-modulo="terminal") no hay topbar de La Cueva:
  *    agrega una barra propia arriba de todo y avisa su alto con --alto-cueva, que la
- *    Terminal descuenta de sus paneles de altura completa.
+ *    Terminal descuenta de sus paneles de altura completa. Esa barra carga además
+ *    web/estilo/bandeja.js: el botón de la bandeja de series compartida con la Mesa.
  *
  * En el sitio publicado (window.CUEVA_ESTATICO) la Terminal no existe: la pestaña queda
  * visible pero apagada, con el aviso de que solo funciona en la versión local.
@@ -103,6 +104,12 @@
       `<nav aria-label="Pestañas de La Cueva del Economista">${enlaces()}</nav>`;
     document.body.prepend(barra);
     document.documentElement.style.setProperty('--alto-cueva', `${ALTO}px`);
+    // la bandeja de series compartida con la Mesa (botón en esta barra)
+    if (!estatico) {
+      const bj = document.createElement('script');
+      bj.src = '/web/estilo/bandeja.js';
+      document.head.appendChild(bj);
+    }
   }
 
   function iniciar() {

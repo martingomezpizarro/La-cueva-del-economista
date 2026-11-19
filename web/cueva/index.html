@@ -3843,7 +3843,7 @@ const PY_VERIFICAR = "\"\"\"Verifica el paquete: huellas de los datos, cada fich
     { t: "fig", pin: "p3" },
   ];
   st.docTit = prev?.docTit || null;
-  st.bandeja = prev?.bandeja?.length ? prev.bandeja.filter((b) => b.tipo !== "cat" || CATS[b.id]) : [itemDeCat("ccl"), itemDeCat("KO_ingresos_T"), itemDeCat("emae_desestacionalizada_m")];
+  st.bandeja = prev?.bandeja?.length ? prev.bandeja.filter((b) => b.tipo !== "cat" || CATS[b.id]) : []; // la bandeja real vive en el servidor (bandeja_servidor.js)
   renderHerr();
   st.deshacer = []; st.rehacer = [];
   render();
@@ -4162,6 +4162,7 @@ const PY_VERIFICAR = "\"\"\"Verifica el paquete: huellas de los datos, cada fich
 </script>
 <script src="/web/cueva/metodos_servidor.js"></script>
 <script src="/web/cueva/terminal_a_pedido.js"></script>
+<script src="/web/cueva/bandeja_servidor.js"></script>
 <script src="/web/estilo/sitio.js"></script>
 <script src="/web/estilo/pie.js"></script>
 </body>

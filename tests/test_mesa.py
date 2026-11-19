@@ -171,3 +171,59 @@ def test_sin_terminal_no_hay_serie_a_pedido(cliente, monkeypatch):
     monkeypatch.setitem(pestana.ESTADO, "disponible", False)
     assert cliente.get("/api/v1/mesa/serie/MUX").status_code == 404
     assert "/web/cueva/terminal_a_pedido.js" in cliente.get("/mesa").text
+
+
+def test_series_de_un_activo_para_la_bandeja(cliente, monkeypatch):
+    """La Terminal arma el menú de lo que se puede mandar a la bandeja desde una ficha."""
+    import sys
+    import types
+
+    from cueva.api import terminal as pestana
+
+    falso = types.ModuleType("terminal.puente")
+    base = {"freq": "diaria", "unidad": "USD", "familia": "x", "subgrupo": ""}
+    falso.series_mesa = lambda ids=None: [
+        {
+            **base,
+            "id": "KO",
+            "nombre": "KO — Coca-Cola",
+            "fuente": "Terminal · Yahoo Finance",
+            "grupo": "Precios",
+        },
+        {
+            **base,
+            "id": "KO_ingresos_T",
+            "nombre": "Coca-Cola",
+            "fuente": "Terminal · SEC EDGAR",
+            "grupo": "Resultados",
+        },
+        {**base, "id": "KOF", "nombre": "KOF", "fuente": "Terminal · Yahoo Finance", "grupo": "Precios"},
+        {**base, "id": "vix", "nombre": "VIX", "fuente": "Terminal · FRED VIXCLS", "grupo": "Riesgo"},
+    ]
+    paquete = types.ModuleType("terminal")
+    paquete.puente = falso
+    monkeypatch.setitem(sys.modules, "terminal", paquete)
+    monkeypatch.setitem(sys.modules, "terminal.puente", falso)
+    monkeypatch.setitem(pestana.ESTADO, "disponible", True)
+
+    ko = cliente.get("/api/v1/mesa/activo/KO").json()["series"]
+    assert [s["id"] for s in ko] == ["KO", "KO_ingresos_T"]  # KOF no es de KO
+    assert ko[0]["etiqueta"] == "Precio diario" and ko[1]["etiqueta"] == "ingresos"
+    assert [s["id"] for s in cliente.get("/api/v1/mesa/activo/VIXCLS").json()["series"]] == ["vix"]
+    assert cliente.get("/api/v1/mesa/activo/a b").status_code in (404, 422)
+
+
+def test_bandeja_compartida_entre_terminal_y_mesa(cliente):
+    """La Mesa sincroniza su bandeja con la del servidor y la Terminal carga el widget."""
+    html = cliente.get("/mesa").text
+    assert "/web/cueva/bandeja_servidor.js" in html
+    assert 'itemDeCat("KO_ingresos_T")' not in html  # sin bandeja de ejemplo del mockup
+    assert cliente.get("/web/cueva/bandeja_servidor.js").status_code == 200
+    assert "/web/estilo/bandeja.js" in cliente.get("/web/estilo/barra.js").text
+    assert cliente.get("/web/estilo/bandeja.js").status_code == 200
+
+    it = cliente.post(
+        "/api/v1/bandeja", json={"tipo": "serie", "ref": "KO", "procedencia": {"origen": "terminal"}}
+    ).json()
+    assert any(i["ref"] == "KO" for i in cliente.get("/api/v1/bandeja").json()["items"])
+    assert cliente.delete(f"/api/v1/bandeja/{it['id']}").status_code == 200

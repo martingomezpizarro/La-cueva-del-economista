@@ -138,7 +138,57 @@ def serie_terminal(sid: str) -> dict | None:
     }
 
 
+def series_de_activo(ticker: str) -> list[dict]:
+    """Las series de la Terminal que pertenecen a un activo: su precio (id = ticker) y sus
+    balances trimestrales (`<ticker>_<variable>_T`); o, si `ticker` es un id de FRED de la
+    pestaña Macro (VIXCLS…), esa serie con el id que usa la Mesa (vix…). Sin datos: es el
+    menú para mandar a la bandeja."""
+    if not pestana_terminal.ESTADO.get("disponible"):
+        return []
+    from terminal import puente
+
+    t = ticker.upper()
+    salida = []
+    for f in puente.series_mesa([]):
+        sid = f["id"]
+        if sid.upper() == t:
+            etiqueta, grupo = "Precio diario", "Precio"
+        elif (f.get("fuente") or "").upper().endswith("FRED " + t):
+            etiqueta, grupo = f.get("nombre") or sid, f.get("grupo") or "Macro"
+        elif sid.upper().startswith(t + "_") and sid.endswith("_T"):
+            etiqueta, grupo = sid[len(t) + 1 : -2].replace("_", " "), f.get("grupo") or "Balances"
+        else:
+            continue
+        salida.append(
+            {
+                "id": sid,
+                "nombre": etiqueta
+                if grupo != "Precio" and "FRED" in (f.get("fuente") or "")
+                else f"{t} · {etiqueta}",
+                "etiqueta": etiqueta,
+                "grupo": grupo,
+                "freq": f.get("freq") or "",
+                "unidad": f.get("unidad") or "",
+            }
+        )
+    salida.sort(key=lambda d: (d["id"].upper() != t, d["grupo"], d["etiqueta"]))
+    return salida
+
+
 def registrar(app: FastAPI) -> None:
+    @app.get("/api/v1/mesa/activo/{ticker}")
+    def mesa_activo(ticker: str):
+        """Qué series de un activo de la Terminal se pueden mandar a la bandeja."""
+        import re
+
+        if not re.fullmatch(r"[A-Za-z0-9.\-^=]{1,30}", ticker):
+            raise HTTPException(422, "Ticker inválido.")
+        try:
+            return JSONResponse({"ticker": ticker, "series": series_de_activo(ticker)})
+        except Exception as e:
+            log.warning("mesa: no se pudieron listar las series de %s: %s", ticker, e)
+            raise HTTPException(503, f"No se pudo leer «{ticker}» de la Terminal.") from e
+
     @app.get("/api/v1/mesa/serie/{sid}")
     def mesa_serie(sid: str):
         """Trae a pedido una serie de la Terminal (ticker, vix, KO_ingresos_T…) con sus datos."""
