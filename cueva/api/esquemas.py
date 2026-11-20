@@ -34,6 +34,10 @@ class ProyectoCrear(BaseModel):
     serie_dependiente: str | None = Field(default=None, max_length=80)
     frecuencia: Frecuencia | None = None
     estudios: list[EstudioSemilla] = Field(default_factory=list, max_length=100)
+    # proyecto predeterminado (ver cueva/sesiones/plantillas.py)
+    plantilla: str | None = Field(default=None, max_length=40)
+    metodos: list[str] = Field(default_factory=list, max_length=20)
+    activo: str | None = Field(default=None, max_length=40)
 
 
 class ProyectoPatch(BaseModel):

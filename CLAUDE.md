@@ -26,6 +26,12 @@ lleva `<nav class="modswitch" data-barra>` + el script), Terminal montada en `/t
 **La Mesa del mockup «La Cueva» ya es la página real (2026-11-18)**: `web/cueva/index.html` en `/`
 (Inicio) y `/mesa`, con datos vivos de `GET /api/v1/mesa/catalogo.js` (`cueva/datos/catalogo_mesa.py`).
 Se generó con `scripts/mesa_desde_mockup.py`; de acá en más se edita la página, no el mockup.
+**Proyectos en la Mesa (2026-11-20)**: selector en la barra (`web/cueva/proyectos.js`): «+ Nuevo proyecto»,
+Vista rápida (sólo navegador), predeterminados y guardados. Con proyecto abierto, figuras, Documento y las corridas
+que usan se guardan en `GET|PUT /api/v1/proyectos/{id}/mesa` (`Pizarra.mesa`). Predeterminados en
+`cueva/sesiones/plantillas.py` (`GET /api/v1/plantillas`); «Valuación de empresa» arranca con los bloques VACÍOS
+(los datos los carga Martín desde la Ficha; cada método lleva ficha propia y (i) por parámetro, por construir).
+⚠ El tablero de la página (`st.pines`) todavía no muestra `Pizarra.figuras` (lo que fija la Terminal o el MCP).
 
 **Catálogo de métodos: 102 métodos en 16 familias y 9 VERBOS + 20 operaciones de recetas (sesión 2026-11-04).** Mapa completo,
 pendientes y hoja de ruta en **`docs/INVESTIGACION_METODOS.md`** (leerlo antes de sumar métodos).

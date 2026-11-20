@@ -104,6 +104,7 @@ class RepositorioProyectos:
                         "pregunta": d.get("proyecto", {}).get("pregunta", ""),
                         "actualizado": d.get("actualizado", 0),
                         "n_series": len(d.get("proyecto", {}).get("series", [])),
+                        "plantilla": d.get("plantilla"),
                     }
                 )
             except Exception:

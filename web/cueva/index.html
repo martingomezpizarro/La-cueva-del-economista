@@ -3848,6 +3848,7 @@ const PY_VERIFICAR = "\"\"\"Verifica el paquete: huellas de los datos, cada fich
   st.deshacer = []; st.rehacer = [];
   render();
   ruta();
+  window.__cuevaLista = true; document.dispatchEvent(new Event("cueva:lista"));
 } catch (e) {
   console.warn("Mesa: el ejemplo inicial quedó incompleto (faltan series de la Terminal en esta compu):", e);
   try { renderHerr(); st.deshacer = []; st.rehacer = []; render(); ruta(); } catch (_) {}
@@ -4163,6 +4164,7 @@ const PY_VERIFICAR = "\"\"\"Verifica el paquete: huellas de los datos, cada fich
 <script src="/web/cueva/metodos_servidor.js"></script>
 <script src="/web/cueva/terminal_a_pedido.js"></script>
 <script src="/web/cueva/bandeja_servidor.js"></script>
+<script src="/web/cueva/proyectos.js"></script>
 <script src="/web/estilo/sitio.js"></script>
 <script src="/web/estilo/pie.js"></script>
 </body>

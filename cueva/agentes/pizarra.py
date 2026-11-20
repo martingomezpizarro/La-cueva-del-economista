@@ -54,6 +54,10 @@ class Pizarra:
         # Terminal, la Mesa y el asistente por MCP (ver cueva/api/mesa_compartida.py).
         self.figuras: list[dict] = []
         self.documento: list[dict] = []
+        # Estado de la página de la Mesa (figuras fijadas, documento, título) tal como lo
+        # guarda el navegador, y la plantilla de la que nació el proyecto (si nació de una).
+        self.mesa: dict = {}
+        self.plantilla: str | None = None
         self.chats_agentes: dict[str, list[dict]] = {a: [] for a in AGENTES_IDS}
         self.uso_llm: dict = {}
         self.actualizado: float = _ahora()
@@ -308,6 +312,8 @@ class Pizarra:
             "estudios": self.estudios,
             "figuras": self.figuras,
             "documento": self.documento,
+            "mesa": self.mesa,
+            "plantilla": self.plantilla,
             "chats_agentes": self.chats_agentes,
             "uso_llm": self.uso_llm,
             "actualizado": self.actualizado,
@@ -321,6 +327,7 @@ class Pizarra:
             "pregunta": self.proyecto.pregunta,
             "actualizado": self.actualizado,
             "n_series": len(self.proyecto.series),
+            "plantilla": self.plantilla,
         }
 
     @classmethod
@@ -336,6 +343,8 @@ class Pizarra:
         piz.estudios = d.get("estudios", [])
         piz.figuras = d.get("figuras", [])
         piz.documento = d.get("documento", [])
+        piz.mesa = d.get("mesa", {})
+        piz.plantilla = d.get("plantilla")
         piz.chats_agentes = {**{a: [] for a in AGENTES_IDS}, **d.get("chats_agentes", {})}
         piz.uso_llm = d.get("uso_llm", {})
         piz.actualizado = d.get("actualizado", _ahora())

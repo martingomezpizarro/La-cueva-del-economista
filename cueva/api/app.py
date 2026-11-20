@@ -69,7 +69,7 @@ from cueva.datos import historia as HIST
 from cueva.datos import series as S
 from cueva.econometria import herramientas as H
 from cueva.econometria.kalman import ajustar_kalman
-from cueva.sesiones import PidInvalido, ProyectoNoEncontrado, RepositorioProyectos
+from cueva.sesiones import PidInvalido, ProyectoNoEncontrado, RepositorioProyectos, plantillas
 
 from .esquemas import (
     PID_PATTERN,
@@ -564,7 +564,13 @@ def crear_app() -> FastAPI:
 
     @app.post("/api/v1/proyectos")
     def api_crear_proyecto(body: ProyectoCrear, repo: RepositorioProyectos = Depends(get_repo)):
+        if body.plantilla is not None and body.plantilla not in plantillas.PLANTILLAS:
+            raise HTTPException(404, f"Plantilla desconocida: {body.plantilla}")
         piz = repo.crear(titulo=body.titulo)
+        if body.plantilla:
+            with repo.abrir(piz.id) as p:
+                p.plantilla = body.plantilla
+                p.mesa = plantillas.estado_inicial(body.plantilla, body.metodos, body.activo)
         # semilla de la Vista Rápida (promover): series y estudios acumulados en el espacio efímero
         if body.series or body.estudios or body.serie_dependiente or body.frecuencia:
             with repo.abrir(piz.id) as p:
@@ -577,6 +583,30 @@ def crear_app() -> FastAPI:
                 for e in body.estudios:
                     p.registrar_estudio(e.herramienta, e.args, e.resumen, resultado=e.resultado)
         return JSONResponse(repo.obtener(piz.id).to_dict())
+
+    @app.get("/api/v1/plantillas")
+    def api_plantillas():
+        return JSONResponse(plantillas.listar())
+
+    @app.get("/api/v1/proyectos/{pid}/mesa")
+    def api_mesa_proyecto(pid: str = PID, repo: RepositorioProyectos = Depends(get_repo)):
+        piz = repo.obtener(pid)
+        return JSONResponse({"id": piz.id, "titulo": piz.proyecto.titulo, "plantilla": piz.plantilla, "mesa": piz.mesa})
+
+    @app.put("/api/v1/proyectos/{pid}/mesa")
+    async def api_guardar_mesa(request: Request, pid: str = PID, repo: RepositorioProyectos = Depends(get_repo)):
+        crudo = await request.body()
+        if len(crudo) > 8_000_000:
+            raise HTTPException(413, "El estado de la Mesa supera los 8 MB.")
+        try:
+            mesa = json.loads(crudo or b"{}")
+        except ValueError:
+            raise HTTPException(422, "El estado de la Mesa no es JSON válido.") from None
+        if not isinstance(mesa, dict):
+            raise HTTPException(422, "El estado de la Mesa tiene que ser un objeto.")
+        with repo.abrir(pid) as piz:
+            piz.mesa = mesa
+        return JSONResponse({"ok": True})
 
     @app.get("/api/v1/proyectos/{pid}")
     def api_obtener_proyecto(pid: str = PID, repo: RepositorioProyectos = Depends(get_repo)):
