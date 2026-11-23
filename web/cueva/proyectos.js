@@ -229,10 +229,16 @@
         const m = info[id] || {};
         const guia = m.guia ? ` <a href="${ec(m.guia)}" target="_blank" rel="noopener">guía ↗</a>` : "";
         const pasos = (m.pasos || []).length
-          ? `<ol class="pasos">${m.pasos.map((p) => `<li${p.estado === "en curso" ? ' class="curso"' : ""}>${ec(p.nombre)} <span class="est">${ec(p.estado)}${p.nota ? " · " + ec(p.nota) : ""}</span></li>`).join("")}</ol>` : "";
+          ? `<ol class="pasos">${m.pasos.map((p) => `<li${p.estado === "en curso" ? ' class="curso"' : ""}>${ec(p.nombre)} <span class="est">${ec(p.estado)}${p.nota ? " · " + ec(p.nota) : ""}</span>${p.metodo ? ` <button class="btn sm" type="button" data-val-metodo="${ec(p.metodo)}">Abrir ▸</button>` : ""}</li>`).join("")}</ol>` : "";
         return `<li><b>${ec(m.nombre || id)}</b> — ${ec(m.pregunta || "")}<span class="est">${ec(m.estado || "")}</span>${guia}${pasos}</li>`;
       }).join("")}</ol>`;
   }
+
+  document.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-val-metodo]");
+    if (!b) return;
+    window.CuevaMetodos?.abrir(b.dataset.valMetodo, b, st.valuacion?.activo ? { activo: st.valuacion.activo } : null);
+  });
 
   /* ── enganches con la página ── */
   const guardarOriginal = window.guardar;

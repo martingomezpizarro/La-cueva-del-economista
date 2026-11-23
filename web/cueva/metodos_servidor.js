@@ -221,5 +221,13 @@
   };
 
   cargar();
-  window.CuevaMetodos = { MET, correr: (id, args, fichas) => correr(MET.get(id), args, fichas) };
+  // Abre el formulario de un método por su id (lo usa la tarjeta de valuación), con valores sugeridos.
+  function abrir(id, ancla, valores) {
+    const t = HERR.find((x) => x.srv === id), m = MET.get(id);
+    if (!t || !m) { toast("Ese método todavía no está cargado: reiniciá La Cueva."); return; }
+    if (valores) MET.set(id, { ...m, params: m.params.map((p) => (p.nombre in valores ? { ...p, defecto: valores[p.nombre] } : p)) });
+    try { aplicar(t, null, ancla); } finally { MET.set(id, m); }
+  }
+
+  window.CuevaMetodos = { MET, abrir, correr: (id, args, fichas) => correr(MET.get(id), args, fichas) };
 })();

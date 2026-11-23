@@ -22,7 +22,8 @@ METODOS_VALUACION: list[dict] = [
         # Se construye de a un paso con Martín (Aprender → Diseñar → Construir → Al informe).
         "pasos": [
             {"id": "flujo", "nombre": "Flujo de caja libre histórico", "estado": "en curso",
-             "nota": "series y gráficos de NVDA en la bandeja"},
+             "metodo": "flujo_caja_libre",
+             "nota": "herramienta «Flujo de caja libre de la firma (FCFF)», en Traer"},
             {"id": "reinversion", "nombre": "Reinversión y retorno del capital", "estado": "por construir"},
             {"id": "crecimiento", "nombre": "Crecimiento esperado", "estado": "por construir"},
             {"id": "tasa", "nombre": "Tasa de descuento (WACC)", "estado": "por construir"},

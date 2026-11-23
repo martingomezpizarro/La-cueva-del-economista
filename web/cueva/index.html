@@ -545,7 +545,7 @@ svg.g .nodo-a:hover rect{stroke:var(--accent)}
     </aside>
     <div class="centro">
       <div class="card" id="proy-card">
-        <div class="card-hd"><h3>Proyectos de la 1.0</h3><span class="sp"></span><span class="lbl">un clic: trae las series, corre el método y deja todo en el registro</span></div>
+        <div class="card-hd"><h3>Proyectos de la 1.0</h3><span class="sp"></span><span class="lbl">un clic: trae las series, corre el método y deja todo en el registro</span><button class="btn sm" type="button" onclick="ejemploMesa()" title="Carga el ejemplo de la 1.0: KO y PEP, el PBI con su ecuación de crecimiento y la distribución de SPY">Ver el ejemplo</button></div>
         <div class="card-bd"><div class="proy-g" id="proy-lista"></div></div>
       </div>
       <div class="barra">
@@ -3336,6 +3336,7 @@ function renderBandeja() {
     if (b.dataset.bj === "min") { bj.classList.toggle("min"); b.textContent = bj.classList.contains("min") ? "▴" : "▾"; return; }
     const i = +b.dataset.i, it = st.bandeja[i];
     if (b.dataset.bjA === "x") { st.bandeja.splice(i, 1); renderBandeja(); guardar(); return; }
+    if (b.dataset.bjA === "mesa" && it.tipo === "figura") { window.CuevaBandeja?.abrirFigura(it); location.hash = "#mesa"; return; }
     if (b.dataset.bjA === "mesa") { cambio(); const s = fichaDeItem(it); mostrarFicha(s); st.sel.add(s.id); location.hash = "#mesa"; render(); toast(`«${s.alias}» está en la Mesa (seleccionada).`); }
   });
   // mover la bandeja arrastrando su encabezado
@@ -3372,6 +3373,7 @@ document.addEventListener("drop", (e) => {
   e.preventDefault(); z.classList.remove("drop");
   const it = itemDePayload(JSON.parse(raw)); if (!it) return;
   if (z.id === "bandeja") { bandejaAgregar(it); return; }
+  if (it.tipo === "figura") { window.CuevaBandeja?.abrirFigura(it); return; }
   cambio(); const s = fichaDeItem(it);
   if (z.id === "ec-f") { const el = $("#ec-f"); el.value = el.value + (el.value.endsWith(" ") || !el.value ? "" : " ") + s.alias; render(); detectarParams(); return; }
   if (z.classList.contains("tool")) { st.sel.add(s.id); render(); aplicar(HERR.find((x) => x.id === z.dataset.tool), s, z); return; }
@@ -3795,42 +3797,38 @@ function logTicks(a0, a1) { const out = []; for (let k = Math.floor(a0) - 1; k <
 const PY_HELPERS = "\"\"\"Funciones de la Mesa de investigaci\u00f3n de La Cueva, en pandas.\n\nCada funci\u00f3n hace exactamente la misma cuenta que la Mesa, para que receta.py reproduzca\ncada ficha y verificar.py pueda comparar los n\u00fameros.\n\"\"\"\nimport math\nimport os\nimport sys\n\nimport numpy as np\nimport pandas as pd\n\n__all__ = [\"np\", \"pd\", \"leer\", \"log\", \"dif\", \"dif2\", \"pct\", \"dif_log\", \"base100\", \"mm\", \"desvio_movil\", \"z\",\n           \"winsor\", \"rezago\", \"lag\", \"hp\", \"sin_tendencia\", \"recorte\", \"drawdown\", \"frecuencia\", \"banda\",\n           \"combinar\", \"residuo\", \"ajustado\", \"corr_movil\", \"dummy\", \"suma\", \"resta\", \"producto\", \"cociente\",\n           \"ecuacion\", \"armonizar\", \"alinear\", \"verificar_corrida\"]\n\nAQUI = os.path.dirname(os.path.abspath(__file__))\n\n\ndef leer(ruta):\n    df = pd.read_csv(os.path.join(AQUI, ruta), dtype={\"fecha\": str})\n    s = pd.Series(df[\"valor\"].astype(float).values, index=df[\"fecha\"].values)\n    return s\n\n\ndef _limpia(s):\n    return s[pd.notna(s) & np.isfinite(s.astype(float))]\n\n\ndef _fechas(s):\n    return pd.to_datetime(pd.Index(s.index))\n\n\n# \u2500\u2500 frecuencias (igual que la Mesa: la m\u00e1s baja del grupo, \u00faltimo dato de cada per\u00edodo) \u2500\u2500\nORDF = {\"diaria\": 0, \"semanal\": 1, \"mensual\": 2, \"trimestral\": 3, \"anual\": 4}\n\n\ndef freq_de(s):\n    x = list(s.index)\n    if len(x) < 3:\n        return \"diaria\"\n    f = pd.to_datetime(pd.Index(x[: min(len(x), 80)]))\n    d = sorted(((f[1:] - f[:-1]).days).tolist())\n    m = d[len(d) // 2]\n    return \"diaria\" if m <= 4 else \"semanal\" if m <= 10 else \"mensual\" if m <= 45 else \"trimestral\" if m <= 120 else \"anual\"\n\n\ndef clave_f(f, fr):\n    y, mo = f[:4], int(f[5:7])\n    if fr == \"mensual\":\n        return f\"{y}-{mo:02d}-01\"\n    if fr == \"trimestral\":\n        return f\"{y}-{((mo - 1) // 3) * 3 + 1:02d}-01\"\n    if fr == \"anual\":\n        return f\"{y}-01-01\"\n    if fr == \"semanal\":\n        t = pd.Timestamp(f[:10])\n        return (t - pd.Timedelta(days=t.weekday())).strftime(\"%Y-%m-%d\")\n    return f\n\n\ndef a_frecuencia(s, fr, agg=\"ultimo\"):\n    s = _limpia(s)\n    g = {}\n    for f, v in zip(s.index, s.values):\n        g.setdefault(clave_f(str(f), fr), []).append(float(v))\n    ks = sorted(g)\n    if agg in (\"promedio\", \"promedio\"):\n        vals = [float(np.mean(g[k])) for k in ks]\n    elif agg == \"suma\":\n        vals = [float(np.sum(g[k])) for k in ks]\n    else:\n        vals = [g[k][-1] for k in ks]\n    return pd.Series(vals, index=ks)\n\n\ndef armonizar(series):\n    fs = [freq_de(_limpia(s)) for s in series]\n    obj = max(fs, key=lambda f: ORDF[f])\n    if obj == \"diaria\" or (obj == \"semanal\" and all(f == \"semanal\" for f in fs)):\n        return [_limpia(s) for s in series]\n    return [a_frecuencia(s, obj) for s in series]\n\n\ndef alinear(*series):\n    ss = armonizar(list(series))\n    df = pd.concat(ss, axis=1, join=\"inner\").dropna()\n    return df\n\n\n# \u2500\u2500 transformaciones \u2500\u2500\ndef log(s):\n    return np.log(s.where(s > 0))\n\n\ndef dif(s, k=1):\n    return s.diff(int(k))\n\n\ndef dif2(s):\n    return s - 2 * s.shift(1) + s.shift(2)\n\n\ndef pct(s, k=12):\n    prev = s.shift(int(k))\n    r = (s / prev.where(prev != 0) - 1) * 100\n    return r.replace([np.inf, -np.inf], np.nan)\n\n\ndef dif_log(s, k=1):\n    prev = s.shift(int(k))\n    return np.log((s / prev).where((s > 0) & (prev > 0)))\n\n\ndef base100(s, fecha=\"\"):\n    k = 0\n    if fecha:\n        idx = [i for i, f in enumerate(s.index) if str(f) >= fecha]\n        k = idx[0] if idx else 0\n    resto = s.iloc[k:]\n    b = next((v for v in resto.values if pd.notna(v) and v != 0), 1)\n    return s / b * 100\n\n\ndef mm(s, k=12, centrada=False):\n    k = int(k)\n    r = s.rolling(k).mean()\n    if centrada:\n        r = r.shift(-((k - 1) // 2))\n    return r\n\n\ndef desvio_movil(s, k=12):\n    return s.rolling(int(k)).std()\n\n\ndef z(s):\n    v = _limpia(s)\n    return (s - v.mean()) / (v.std() or 1)\n\n\ndef winsor(s, q=0.01):\n    v = _limpia(s)\n    lo, hi = np.quantile(v.values, q), np.quantile(v.values, 1 - q)\n    return s.clip(lo, hi)\n\n\ndef rezago(s, k=1):\n    return s.shift(int(k))\n\n\nlag = rezago\n\n\ndef hp(s, lamb=129600, parte=\"ciclo\"):\n    from statsmodels.tsa.filters.hp_filter import hpfilter\n    v = _limpia(s)\n    ciclo, tend = hpfilter(v.values.astype(float), lamb=lamb)\n    return pd.Series(tend if parte == \"tendencia\" else ciclo, index=v.index)\n\n\ndef sin_tendencia(s):\n    v = _limpia(s)\n    t = np.arange(len(v))\n    X = np.column_stack([np.ones(len(v)), t])\n    b = np.linalg.lstsq(X, v.values, rcond=None)[0]\n    return pd.Series(v.values - X @ b, index=v.index)\n\n\ndef recorte(s, desde=\"\", hasta=\"\"):\n    keep = [(not desde or str(f)[: len(desde)] >= desde) and (not hasta or str(f)[: len(hasta)] <= hasta) for f in s.index]\n    return s[keep]\n\n\ndef drawdown(s):\n    v = _limpia(s)\n    return (v / v.cummax() - 1) * 100\n\n\ndef frecuencia(s, a=\"mensual\", agg=\"\u00faltimo\"):\n    return a_frecuencia(s, a, {\"\u00faltimo\": \"ultimo\", \"promedio\": \"promedio\", \"suma\": \"suma\"}.get(agg, \"ultimo\"))\n\n\ndef banda(s, k=20, n=2, lado=\"superior\"):\n    m, d = s.rolling(int(k)).mean(), s.rolling(int(k)).std()\n    return m + n * d if lado == \"superior\" else m - n * d\n\n\n# \u2500\u2500 combinaciones \u2500\u2500\ndef combinar(a, b, op):\n    df = alinear(a, b)\n    u, v = df.iloc[:, 0], df.iloc[:, 1]\n    if op == \"resta\":\n        return u - v\n    if op == \"suma\":\n        return u + v\n    if op == \"producto\":\n        return u * v\n    return (u / v.where(v != 0))\n\n\ndef suma(a, b):\n    return combinar(a, b, \"suma\")\n\n\ndef resta(a, b):\n    return combinar(a, b, \"resta\")\n\n\ndef producto(a, b):\n    return combinar(a, b, \"producto\")\n\n\ndef cociente(a, b):\n    return combinar(a, b, \"cociente\")\n\n\ndef _mco(y, xs):\n    df = alinear(y, *xs)\n    Y = df.iloc[:, 0].values\n    X = np.column_stack([np.ones(len(df))] + [df.iloc[:, j + 1].values for j in range(len(xs))])\n    b = np.linalg.lstsq(X, Y, rcond=None)[0]\n    return df.index, Y, X, b\n\n\ndef residuo(y, *xs):\n    idx, Y, X, b = _mco(y, xs)\n    return pd.Series(Y - X @ b, index=idx)\n\n\ndef ajustado(y, *xs):\n    idx, Y, X, b = _mco(y, xs)\n    return pd.Series(X @ b, index=idx)\n\n\ndef corr_movil(a, b, k=12):\n    df = alinear(a, b)\n    return df.iloc[:, 0].rolling(int(k)).corr(df.iloc[:, 1])\n\n\ndef dummy(x, desde=\"\", hasta=\"\"):\n    return pd.Series([1 if (not desde or str(f)[: len(desde)] >= desde) and (not hasta or str(f)[: len(hasta)] <= hasta) else 0 for f in x.index], index=x.index)\n\n\ndef ecuacion(rhs, base=None, **par):\n    env = dict(sys._getframe(1).f_globals)\n    env.update(par)\n    env[\"np\"] = np\n    if base is not None:\n        v = _limpia(base)\n        env[\"t\"] = pd.Series(np.arange(len(v), dtype=float), index=v.index)\n    return eval(rhs, env)\n\n\n# \u2500\u2500 verificaci\u00f3n de corridas \u2500\u2500\ndef _rel(a, b):\n    if a is None or b is None:\n        return 0.0 if a is b else float(\"inf\")\n    return abs(a - b) / max(1e-9, abs(a), abs(b))\n\n\ndef _metricas(r, ppy):\n    v = np.array([x for x in r if x is not None and np.isfinite(x)])\n    eq = np.cumprod(1 + v)\n    m, d = v.mean(), v.std(ddof=1)\n    return {\"cagr\": eq[-1] ** (ppy / len(v)) - 1, \"sharpe\": m / d * math.sqrt(ppy) if d else None}\n\n\nPPY = {\"diaria\": 252, \"semanal\": 52, \"mensual\": 12, \"trimestral\": 4, \"anual\": 1}\n\n\ndef _cruce(s, p):\n    v = _limpia(s)\n    y, n = v.values.astype(float), len(v)\n    ppy = PPY[freq_de(v)]\n    r = np.r_[np.nan, y[1:] / y[:-1] - 1]\n    corte = int(math.floor(n * (1 - p[\"oos\"])))\n    a = pd.Series(y).rolling(int(p[\"rapida\"])).mean().values\n    b = pd.Series(y).rolling(int(p[\"lenta\"])).mean().values\n    pos = np.where(np.isnan(a) | np.isnan(b), 0, np.where(a > b, 1, -1 if p.get(\"corto\") == \"s\u00ed\" else 0))\n    ret = np.zeros(n)\n    for i in range(1, n):\n        ps, pp = pos[i - 1], (pos[i - 2] if i > 1 else 0)\n        ret[i] = ps * r[i] - abs(ps - pp) * p[\"costo\"] / 1e4\n    ops = int(sum(1 for i in range(1, n) if pos[i] != pos[i - 1]))\n    m = _metricas(ret[corte:], ppy)\n    return {\"sharpe_fuera\": m[\"sharpe\"], \"cagr_fuera\": m[\"cagr\"], \"operaciones\": ops}\n\n\ndef _pares(a, b, p):\n    df = alinear(a, b)\n    la, lb = np.log(df.iloc[:, 0].values), np.log(df.iloc[:, 1].values)\n    n = len(df)\n    nf = int(math.floor(n * p[\"formacion\"]))\n    X = np.column_stack([np.ones(nf), lb[:nf]])\n    al0, beta = np.linalg.lstsq(X, la[:nf], rcond=None)[0]\n    sp = la - beta * lb - al0\n    e = sp[:nf]\n    de = e[1:] - e[:-1]\n    Xe = np.column_stack([np.ones(nf - 1), e[:-1]])\n    be = np.linalg.lstsq(Xe, de, rcond=None)[0]\n    res = de - Xe @ be\n    s2 = res @ res / (len(de) - 2)\n    cov = s2 * np.linalg.inv(Xe.T @ Xe)\n    t_eg = be[1] / math.sqrt(cov[1, 1])\n    k = int(p[\"ventana\"])\n    zz = [None] * n\n    for i in range(k - 1, n):\n        w = sp[i - k + 1: i + 1]\n        d = w.std(ddof=1)\n        zz[i] = (sp[i] - w.mean()) / d if d else None\n    pos = [0] * n\n    for i in range(nf, n):\n        prev, zi = pos[i - 1], zz[i]\n        if zi is None:\n            pos[i] = 0\n        elif prev == 0:\n            pos[i] = -1 if zi > p[\"entrada\"] else 1 if zi < -p[\"entrada\"] else 0\n        else:\n            pos[i] = 0 if abs(zi) < p[\"salida\"] else prev\n    ret = [0.0] * n\n    for i in range(nf + 1, n):\n        ps = pos[i - 1]\n        d = la[i] - la[i - 1] - beta * (lb[i] - lb[i - 1])\n        ret[i] = ps * d / (1 + abs(beta)) - abs(ps - pos[i - 2]) * 2 * p[\"costo\"] / 1e4\n    ops = sum(1 for i in range(nf + 1, n) if pos[i] != pos[i - 1] and pos[i] != 0)\n    m = _metricas(ret[nf + 1:], PPY[freq_de(df.iloc[:, 0])])\n    return {\"beta\": beta, \"t_eg\": t_eg, \"sharpe\": m[\"sharpe\"], \"operaciones\": ops}\n\n\ndef _ecuacion_fit(c, ns):\n    from scipy.optimize import least_squares\n    obj = _limpia(ns[c[\"base\"]])\n    est = list(c[\"estimados\"])\n    t = pd.Series(np.arange(len(obj), dtype=float), index=obj.index)\n\n    def f(th):\n        env = dict(ns)\n        env.update(c[\"fijos\"])\n        env.update(dict(zip(est, th)))\n        env[\"np\"], env[\"t\"] = np, t\n        s = eval(c[\"rhs\"], env)\n        df = pd.concat([obj, s], axis=1, join=\"inner\").dropna()\n        return (df.iloc[:, 0] - df.iloc[:, 1]).values\n\n    sol = least_squares(f, [c[\"estimados\"][k] for k in est], method=\"lm\", xtol=1e-12, ftol=1e-12)\n    return dict(zip(est, sol.x))\n\n\ndef verificar_corrida(c, ns, tol=1e-6):\n    \"\"\"Devuelve una lista de (qu\u00e9, esperado, obtenido, ok).\"\"\"\n    out = []\n    if c[\"tipo\"] == \"mco\":\n        y, xs = ns[c[\"y\"]], [ns[a] for a in c[\"xs\"]]\n        import statsmodels.api as sm\n        df = alinear(y, *xs)\n        fit = sm.OLS(df.iloc[:, 0].values, sm.add_constant(df.iloc[:, 1:].values)).fit()\n        for i, (e, o) in enumerate(zip(c[\"esperado\"][\"b\"], fit.params)):\n            out.append((f\"\u03b2{i}\", e, float(o), _rel(e, float(o)) < 1e-6))\n        out.append((\"R\u00b2\", c[\"esperado\"][\"r2\"], fit.rsquared, _rel(c[\"esperado\"][\"r2\"], fit.rsquared) < 1e-6))\n    elif c[\"tipo\"] == \"cruce_medias\":\n        o = _cruce(ns[c[\"serie\"]], c[\"p\"])\n        for k, e in c[\"esperado\"].items():\n            out.append((k, e, o[k], _rel(e, o[k]) < 1e-6))\n    elif c[\"tipo\"] == \"pares\":\n        o = _pares(ns[c[\"a\"]], ns[c[\"b\"]], c[\"p\"])\n        for k, e in c[\"esperado\"].items():\n            out.append((k, e, o[k], _rel(e, o[k]) < 1e-5))\n    elif c[\"tipo\"] == \"ecuacion\":\n        o = _ecuacion_fit(c, ns)\n        for k, e in c[\"esperado\"].items():\n            out.append((k, e, float(o[k]), _rel(e, float(o[k])) < 1e-3))\n    return out\n";
 const PY_VERIFICAR = "\"\"\"Verifica el paquete: huellas de los datos, cada ficha de la receta y las corridas.\n\n    python verificar.py\n\nRecalcula todo desde cero con pandas/statsmodels/scipy y lo compara con lo que dio la Cueva.\n\"\"\"\nimport hashlib\nimport json\nimport math\nimport os\nimport runpy\nimport sys\n\nAQUI = os.path.dirname(os.path.abspath(__file__))\nsys.path.insert(0, AQUI)\nos.chdir(AQUI)\n\nimport pandas as pd  # noqa: E402\n\nfrom cueva_helpers import _limpia, verificar_corrida  # noqa: E402\n\nesp = json.load(open(\"resultados_esperados.json\", encoding=\"utf-8\"))\nbien, mal = 0, 0\n\n\ndef informe(ok, texto):\n    global bien, mal\n    bien, mal = bien + ok, mal + (not ok)\n    print((\"  \u2713 \" if ok else \"  \u2715 \") + texto)\n\n\nprint(\"1) Datos: \u00bfson los mismos archivos que us\u00f3 la Cueva?\")\nfor alias, h in esp[\"huellas\"].items():\n    sha = hashlib.sha256(open(f\"datos/{alias}.csv\", \"rb\").read()).hexdigest()\n    informe(h[\"sha256\"] is None or sha == h[\"sha256\"], f\"{alias:<22} {h['fuente']} \u00b7 {h['serie']} \u00b7 hasta {h['fecha_corte']}\")\n\nprint(\"\\n2) Fichas: cada l\u00ednea de receta.py recalculada\")\ntry:\n    ns = runpy.run_path(\"receta.py\")\nexcept Exception as e:  # una l\u00ednea de c\u00f3digo libre que pandas no entiende\n    print(f\"  \u2715 receta.py no corri\u00f3: {e}\")\n    sys.exit(1)\n\n\ndef cerca(a, b, escala):\n    if a is None or b is None:\n        return a is b\n    return abs(a - b) <= 1e-6 * max(1.0, abs(a), abs(b), escala)\n\n\nfor alias, e in esp[\"fichas\"].items():\n    s = ns.get(alias)\n    if s is None:\n        informe(False, f\"{alias}: no est\u00e1 en receta.py\")\n        continue\n    v = _limpia(pd.Series(s))\n    escala = float(v.abs().mean()) if len(v) else 1.0\n    ok = len(v) == e[\"n\"] and cerca(float(v.iloc[0]), e[\"primero\"], escala) and cerca(float(v.iloc[-1]), e[\"ultimo\"], escala) and cerca(float(v.sum()), e[\"suma\"], escala * max(1, len(v)))\n    informe(ok, f\"{alias:<22} n {len(v)} (esperado {e['n']}) \u00b7 \u00faltimo {float(v.iloc[-1]) if len(v) else float('nan'):.6g} (esperado {e['ultimo']:.6g})\")\n\nprint(\"\\n3) Corridas: modelos y backtests recalculados\")\nfor c in esp[\"corridas\"]:\n    try:\n        filas = verificar_corrida(c, ns)\n    except Exception as e:\n        informe(False, f\"{c['titulo']}: {e}\")\n        continue\n    ok = all(f[3] for f in filas)\n    informe(ok, c[\"titulo\"])\n    for q, e, o, k in filas:\n        print(f\"      {'\u00b7' if k else '!'} {q}: esperado {e:.6g} \u00b7 obtenido {o:.6g}\" if isinstance(e, (int, float)) and isinstance(o, (int, float)) and e is not None and o is not None and math.isfinite(e) and math.isfinite(o) else f\"      \u00b7 {q}: {e} / {o}\")\n\nprint(f\"\\nResultado: {bien} coinciden, {mal} no coinciden.\")\nsys.exit(1 if mal else 0)\n";
 
-/* ═════════════ estado inicial: datos reales, tres corridas y un borrador ═════════════ */
-(function inicio() { try {
-  const nCue = Object.values(CATS).filter((m) => m.fuente.startsWith("Cueva")).length;
-  $("#chip-datos").textContent = `Datos reales: ${nCue} series de la Cueva + ${Object.keys(CATS).length - nCue} de la Terminal`;
-  renderCatSide();
-  $("#dl-panel").innerHTML = Object.values(CATS).map((m) => `<option value="${esc(m.corto)}">${esc(m.nombre)}</option>`).join("");
-  $("#nuevo-graf").innerHTML = htmlCatalogoGraf();
-  renderProyectos();
+/* ═════════════ ejemplo de la 1.0 (a pedido): tres gráficos, tres corridas y un borrador ═════════════ */
+function ejemploMesa() {
+  try {
+    cambio();
   const ko = delCatalogo("KO", "ko"), pep = delCatalogo("PEP", "pep"), spy = delCatalogo("SPY", "spy"), vix = delCatalogo("vix", "vix"), pbi = delCatalogo("od_d_pbi", "pbi_real");
-  DIAG.orden.f(pbi);
-  // 1) KO y PEP en base 100 (¿un par para operar?)
-  const p1 = nuevoPanel("tiempo", [ko, pep]); p1.escala = "base"; p1.ancho = 2; p1.titulo = "Coca-Cola y Pepsi en base 100: ¿se mueven juntas?"; p1.manual = true;
-  // 2) la ecuación de crecimiento sobre el PBI real
-  $("#ec-f").value = "pbi_real ~ a * np.exp(g * t)";
-  st.ecPar = { a: { modo: "estimar", v: 400000 }, g: { modo: "estimar", v: 0.005 } };
-  detectarParams();
-  const rEc = correrEcuacion();
-  const p2 = nuevoPanel("tiempo", [pbi]);
-  if (rEc) { const fit = salidaComoFicha(rEc, 0, false); fit.alias = "pbi_exp"; p2.capas.push(capa({ r: ref(fit.id), tipo: "linea", color: "--s3", estilo: "guiones", grosor: 1.6, eje: "izq" })); }
-  p2.titulo = "PBI real (desest.) y la ecuación de crecimiento exponencial"; p2.manual = true;
-  // 3) distribución del retorno diario de SPY: histograma + densidad + violín
-  const p3 = nuevoPanel("distribucion", []);
-  p3.capas = [capa({ r: ref(spy.id, [{ op: "pct", p: { k: 1 } }]), tipo: "hist", color: "--s1" }), capa({ r: ref(spy.id, [{ op: "pct", p: { k: 1 } }]), tipo: "densidad", color: "--s3" }), capa({ r: ref(spy.id, [{ op: "pct", p: { k: 1 } }]), tipo: "violin", color: "--s1" })];
-  p3.titulo = "Retorno diario de SPY (%): histograma, densidad y violín"; p3.manual = true;
-  st.activo = p1.id;
-  // corridas sembradas (se calculan ahora, con los datos de arriba)
-  const rPar = paresTrading(ko, pep, { formacion: 0.5, ventana: 60, entrada: 2, salida: 0.5, costo: 5 });
-  const rCr = cruceMedias(spy, { rapida: 50, lenta: 200, costo: 10, corto: "no", oos: 0.3 });
-  st.runSel = rEc ? rEc.id : rCr.id;
-  st.pines.push(
-    { id: "p1", titulo: rCr.titulo + ": capital y robustez", spec: { vista: "run", rid: rCr.id }, origen: [rCr.id], color: "--s1" },
-    { id: "p2", titulo: rPar.titulo + ": z-score y capital", spec: { vista: "run", rid: rPar.id }, origen: [rPar.id], color: "--s2" },
-    ...(rEc ? [{ id: "p3", titulo: "PBI real y crecimiento exponencial estimado", spec: { vista: "run", rid: rEc.id }, origen: [rEc.id], color: "--s3" }] : []),
-  );
-  let prev = null; try { prev = JSON.parse(localStorage.getItem("cueva_mockup_mesa_v2") || "null"); } catch (e) { prev = null; }
-  st.doc = prev?.doc?.length ? prev.doc : [
+    DIAG.orden.f(pbi);
+    // 1) KO y PEP en base 100 (¿un par para operar?)
+    const p1 = nuevoPanel("tiempo", [ko, pep]); p1.escala = "base"; p1.ancho = 2; p1.titulo = "Coca-Cola y Pepsi en base 100: ¿se mueven juntas?"; p1.manual = true;
+    // 2) la ecuación de crecimiento sobre el PBI real
+    $("#ec-f").value = "pbi_real ~ a * np.exp(g * t)";
+    st.ecPar = { a: { modo: "estimar", v: 400000 }, g: { modo: "estimar", v: 0.005 } };
+    detectarParams();
+    const rEc = correrEcuacion();
+    const p2 = nuevoPanel("tiempo", [pbi]);
+    if (rEc) { const fit = salidaComoFicha(rEc, 0, false); fit.alias = "pbi_exp"; p2.capas.push(capa({ r: ref(fit.id), tipo: "linea", color: "--s3", estilo: "guiones", grosor: 1.6, eje: "izq" })); }
+    p2.titulo = "PBI real (desest.) y la ecuación de crecimiento exponencial"; p2.manual = true;
+    // 3) distribución del retorno diario de SPY: histograma + densidad + violín
+    const p3 = nuevoPanel("distribucion", []);
+    p3.capas = [capa({ r: ref(spy.id, [{ op: "pct", p: { k: 1 } }]), tipo: "hist", color: "--s1" }), capa({ r: ref(spy.id, [{ op: "pct", p: { k: 1 } }]), tipo: "densidad", color: "--s3" }), capa({ r: ref(spy.id, [{ op: "pct", p: { k: 1 } }]), tipo: "violin", color: "--s1" })];
+    p3.titulo = "Retorno diario de SPY (%): histograma, densidad y violín"; p3.manual = true;
+    st.activo = p1.id;
+    // corridas sembradas (se calculan ahora, con los datos de arriba)
+    const rPar = paresTrading(ko, pep, { formacion: 0.5, ventana: 60, entrada: 2, salida: 0.5, costo: 5 });
+    const rCr = cruceMedias(spy, { rapida: 50, lenta: 200, costo: 10, corto: "no", oos: 0.3 });
+    st.runSel = rEc ? rEc.id : rCr.id;
+    st.pines.push(
+      { id: "p1", titulo: rCr.titulo + ": capital y robustez", spec: { vista: "run", rid: rCr.id }, origen: [rCr.id], color: "--s1" },
+      { id: "p2", titulo: rPar.titulo + ": z-score y capital", spec: { vista: "run", rid: rPar.id }, origen: [rPar.id], color: "--s2" },
+      ...(rEc ? [{ id: "p3", titulo: "PBI real y crecimiento exponencial estimado", spec: { vista: "run", rid: rEc.id }, origen: [rEc.id], color: "--s3" }] : []),
+    );
+  
+    if (!st.doc.length) st.doc = [
     { t: "h", v: "1. Para qué sirve este borrador" },
     { t: "p", v: "Este documento se arma solo desde la Mesa: cada figura lleva su receta y el anexo de datos sale del linaje. Las tres figuras de abajo se calcularon recién, en tu navegador, con las series reales de la Cueva y de la Terminal." },
     { t: "h", v: "2. Una regla técnica bajo la lupa" },
@@ -3843,6 +3841,25 @@ const PY_VERIFICAR = "\"\"\"Verifica el paquete: huellas de los datos, cada fich
     { t: "p", v: "La tercera ajusta una ecuación de crecimiento exponencial al PBI real desestacionalizado del INDEC y muestra el residuo: los períodos en que la economía estuvo por encima o por debajo de su tendencia." },
     { t: "fig", pin: "p3" },
   ];
+    render(); toast("Ejemplo cargado: tres gráficos, tres corridas y un borrador. Ctrl+Z lo deshace.");
+  } catch (e) { console.warn("Mesa: no se pudo cargar el ejemplo:", e); toast("No se pudo cargar el ejemplo (faltan series en esta compu)."); }
+}
+window.ejemploMesa = ejemploMesa;
+
+/* ═════════════ estado inicial: la Mesa vacía ═════════════ */
+(function inicio() { try {
+  const nCue = Object.values(CATS).filter((m) => m.fuente.startsWith("Cueva")).length;
+  $("#chip-datos").textContent = `Datos reales: ${nCue} series de la Cueva + ${Object.keys(CATS).length - nCue} de la Terminal`;
+  renderCatSide();
+  $("#dl-panel").innerHTML = Object.values(CATS).map((m) => `<option value="${esc(m.corto)}">${esc(m.nombre)}</option>`).join("");
+  $("#nuevo-graf").innerHTML = htmlCatalogoGraf();
+  renderProyectos();
+  // La Mesa arranca VACÍA (un gráfico sin capas). El ejemplo de la 1.0 se carga a pedido con
+  // «Ver el ejemplo» (tarjeta Proyectos de la 1.0).
+  nuevoPanel("tiempo", []);
+  let prev = null; try { prev = JSON.parse(localStorage.getItem("cueva_mockup_mesa_v2") || "null"); } catch (e) { prev = null; }
+  st.doc = prev?.doc?.length ? prev.doc : [];
+
   st.docTit = prev?.docTit || null;
   st.bandeja = prev?.bandeja?.length ? prev.bandeja.filter((b) => b.tipo !== "cat" || CATS[b.id]) : []; // la bandeja real vive en el servidor (bandeja_servidor.js)
   renderHerr();
