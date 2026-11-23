@@ -51,6 +51,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 import subprocess
 import sys
 import threading
@@ -211,7 +212,20 @@ def crear_app() -> FastAPI:
     def _pagina(ruta, falta: str):
         if not ruta.exists():
             return HTMLResponse(f"<h1>Falta {falta}</h1>", status_code=500)
-        return HTMLResponse(ruta.read_text(encoding="utf-8"))
+        return HTMLResponse(_con_version(ruta.read_text(encoding="utf-8")))
+
+    def _con_version(html: str) -> str:
+        """Agrega ?v=<fecha del archivo> a cada script/hoja de /web: el navegador que guardó
+        una copia vieja (sin la cabecera no-cache) la reusa sin preguntar; con la versión en
+        la URL, un archivo cambiado es otra URL y se baja sí o sí."""
+
+        def poner(m: re.Match) -> str:
+            archivo = WEB / m.group(2)
+            if not archivo.is_file():
+                return m.group(0)
+            return f'{m.group(1)}="/web/{m.group(2)}?v={int(archivo.stat().st_mtime)}"'
+
+        return re.sub(r'(src|href)="/web/([^"?#]+\.(?:js|css))"', poner, html)
 
     @app.get("/", response_class=HTMLResponse)
     def home():
