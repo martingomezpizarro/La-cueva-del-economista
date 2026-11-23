@@ -245,7 +245,8 @@ def flujo_caja_libre(activo, periodo="ejercicios", restar_sbc=True, id_inversion
     r.tabla(f"{activo} · flujo de caja libre renglón por renglón ({unidad})", ["Renglón"] + etiq, filas,
             nota="Fuente: balances de la SEC vía la Terminal (cada dato con su presentación en la Ficha). La fila de "
                  "control no se fuerza a cero: si los caminos difieren, la diferencia está en partidas que el camino "
-                 "1 no ve (otros activos y pasivos operativos, impuestos diferidos, resultados que no son caja).")
+                 "1 no ve (otros activos y pasivos operativos, impuestos diferidos, resultados que no son caja).",
+            fechas_columnas=[None] + [f.strftime("%Y-%m-%d") for f in cols])
 
     ult = cols[-1]
     v = principal.get(ult)

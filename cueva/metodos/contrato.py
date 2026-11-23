@@ -319,18 +319,24 @@ class Resultado:
         filas: list[list],
         nota: str = "",
         resaltar_p: str | None = None,
+        fechas_columnas: list[str | None] | None = None,
     ) -> Resultado:
-        """`resaltar_p`: nombre de la columna de p-valores a colorear (< 0,05)."""
-        self.bloques.append(
-            {
-                "tipo": "tabla",
-                "titulo": titulo,
-                "columnas": columnas,
-                "filas": [[_num(c) if not isinstance(c, str) else c for c in f] for f in filas],
-                "nota": nota,
-                "resaltar_p": resaltar_p,
-            }
-        )
+        """`resaltar_p`: nombre de la columna de p-valores a colorear (< 0,05).
+        `fechas_columnas`: la fecha (AAAA-MM-DD) de cada columna, cuando la tabla es renglones ×
+        períodos; con eso la pantalla puede convertir una FILA en serie temporal."""
+        bloque = {
+            "tipo": "tabla",
+            "titulo": titulo,
+            "columnas": columnas,
+            "filas": [[_num(c) if not isinstance(c, str) else c for c in f] for f in filas],
+            "nota": nota,
+            "resaltar_p": resaltar_p,
+        }
+        if fechas_columnas is not None:
+            if len(fechas_columnas) != len(columnas):
+                raise ValueError("fechas_columnas tiene que tener una entrada por columna")
+            bloque["fechas_columnas"] = fechas_columnas
+        self.bloques.append(bloque)
         return self
 
     def lineas(

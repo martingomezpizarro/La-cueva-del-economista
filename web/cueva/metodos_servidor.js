@@ -150,7 +150,7 @@
     bl.filter((b) => b.tipo === "metricas").forEach((b) => b.items.forEach((it) => metricas.push([it.nombre, fmt(it.valor, it.formato), it.ayuda || ""])));
     const tablas = [];
     bl.forEach((b) => {
-      if (b.tipo === "tabla") tablas.push({ nombre: b.titulo || "Tabla", columnas: b.columnas, filas: b.filas });
+      if (b.tipo === "tabla") tablas.push({ nombre: b.titulo || "Tabla", columnas: b.columnas, filas: b.filas, fechasCols: b.fechas_columnas || null });
       if (b.tipo === "mapa_calor") tablas.push({ nombre: b.titulo || "Matriz", columnas: ["", ...b.columnas], filas: b.filas.map((f, i) => [f, ...b.valores[i]]) });
       if (b.tipo === "barras") { const ks = Object.keys(b.series); tablas.push({ nombre: b.titulo || "Barras", columnas: ["", ...ks], filas: b.categorias.map((c, i) => [c, ...ks.map((k) => b.series[k][i])]) }); }
     });

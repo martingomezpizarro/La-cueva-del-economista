@@ -109,7 +109,8 @@ export function montarTabla(cont, conjunto, opciones = {}) {
       return {
         modo: 'filas', cols, filas,
         etiquetas: cols.map((j) => t.columnas[j]),
-        fechas: null,
+        // si la tabla trae la fecha de cada columna (renglones × años), la fila es una serie temporal
+        fechas: t.fechasCols && cols.every((j) => esFecha(t.fechasCols[j])) ? cols.map((j) => t.fechasCols[j]) : null,
         valores: filas.map((i) => cols.map((j) => (typeof t.filas[i][j] === 'number' ? t.filas[i][j] : null))),
         nombre: filas.map(etiq).join(' · '),
         nombresFilas: filas.map(etiq),
@@ -123,7 +124,8 @@ export function montarTabla(cont, conjunto, opciones = {}) {
     const sel = seleccion(); if (!sel) return [];
     const f = filtroTexto();
     if (sel.modo === 'columnas') return sel.cols.map((j, k) => ({ nombre: `${t.columnas[j]} · ${t.nombre}${f}`.slice(0, 80), etiquetas: sel.etiquetas, fechas: sel.fechas, valores: sel.valores[k], procedencia: `${opciones.origen || ''} · ${t.nombre} · columna ${t.columnas[j]}${f}`.slice(0, 480) }));
-    return sel.filas.map((_, k) => ({ nombre: `${sel.nombresFilas[k]} · ${t.nombre}`.slice(0, 80), etiquetas: sel.etiquetas, fechas: null, valores: sel.valores[k], procedencia: `${opciones.origen || ''} · ${t.nombre} · fila ${sel.nombresFilas[k]}`.slice(0, 480) }));
+    // una fila sin ningún número (un subtítulo como «Camino 1 · …») no se manda
+    return sel.filas.map((_, k) => ({ nombre: `${sel.nombresFilas[k]} · ${t.nombre}`.slice(0, 80), etiquetas: sel.etiquetas, fechas: sel.fechas, valores: sel.valores[k], procedencia: `${opciones.origen || ''} · ${t.nombre} · fila ${sel.nombresFilas[k]}`.slice(0, 480) })).filter((it) => it.valores.some((v) => v != null));
   }
 
   function render() {
@@ -277,7 +279,7 @@ export function montarTabla(cont, conjunto, opciones = {}) {
     render();
   }
   async function guardar() {
-    const its = items(); if (!its.length) return;
+    const its = items(); if (!its.length) { mensaje = 'Lo elegido no tiene números (¿una fila de subtítulo?): elegí renglones con valores.'; render(); return; }
     try {
       const msgs = [];
       for (const it of its) msgs.push(await (it.fechas && opciones.alGuardarSerie ? opciones.alGuardarSerie(it) : opciones.alGuardarVector(it)));
@@ -286,7 +288,7 @@ export function montarTabla(cont, conjunto, opciones = {}) {
     render();
   }
   async function graficarEnMesa() {
-    const its = items(); if (!its.length) return;
+    const its = items(); if (!its.length) { mensaje = 'Lo elegido no tiene números (¿una fila de subtítulo?): elegí renglones con valores.'; render(); return; }
     try { mensaje = await opciones.alGraficar(its); } catch (err) { mensaje = `No se pudo graficar: ${err.message}`; }
     render();
   }
