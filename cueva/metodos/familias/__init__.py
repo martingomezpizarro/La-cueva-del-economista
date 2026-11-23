@@ -18,5 +18,6 @@ from cueva.metodos.familias import (  # noqa: F401
     regresion,
     univariados,
     universo,
+    valuacion,
     volatilidad,
 )

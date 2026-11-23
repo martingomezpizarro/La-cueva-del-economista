@@ -53,6 +53,7 @@ FAMILIAS: dict[str, dict[str, str]] = {
     "no_supervisado": {"nombre": "No supervisado y anomalías", "icono": "🧩"},
     "finanzas": {"nombre": "Finanzas cuantitativas y activos", "icono": "💹"},
     "evaluacion": {"nombre": "Evaluación y combinación de modelos", "icono": "🏆"},
+    "valuacion": {"nombre": "Valuación de empresas", "icono": "🏷"},
 }
 
 
@@ -86,6 +87,7 @@ CLASE_POR_FAMILIA = {
     "no_supervisado": "modelar",
     "finanzas": "modelar",
     "evaluacion": "evaluar",
+    "valuacion": "modelar",
 }
 
 

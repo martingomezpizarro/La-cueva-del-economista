@@ -186,6 +186,7 @@ ARGS: dict[str, dict] = {
     "contagio_diebold_yilmaz": dict(sids=["mercado", "accion_a", "accion_b"], freq="mensual"),
     "dcc_garch": dict(sids=["mercado", "accion_a"]),
     "colas_extremas": dict(sid="mercado"),
+    "flujo_caja_libre": dict(activo="__prueba__", id_inversion=True),
     "curva_nelson_siegel": dict(sids=["fac0", "fac1", "fac2", "fac3"], plazos="0.25, 1, 5, 10"),
     "intervalos_conformales": dict(ML, modelo="svr"),
     # universo de modelos (el método del Trabajo Final)
@@ -762,3 +763,15 @@ def test_api_codigo(banco):
     ev = c.post("/api/v1/recetas/evaluar", json={"receta": r["series"][1]["receta"]}).json()
     assert np.allclose(ev["valores"], r["series"][1]["valores"])
     assert c.post("/api/v1/codigo/evaluar", json={"codigo": "import os"}).status_code == 422
+
+
+def test_flujo_caja_libre_cierra_por_los_dos_caminos():
+    """En la empresa de prueba no hay partidas fuera del camino 1: los dos caminos del FCFF cierran."""
+    for periodo in ("ejercicios", "12 meses móviles"):
+        r = ejecutar("flujo_caja_libre", {"activo": "__prueba__", "periodo": periodo, "restar_sbc": False})
+        assert r["ok"], r["resumen"]
+        tabla = next(b for b in r["bloques"] if b["tipo"] == "tabla")
+        pct = next(f for f in tabla["filas"] if f[0] == "Diferencia como % del FCFF")
+        assert all(abs(x) < 1 for x in pct[1:] if x is not None), pct
+        nombres = {s["nombre"] for s in r["series_salida"]}
+        assert {"__prueba__ · FCFF", "__prueba__ · NOPAT", "__prueba__ · Reinversión"} <= nombres
