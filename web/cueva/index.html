@@ -4061,6 +4061,9 @@ const PY_VERIFICAR = "\"\"\"Verifica el paquete: huellas de los datos, cada fich
   }
   const abrir = (id) => (esTerm(cats()[id]) ? abrirEnTerminal(id) : alaBandeja(id));
   function ir(h, foco) {
+    // la Terminal va a su pestaña DENTRO del clic (si se espera al cambio de hash, el navegador
+    // ya no lo cuenta como clic del usuario y bloquea la pestaña nueva)
+    if (h === "mercados" && window.CuevaBarra && window.CuevaBarra.irA) { window.CuevaBarra.irA("/terminal/", "terminal"); return; }
     location.hash = "#" + h;
     if (foco) setTimeout(() => document.querySelector(foco)?.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
   }

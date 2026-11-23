@@ -86,7 +86,11 @@
     if (!nombre || nombre === window.name) { location.href = href; return; }
     let w = null;
     try { w = window.open('', nombre); } catch (_) { w = null; }
-    if (!w) { location.href = href; return; }             // bloqueador de ventanas: misma pestaña
+    if (!w) {                                              // el navegador bloqueó la pestaña nueva
+      console.warn('La Cueva: el navegador bloqueó abrir otra pestaña; se abre acá. Permití ventanas emergentes de este sitio para tener cada módulo en su pestaña.');
+      location.href = href;
+      return;
+    }
     let ruta = '';
     try { ruta = w.location.pathname; } catch (_) { ruta = ''; }
     const base = href.split(/[?#]/)[0].replace(/\/$/, '') || '/';
