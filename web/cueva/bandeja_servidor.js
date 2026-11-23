@@ -11,6 +11,12 @@
  *
  * Las series de la Terminal que todavía no están en el catálogo cargado se traen a pedido
  * (CuevaTerminalAPedido.asegurar). En el sitio publicado no hay servidor: no hace nada.
+ *
+ * Figuras armadas (las deja el asistente, o cualquier pantalla):
+ *   servidor {tipo:"figura", ref, etiqueta, datos:{panel:{modo, titulo, capas:[{serie, tipo, eje, color}]}}}
+ * Al llegar se abre como un gráfico nuevo del lienzo de la Mesa: cada `serie` es el ref de una
+ * serie de la bandeja (o un id del catálogo / de la Terminal) y entra como ficha. Cada figura se
+ * arma una sola vez por navegador; después se edita como cualquier otro gráfico.
  */
 (function () {
   if (window.CUEVA_ESTATICO) return;
@@ -19,6 +25,34 @@
   let sinc = new Map();
   try { sinc = new Map(Object.entries(JSON.parse(localStorage.getItem(CLAVE) || "{}"))); } catch (_) { /* vacío */ }
   const recordar = () => { try { localStorage.setItem(CLAVE, JSON.stringify(Object.fromEntries(sinc))); } catch (_) { /* sin almacenamiento */ } };
+
+  const CLAVE_FIG = "cueva_bandeja_figuras_v1";
+  let figurasHechas = new Set();
+  try { figurasHechas = new Set(JSON.parse(localStorage.getItem(CLAVE_FIG) || "[]")); } catch (_) { /* vacío */ }
+
+  async function armarFigura(sv, items) {
+    const panel = sv.datos && sv.datos.panel;
+    if (!panel || !Array.isArray(panel.capas) || typeof nuevoPanel !== "function") return false;
+    const fichas = [];
+    for (const c of panel.capas) {
+      let it = st.bandeja.find((b) => b.k === c.serie || b.k === "cat:" + c.serie);
+      if (!it) {
+        const sv2 = items.find((i) => i.tipo === "serie" && i.ref === c.serie) || { tipo: "serie", ref: c.serie };
+        it = await deMesaItem(sv2);
+      }
+      if (!it) { console.warn("figura: no encontré", c.serie); return false; }
+      const f = fichaDeItem(it);
+      if (!f) return false;
+      fichas.push([f, c]);
+    }
+    if (typeof cambio === "function") cambio();
+    const p = nuevoPanel(panel.modo || "tiempo", []);
+    p.capas = fichas.map(([f, c], i) => capa({ r: ref(f.id, c.transf || []), tipo: c.tipo || "linea", color: c.color || f.color || PALETA[i % PALETA.length],
+      estilo: c.estilo || "solido", grosor: c.grosor || (c.tipo === "barras" ? 1 : 1.8), eje: c.eje || "izq" }));
+    if (panel.escala) p.escala = panel.escala;
+    p.titulo = panel.titulo || sv.etiqueta || p.titulo; p.manual = true;
+    return true;
+  }
 
   const claveDe = (sv) => (sv.datos && sv.datos.y ? sv.ref : "cat:" + sv.ref);
   let listo = false, ocupado = false;
@@ -96,6 +130,19 @@
         if (st.bandeja.some((b) => b.k === k)) continue;
         const it = await deMesaItem(sv);
         if (it) { st.bandeja.push(it); nuevos.push(it); cambio = true; }
+      }
+      // figuras armadas: se abren una vez como gráficos del lienzo
+      const figs = items.filter((i) => i.tipo === "figura" && !figurasHechas.has(i.id) && i.datos && i.datos.panel);
+      let armadas = 0;
+      for (const sv of figs) {
+        try { if (await armarFigura(sv, items)) { figurasHechas.add(sv.id); armadas++; } }
+        catch (e) { console.warn("figura:", e && e.message); }
+      }
+      if (armadas) {
+        try { localStorage.setItem(CLAVE_FIG, JSON.stringify([...figurasHechas])); } catch (_) { /* sin almacenamiento */ }
+        if (typeof render === "function") render();
+        if (typeof guardar === "function") guardar();
+        if (listo && typeof toast === "function") toast(armadas === 1 ? `Llegó un gráfico armado a la Mesa: «${figs[0].etiqueta || "figura"}».` : `Llegaron ${armadas} gráficos armados a la Mesa.`);
       }
       recordar();
       if (cambio) {
