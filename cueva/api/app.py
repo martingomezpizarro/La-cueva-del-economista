@@ -127,6 +127,17 @@ def get_repo() -> RepositorioProyectos:
 def crear_app() -> FastAPI:
     app = FastAPI(title="La Cueva del Economista — Mesa de Trabajo")
 
+    @app.middleware("http")
+    async def sin_cache_vieja(request, call_next):
+        """Las páginas y los scripts de /web se revalidan siempre: si no, después de una
+        actualización el navegador sigue usando la versión guardada (pasó con las pestañas)."""
+        resp = await call_next(request)
+        ruta = request.url.path
+        tipo = resp.headers.get("content-type", "")
+        if ruta.startswith("/web/") or "text/html" in tipo:
+            resp.headers.setdefault("Cache-Control", "no-cache")
+        return resp
+
     # ── estáticos de la plataforma ─────────────────────────────────────────
     # /web sirve el sistema de diseño (web/estilo/) y los módulos ES de cada pantalla.
     # Los módulos nativos se cargan como archivos, no embebidos: sin build.

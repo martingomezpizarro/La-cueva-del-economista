@@ -50,7 +50,11 @@
   .val-card .hd b{font-size:14px}
   .val-card ol{margin:8px 0 2px;padding-left:20px;display:grid;gap:3px;font-size:12.5px}
   .val-card .est{font-size:10.5px;color:var(--warn);margin-left:6px}
-  .val-card small{color:var(--ink-dim)}`;
+  .val-card small{color:var(--ink-dim)}
+  .val-card ol.pasos{margin:4px 0 4px;padding-left:18px;gap:1px;font-size:12px;color:var(--ink-dim)}
+  .val-card ol.pasos li.curso{color:var(--ink)}
+  .val-card ol.pasos li.curso .est{color:var(--accent)}
+  .val-card a{color:var(--accent);font-size:11.5px;margin-left:6px}`;
   document.head.appendChild(css);
 
   /* ── selector en la barra ── */
@@ -221,7 +225,13 @@
     const info = Object.fromEntries((plant?.metodos || []).map((m) => [m.id, m]));
     if (!c) { c = document.createElement("div"); c.id = "val-card"; c.className = "val-card"; e$("#v-mesa")?.prepend(c); }
     c.innerHTML = `<div class="hd"><b>Valuación${v.activo ? " de " + ec(v.activo) : ""}</b><small>Cada método trae su ficha para aprenderlo y un (i) por parámetro. Los datos los cargás vos desde la Ficha.</small></div>
-      <ol>${(v.metodos || []).map((id) => `<li><b>${ec(info[id]?.nombre || id)}</b> — ${ec(info[id]?.pregunta || "")}<span class="est">${ec(info[id]?.estado || "")}</span></li>`).join("")}</ol>`;
+      <ol>${(v.metodos || []).map((id) => {
+        const m = info[id] || {};
+        const guia = m.guia ? ` <a href="${ec(m.guia)}" target="_blank" rel="noopener">guía ↗</a>` : "";
+        const pasos = (m.pasos || []).length
+          ? `<ol class="pasos">${m.pasos.map((p) => `<li${p.estado === "en curso" ? ' class="curso"' : ""}>${ec(p.nombre)} <span class="est">${ec(p.estado)}${p.nota ? " · " + ec(p.nota) : ""}</span></li>`).join("")}</ol>` : "";
+        return `<li><b>${ec(m.nombre || id)}</b> — ${ec(m.pregunta || "")}<span class="est">${ec(m.estado || "")}</span>${guia}${pasos}</li>`;
+      }).join("")}</ol>`;
   }
 
   /* ── enganches con la página ── */

@@ -38,6 +38,9 @@
     { id: 'terminal', texto: 'Terminal', href: '/terminal/', aparte: true },
   ];
 
+  // Nombre de la pestaña del navegador de cada módulo.
+  const VENTANA = { inicio: 'cueva', mesa: 'cueva', tiempo: 'cueva-tiempo', terminal: 'cueva-terminal' };
+
   const estatico = !!window.CUEVA_ESTATICO;
   if (estatico) {
     // En el sitio publicado no hay portada: la Mesa vive en «/».
@@ -64,16 +67,15 @@
         `href="${apagada ? '#' : p.href}"`,
         `data-pestana="${p.id}"`,
         p.id === aqui ? 'aria-current="true"' : '',
-        p.aparte && p.id !== aqui ? 'target="_blank" rel="noopener" title="Se abre en otra pestaña del navegador"' : '',
+        // sin JavaScript (o si el navegador bloquea el truco de enfocar) igual va a la pestaña del módulo
+        p.id !== aqui && VENTANA[p.id] !== VENTANA[aqui] ? `target="${VENTANA[p.id]}" title="Se abre en su propia pestaña del navegador"` : '',
         apagada ? 'aria-disabled="true" title="La Terminal solo funciona en la versión local de La Cueva del Economista"' : '',
       ].join(' ');
-      const flecha = p.aparte && p.id !== aqui ? ' <span class="barra-aparte" aria-hidden="true">↗</span>' : '';
+      const flecha = p.id !== aqui && VENTANA[p.id] !== VENTANA[aqui] ? ' <span class="barra-aparte" aria-hidden="true">↗</span>' : '';
       return `<a ${attrs}>${ICONOS[p.id]}${p.texto}${flecha}</a>`;
     }).join('');
   }
 
-  // Nombre de la pestaña del navegador de cada módulo.
-  const VENTANA = { inicio: 'cueva', mesa: 'cueva', tiempo: 'cueva-tiempo', terminal: 'cueva-terminal' };
 
   function nombrarEstaPestana() {
     const nombre = VENTANA[actual()];

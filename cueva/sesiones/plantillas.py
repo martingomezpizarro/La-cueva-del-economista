@@ -17,7 +17,18 @@ METODOS_VALUACION: list[dict] = [
         "id": "dcf",
         "nombre": "Flujo de fondos descontado (DCF)",
         "pregunta": "¿Cuánto vale si se cumplen mis supuestos de flujo, crecimiento y tasa?",
-        "estado": "por construir",
+        "estado": "en construcción · paso 1 de 6",
+        "guia": "https://claude.ai/artifact/GGutPT2ZtgZ8VDWW94DyVi",
+        # Se construye de a un paso con Martín (Aprender → Diseñar → Construir → Al informe).
+        "pasos": [
+            {"id": "flujo", "nombre": "Flujo de caja libre histórico", "estado": "en curso",
+             "nota": "series y gráficos de NVDA en la bandeja"},
+            {"id": "reinversion", "nombre": "Reinversión y retorno del capital", "estado": "por construir"},
+            {"id": "crecimiento", "nombre": "Crecimiento esperado", "estado": "por construir"},
+            {"id": "tasa", "nombre": "Tasa de descuento (WACC)", "estado": "por construir"},
+            {"id": "etapas", "nombre": "DCF por etapas y valor final", "estado": "por construir"},
+            {"id": "inverso", "nombre": "DCF inverso", "estado": "por construir"},
+        ],
     },
     {
         "id": "gordon",
