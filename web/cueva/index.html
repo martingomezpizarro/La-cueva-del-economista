@@ -8,6 +8,7 @@
 <link rel="stylesheet" href="/web/estilo/tokens.css">
 <link rel="stylesheet" href="/web/estilo/pie.css">
 <script src="/web/estilo/tema.js"></script>
+<script src="/web/estilo/barra.js" defer></script>
 <style>
 /* Mockup de la Mesa de investigación — La Cueva del Economista.
    Layout: tres espacios (Mesa · Proyecto · Documento). La Mesa = lienzo central (gráfico,
@@ -4049,7 +4050,9 @@ const PY_VERIFICAR = "\"\"\"Verifica el paquete: huellas de los datos, cada fich
     catch (_) { aviso("No se pudo llevar a la bandeja."); }
   }
   function abrirEnTerminal(id) {
-    location.href = "/terminal/activo/" + encodeURIComponent(corto(id)); return;
+    const destino = "/terminal/activo/" + encodeURIComponent(corto(id));
+    if (window.CuevaBarra && window.CuevaBarra.irA) window.CuevaBarra.irA(destino, "terminal"); else location.href = destino;
+    return;
     location.hash = "#mercados";
     setTimeout(() => {
       const t = corto(id), b = [...document.querySelectorAll("#merc-lista .merc-a")].find((x) => x.querySelector("b")?.textContent.trim() === t);
@@ -4145,7 +4148,11 @@ const PY_VERIFICAR = "\"\"\"Verifica el paquete: huellas de los datos, cada fich
   const VISTAS = ["inicio", "mesa", "mercados", "proyecto", "documento"], TRABAJO = ["mesa", "proyecto", "documento"];
   function rutaCueva() {
     const h = (location.hash || "").slice(1) || "inicio";
-    if (h === "mercados") { location.href = "/terminal/"; return; }
+    if (h === "mercados") {
+      if (window.CuevaBarra && window.CuevaBarra.irA) { history.replaceState(null, "", "#inicio"); window.CuevaBarra.irA("/terminal/", "terminal"); }
+      else location.href = "/terminal/";
+      return;
+    }
     if (!VISTAS.includes(h)) return;
     document.querySelectorAll("main > .vista").forEach((s) => { s.hidden = s.id !== "v-" + h; });
     document.querySelectorAll(".top [data-v]").forEach((a) => (a.dataset.v === h ? a.setAttribute("aria-current", "page") : a.removeAttribute("aria-current")));

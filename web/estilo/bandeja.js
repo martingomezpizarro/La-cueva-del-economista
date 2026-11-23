@@ -156,7 +156,7 @@
       const origen = it.procedencia && it.procedencia.origen ? it.procedencia.origen : it.autor;
       return `<div class="cb-bj-fila"><span class="t" title="${esc(it.ref)}">${esc(it.etiqueta || it.ref)}</span><span class="m">${esc(origen)}</span><button class="mini" data-bj="x" data-id="${esc(it.id)}" title="Quitar de la bandeja">✕</button></div>`;
     }).join('');
-    html += '</div><div class="cb-bj-pie"><span class="m" style="color:#8b97a6;font-size:11.5px">Se comparte con la Mesa</span><a href="/mesa#mesa">Abrir en la Mesa →</a></div>';
+    html += '</div><div class="cb-bj-pie"><span class="m" style="color:#8b97a6;font-size:11.5px">Se comparte con la Mesa (otra pestaña)</span><a href="/mesa#mesa" data-ir-mesa>Ir a la Mesa →</a></div>';
     panel.innerHTML = html;
   }
 
@@ -185,6 +185,12 @@
     panel.className = 'cb-bj-panel';
     panel.hidden = true;
     panel.addEventListener('click', (e) => {
+      const ir = e.target.closest('a[data-ir-mesa]');
+      if (ir && window.CuevaBarra && window.CuevaBarra.irA) {
+        e.preventDefault();
+        window.CuevaBarra.irA(ir.getAttribute('href'), 'mesa'); // la Mesa en su pestaña, sin recargarla
+        return;
+      }
       const b = e.target.closest('[data-bj]');
       if (!b || b.disabled) return;
       if (b.dataset.bj === 'uno') mandar([activo.series[+b.dataset.i]]);

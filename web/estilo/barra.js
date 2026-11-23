@@ -1,7 +1,12 @@
 /* barra.js — la barra común de La Cueva del Economista.
  *
  * Un solo lugar define las pestañas de la plataforma:
- *   Inicio · Línea de tiempo ↗ (abre en otra pestaña del navegador) · Mesa de trabajo · Terminal
+ *   Inicio · Línea de tiempo ↗ · Mesa de trabajo · Terminal ↗
+ *
+ * Cada módulo vive en SU pestaña del navegador, con nombre (window.name): «cueva» (Inicio y
+ * Mesa), «cueva-terminal» y «cueva-tiempo». Pasar de una a otra ENFOCA la pestaña que ya está
+ * abierta, sin recargarla; sólo se navega si esa pestaña todavía no existe o está en otra
+ * pantalla. Lo único que conecta la Terminal con la Mesa es la bandeja (en el servidor).
  *
  * Dos modos:
  *  - En las pantallas de La Cueva (portada, Mesa, Línea de tiempo) completa el
@@ -30,7 +35,7 @@
     { id: 'inicio', texto: 'Inicio', href: '/' },
     { id: 'tiempo', texto: 'Línea de tiempo', href: '/tiempo', aparte: true },
     { id: 'mesa', texto: 'Mesa de trabajo', href: '/mesa' },
-    { id: 'terminal', texto: 'Terminal', href: '/terminal/' },
+    { id: 'terminal', texto: 'Terminal', href: '/terminal/', aparte: true },
   ];
 
   const estatico = !!window.CUEVA_ESTATICO;
@@ -67,12 +72,49 @@
     }).join('');
   }
 
+  // Nombre de la pestaña del navegador de cada módulo.
+  const VENTANA = { inicio: 'cueva', mesa: 'cueva', tiempo: 'cueva-tiempo', terminal: 'cueva-terminal' };
+
+  function nombrarEstaPestana() {
+    const nombre = VENTANA[actual()];
+    if (nombre && !estatico && (!window.name || window.name.startsWith('cueva'))) window.name = nombre;
+  }
+
+  // Va a `href` en la pestaña del módulo: si ya existe y está en ese módulo, sólo la enfoca.
+  function irA(href, id) {
+    const nombre = VENTANA[id];
+    if (!nombre || nombre === window.name) { location.href = href; return; }
+    let w = null;
+    try { w = window.open('', nombre); } catch (_) { w = null; }
+    if (!w) { location.href = href; return; }             // bloqueador de ventanas: misma pestaña
+    let ruta = '';
+    try { ruta = w.location.pathname; } catch (_) { ruta = ''; }
+    const base = href.split(/[?#]/)[0].replace(/\/$/, '') || '/';
+    const alli = ruta && ruta !== 'blank' && (base === '/' ? ruta === '/' : ruta.startsWith(base));
+    if (!alli) w.location.href = href;
+    w.focus();
+  }
+
+  function conectar(raiz) {
+    raiz.querySelectorAll('a[data-pestana]').forEach((a) => {
+      const id = a.dataset.pestana;
+      if (a.getAttribute('aria-disabled') === 'true' || id === actual() || estatico) return;
+      if (VENTANA[id] === VENTANA[actual()]) return;       // misma pestaña (Inicio ↔ Mesa): enlace normal
+      a.addEventListener('click', (e) => {
+        if (e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return;
+        e.preventDefault();
+        irA(a.getAttribute('href'), id);
+      });
+    });
+  }
+
   function enPaginaDeLaCueva() {
     const nav = document.querySelector('nav.modswitch[data-barra]');
     if (!nav) return false;
     nav.innerHTML = enlaces();
     nav.setAttribute('aria-label', 'Pestañas de La Cueva del Economista');
     nav.querySelectorAll('a[aria-disabled="true"]').forEach((a) => a.addEventListener('click', (e) => e.preventDefault()));
+    conectar(nav);
     return true;
   }
 
@@ -103,6 +145,8 @@
       'La Cueva del <em>Economista</em></a>' +
       `<nav aria-label="Pestañas de La Cueva del Economista">${enlaces()}</nav>`;
     document.body.prepend(barra);
+    conectar(barra);
+    barra.querySelector('.cb-marca').addEventListener('click', (e) => { e.preventDefault(); irA('/', 'inicio'); });
     document.documentElement.style.setProperty('--alto-cueva', `${ALTO}px`);
     // la bandeja de series compartida con la Mesa (botón en esta barra)
     if (!estatico) {
@@ -112,7 +156,21 @@
     }
   }
 
+  // Cualquier otro enlace de la página a la Terminal (accesos de la Mesa, «abrir en la Terminal»)
+  // también va a su pestaña.
+  function delegarEnlaces() {
+    if (estatico || actual() === 'terminal') return;
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest && e.target.closest('a[href^="/terminal"]');
+      if (!a || a.closest('[data-barra], .cueva-barra') || e.ctrlKey || e.metaKey || e.shiftKey || e.button !== 0) return;
+      e.preventDefault();
+      irA(a.getAttribute('href'), 'terminal');
+    });
+  }
+
   function iniciar() {
+    nombrarEstaPestana();
+    delegarEnlaces();
     if (modulo === 'terminal') enTerminal();
     else enPaginaDeLaCueva();
   }
@@ -120,5 +178,5 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar);
   else iniciar();
 
-  window.CuevaBarra = { PESTANAS, actual };
+  window.CuevaBarra = { PESTANAS, actual, irA };
 })();
